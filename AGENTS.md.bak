@@ -1,0 +1,391 @@
+# PROJECT: FIFA / FC Online Player Draft System (Python backend)
+
+Build a realtime multi-team player draft system for a Vietnamese FC Online pro tournament.
+Work in PHASES. After finishing each phase: run lint, type-check and tests, summarize what
+you did, list any deviations, then STOP and wait for my confirmation.
+Do not start the next phase on your own. Do not over-engineer.
+
+`docs/design.md` is the **index** for domain model, ERD, state machine, business rules and API shapes
+(full content split into `docs/design/01-domain-analysis.md` … `08-open-questions.md`).
+This file (`AGENTS.md`) is the source of truth for stack, architecture and coding rules.
+If the two conflict, STOP and ask me. Do not silently pick one.
+
+## PROJECT LOCATION
+
+The project root is: D:\VideCode\WebFifa (Windows).
+
+Before making changes:
+
+- Inspect the existing project structure and any existing backend code.
+- Do not overwrite existing files without telling me.
+- Use commands that work on Windows (PowerShell). No bash-only syntax in docs or scripts
+  unless it is inside a Docker container.
+
+## ABOUT ME (IMPORTANT)
+
+I am learning Python (coming from Java) and moving toward Data Engineering. This is a real
+project for a friend AND my learning project. Therefore:
+
+- Write clear, idiomatic, boring Python. No clever metaprogramming, no unnecessary decorators
+  or metaclasses, no over-abstraction.
+- At the end of every phase, add a section "Python concepts used" with 3-5 short bullets
+  explaining the new language/library concepts introduced (e.g. async/await, dependency
+  injection in FastAPI, Pydantic validation, SQLAlchemy Session).
+- Comment only where the WHY is not obvious (locking, race conditions, timezone handling).
+- Prefer small functions and explicit type hints on everything.
+
+## TECH STACK
+
+Backend:
+
+- Python 3.12, package/venv manager: uv (pyproject.toml, uv.lock)
+- FastAPI + Uvicorn, Pydantic v2, pydantic-settings
+- SQLAlchemy 2.0 (async, `AsyncSession`) + asyncpg, PostgreSQL 16
+- Alembic (migrations)
+- Passwords: `bcrypt` package directly (do not use passlib)
+- Lint/format: ruff. Types: mypy --strict. Layering: import-linter.
+- Tests: pytest, pytest-asyncio, httpx (AsyncClient), testcontainers-python (PostgreSQL,
+  NEVER SQLite/H2 or mocked DB for integration tests)
+- pandas is allowed ONLY inside the importer module (data import / ETL).
+
+Frontend: React + TypeScript + Vite, Tailwind, shadcn/ui, Axios, TanStack Query,
+react-router, react-hook-form + zod, native WebSocket (NO STOMP).
+Reference layout: `docs/ui/reference-draft-board.png`.
+Tests: Vitest, Playwright.
+
+Infra: Docker, Docker Compose, Nginx. NO Redis, NO Kafka, NO Celery.
+
+Keep dependencies minimal. Ask before adding any library not listed here.
+
+## ARCHITECTURE
+
+Package-by-feature, layered inside each feature:
+
+```
+backend/
+  pyproject.toml
+  alembic.ini
+  alembic/versions/
+  app/
+    main.py                # FastAPI app, lifespan, router registration
+    config.py              # pydantic-settings
+    db.py                  # engine, async session factory
+    common/                # Clock, errors, base model, time utils
+    auth/
+    tournament/
+    team/
+    player/                # Player, Season, PlayerSeason
+    draft/
+    match/                 # Matches & Bans (replaces squad)
+    importer/              # CSV import (ETL)
+    <feature>/
+      api.py               # routers + request/response schemas (Pydantic)
+      service.py           # application/use-case layer (transactions live here)
+      domain.py            # entities (SQLAlchemy models) + pure business rules
+      repository.py        # DB queries
+  tests/
+    unit/
+    integration/
+```
+
+Rules:
+
+- Routers (api.py) only: receive request, validate input, call a service, return response.
+  NO business logic in routers.
+- Business rules live in service.py / domain.py. Turn-rotation logic is PURE Python
+  (no FastAPI, no SQLAlchemy session, no DB) so it can be unit-tested without a database.
+- SQLAlchemy models double as domain entities (do not split persistence/domain models).
+- `DraftOrderStrategy` (Protocol): `LinearOrder` implemented (1..N, 1..N), `SnakeOrder` later.
+- `TimeoutPolicy` (Protocol): `AutoPickCheapest` implemented as default (auto-picks cheapest valid ACTIVE cards in allowed seasons up to remaining picks in turn); `SkipTurn` alternative; `AutoPickBest` later.
+- `Clock` (Protocol) with `now() -> datetime` (timezone-aware UTC). Inject it everywhere.
+  NEVER call `datetime.now()` / `datetime.utcnow()` directly outside the real Clock
+  implementation. Tests use a `FakeClock`. No `sleep` in tests.
+- Dependency direction: api -> service -> domain; repository -> domain. `domain` must not
+  import fastapi, api modules or repository modules. Enforce with import-linter in CI.
+- Use FastAPI `Depends` for session, current user, clock and services.
+
+## PHASES (Execution Plan)
+
+- **Phase 0**: Architecture, Design & Domain Model (`design.md`, `AGENTS.md`, `CHANGELOG.md`)
+- **Phase 1**: Project Setup, Base Infrastructure, DB & Alembic Migrations
+- **Phase 2**: Authentication & User Management (Sessions, Cookie Auth, Roles)
+- **Phase 3**: Seasons & Player Catalogue / Importer Pipeline (CSV ETL, Season badges, Unaccent search)
+- **Phase 4**: Tournaments, Tournament Rules (JSONB) & Teams Management
+- **Phase 5**: Draft Engine (Multi-pick turns, UniqueBy player/card, Clock, Versioning)
+- **Phase 6**: Draft Timer Background Task & WebSocket Realtime (`/ws/drafts/{id}`)
+- **Phase 7**: Frontend Draft Board (React + Vite + Tailwind, FC Online UI)
+- **Phase 8**: Matches & Bans (Match Scheduling, Simultaneous/Alternating Bans, `/ws/matches/{id}`)
+- **Phase 9**: Integration Tests, E2E Verification & Hardening
+
+## DOMAIN (see design.md for full detail)
+
+Multi-season pool model:
+
+- `Season` (id, code, name, badgeUrl nullable, game, year, createdAt): e.g. code="23UCL", badgeUrl="/badges/23ucl.png".
+- `Player` (id, name, externalPlayerId, createdAt): stable identity only. `externalPlayerId` is REQUIRED for deduplication.
+- `PlayerSeason` (id, playerId, seasonId, position, rating nullable, salary INT, imageUrl nullable,
+  status[ACTIVE,INACTIVE], stats nullable). UNIQUE(player_id, season_id). Stores original game position (no collapsing, e.g. LWB, RWB, CF).
+- `Tournament` (id, name, status[DRAFT,READY,RUNNING,COMPLETED,CANCELLED], rules jsonb, createdAt, updatedAt).
+  No season_id column (tournaments draw from multi-season pool defined in rules).
+  `rules` is validated by Pydantic `TournamentRules`:
+  - `rules_version`: int
+  - `rosterSize`: int (1..60, default 24)
+  - `budget`: int (default 305)
+  - `pickTimeSeconds`: int (default 30)
+  - `uniqueBy`: VARCHAR[PLAYER,CARD] (default PLAYER)
+  - `timeoutPolicy`: VARCHAR[SKIP_TURN,AUTO_PICK_CHEAPEST] (default AUTO_PICK_CHEAPEST)
+  - `allowedSeasonIds`: list[UUID] (empty = all seasons allowed)
+  - `banCount`: int (default 5)
+  - `banTimeSeconds`: int (default 60)
+  - `banTarget`: VARCHAR[OPPONENT_ROSTER,OWN_ROSTER] (default OPPONENT_ROSTER)
+  - `banOrder`: VARCHAR[SIMULTANEOUS,ALTERNATING] (default SIMULTANEOUS)
+    Status: READY when >= 2 teams exist (or when an active draft is cancelled), RUNNING when the draft starts, COMPLETED set manually by ADMIN.
+- `Team` (id, tournamentId, name, draftOrder, budgetUsed, status). N teams, never hard-code 4. A team's roster is simply its `DraftPick` rows.
+- `DraftSession` (id, tournamentId, status[WAITING,PICKING,PAUSED,COMPLETED,CANCELLED],
+  currentRound, currentTurn, currentTeamId, turnStartedAt, turnExpiresAt, remainingMillis,
+  rulesSnapshot jsonb, version, createdAt, completedAt). Cancelled sessions are preserved in the DB as history.
+- `DraftPick` (id, draftSessionId, teamId, playerSeasonId, playerId, uniqueByPlayer bool, round, turnNumber, salaryAtPick, pickedAt).
+- `DraftEvent` (id, draftSessionId, type[START,PICK,SKIP,PAUSE,RESUME,COMPLETE,CANCEL], teamId,
+  turnNumber, payload jsonb, createdAt). Append-only audit log.
+- `Match` (id, tournamentId, homeTeamId, awayTeamId, status[SCHEDULED,BAN_PHASE,BANS_LOCKED,COMPLETED],
+  scheduledAt nullable, rulesSnapshot jsonb, banStartedAt nullable, banExpiresAt nullable, homeConfirmed bool, awayConfirmed bool, version, createdAt, updatedAt).
+- `MatchBan` (id, matchId, banningTeamId, targetTeamId, playerSeasonId, createdAt).
+- `User` (id, username, passwordHash, role[ADMIN,TEAM_USER], teamId nullable).
+- `Session` (id = random token, userId, expiresAt, createdAt) for login sessions.
+
+Positions: stored as game's original string (ST, CF, LW, RW, CAM, CM, CDM, LM, RM, CB, LB, RB, LWB, RWB, GK). UI groups into filter chips.
+IDs are UUIDs.
+
+## DATABASE RULES
+
+- Alembic only. NEVER `Base.metadata.create_all()` in app code except inside test fixtures
+  that first run the real Alembic migrations. Prefer running real migrations in tests.
+- Autogenerate is only a starting point. Review every migration by hand. Autogenerate misses
+  partial indexes, CHECK constraints and some server defaults: write those explicitly.
+- Set a SQLAlchemy `naming_convention` on metadata so constraint/index names are stable.
+  Stable names are REQUIRED because IntegrityError handling maps constraint names to errors.
+- Enums: VARCHAR + CHECK constraint (no PG enum types). Timestamps: `timestamptz`
+  (`DateTime(timezone=True)`), always timezone-aware UTC in Python. Salary/budget: INT.
+- Constraints:
+  - `draft_picks`: UNIQUE(draft_session_id, player_season_id),
+    partial unique index UNIQUE(draft_session_id, player_id) WHERE unique_by_player,
+    UNIQUE(draft_session_id, turn_number)
+  - `teams`: UNIQUE(tournament_id, draft_order), CHECK(budget_used >= 0)
+  - `draft_sessions`: version INT NOT NULL DEFAULT 0, partial unique index UNIQUE(tournament_id)
+    WHERE status IN ('WAITING','PICKING','PAUSED')
+  - `seasons`: UNIQUE(code)
+  - `player_seasons`: UNIQUE(player_id, season_id)
+  - `players`: UNIQUE(external_player_id)
+  - `matches`: version INT NOT NULL DEFAULT 0
+  - `match_bans`: UNIQUE(match_id, banning_team_id, player_season_id)
+- GIN index with `pg_trgm + unaccent` on `players.name` for player name search (Alembic migration must create an immutable wrapper function for unaccent because PG unaccent is not IMMUTABLE). The importer must NOT use fuzzy matching (deduplication strictly by externalPlayerId). Player list endpoints are paginated.
+
+## PICK RULES (POST /api/drafts/{id}/picks, body: {playerSeasonId, expectedVersion})
+
+The whole operation runs in ONE transaction (one `async with session.begin()` in the service):
+
+1. Load DraftSession with `SELECT ... FOR UPDATE` (`with_for_update()`). All operations on a
+   draft (pick, timeout, pause, resume, cancel) go through this lock.
+2. Draft exists (DRAFT_NOT_FOUND); status PICKING (DRAFT_NOT_ACTIVE / DRAFT_COMPLETED).
+3. expectedVersion == version, otherwise reject (stale client).
+4. If now > turnExpiresAt: apply the timeout in the SAME transaction (locking the draft row,
+   applying TimeoutPolicy to auto-pick or skip the turn, advancing turn,
+   consuming turn, incrementing version, writing event); commit; only after leaving the
+   `async with session.begin()` block raise TURN_EXPIRED (the service returns a result indicating expiry
+   and the outer layer raises). Never open a second transaction on the same draft row (avoids self-deadlock).
+   Broadcast the updated state after that commit.
+5. Resolve the team from the authenticated user. NEVER trust a teamId from the client.
+   Must equal currentTeamId (NOT_YOUR_TURN).
+6. PlayerSeason exists (PLAYER_NOT_FOUND); status is ACTIVE (PLAYER_NOT_AVAILABLE);
+   belongs to allowed seasons if allowedSeasonIds is non-empty (SEASON_NOT_ALLOWED);
+   not already picked in this draft (PLAYER_ALREADY_PICKED).
+7. budgetUsed + salary <= budget (BUDGET_EXCEEDED). budgetRemaining = budget - budgetUsed,
+   computed on the backend.
+8. Team roster < rosterSize (TEAM_ROSTER_FULL).
+9. Budget feasibility: budgetRemaining - salary >= (slotsLeft - 1) \* minSalaryInPool
+   (BUDGET_INSUFFICIENT_FOR_ROSTER).
+10. Insert DraftPick (with playerId, uniqueByPlayer, round, turnNumber, salaryAtPick),
+    update budgetUsed, increment version, write DraftEvent.
+11. Advance turn logic: advance the turn via DraftOrderStrategy to the next team.
+    After the last team, currentRound += 1 and wrap back to smallest draftOrder.
+    Skip teams whose roster is full. Draft becomes COMPLETED after all rosters are full, or after
+    rosterSize rounds, or if no ACTIVE unpicked PlayerSeason with salary <= any team's budgetRemaining exists.
+    Write DraftEvent(COMPLETE).
+12. Reset turnStartedAt / turnExpiresAt using Clock when the turn advances to a new team.
+13. Commit. ONLY AFTER the commit succeeds, broadcast the new DraftState over WebSocket.
+    Never broadcast inside the transaction.
+
+- Draft start validation (POST /api/tournaments/{id}/draft/start): requires tournament status
+  READY (>= 2 teams), and allowed seasons having >= teams \* rosterSize ACTIVE PlayerSeasons
+  (otherwise DRAFT_POOL_TOO_SMALL, 422). Draft start resets teams.budget_used = 0 for all teams
+  in the tournament and copies rules into draft_sessions.rules_snapshot.
+- Catch `IntegrityError` and map it by CONSTRAINT NAME:
+  draft_picks unique on player_season or player -> PLAYER_ALREADY_PICKED; on (turn_number) -> stale turn.
+  Any other IntegrityError is a bug and must surface as 500.
+
+## TIMER
+
+- Backend is the source of truth: store turnStartedAt / turnExpiresAt for drafts, banStartedAt / banExpiresAt for matches.
+- A background task started in FastAPI `lifespan` loops about once per second:
+  - Finds PICKING drafts with turnExpiresAt < now, and handles each in its OWN transaction.
+  - Finds BAN_PHASE matches with banExpiresAt < now, and locks bans in its OWN transaction.
+    Must survive server restarts (no in-memory timers). Cancel cleanly on shutdown.
+- Timeout handler for draft: lock draft row, RE-CHECK version and expiry, then apply
+  TimeoutPolicy (default AutoPickCheapest: auto-picks the cheapest ACTIVE unpicked card in allowed seasons;
+  SkipTurn skips the turn). Consumes turn, increments version, writes event.
+- Pause stores remainingMillis, increments version. Resume sets turnExpiresAt = now + remainingMillis, increments version.
+- Never block the event loop (no `time.sleep`, no sync DB calls, no heavy CPU in handlers).
+
+## REALTIME
+
+- Plain WebSocket endpoints sending JSON (NO STOMP):
+  - `/ws/drafts/{draft_id}`: draft updates
+  - `/ws/matches/{match_id}`: match ban updates
+- Authenticate using session cookie at handshake. Check `Origin` against allowed list.
+- Single Uvicorn worker in v1 (document in README). Periodic ping/heartbeat.
+- Draft payload: full DraftState snapshot {draftId, version, serverTime, status, currentRound,
+  currentTurn, currentTeamId, turnStartedAt, turnExpiresAt, rulesSnapshot,
+  pickedPlayer{playerSeasonId, playerId, name, position, salary, season{id, code, badgeUrl}},
+  teams[{id, name, draftOrder, budgetUsed, budgetRemaining, pickedCount}]}.
+- Match payload: full MatchState snapshot {matchId, version, status, scheduledAt, banStartedAt,
+  banExpiresAt, homeTeam, awayTeam, bans: (full list if BANS_LOCKED, otherwise filtered per team/spectator)}.
+
+## MATCHES & BANS (replaces squad lock)
+
+- Tables `matches` and `match_bans`. Created manually by ADMIN (no auto fixture generation in v1).
+- Admin starts ban phase: POST /api/matches/{id}/bans/start (status -> BAN_PHASE, snapshots ban rules, sets ban timer).
+- Bans:
+  - Target player must belong to the target team's drafted roster (PLAYER_NOT_IN_ROSTER, 422).
+  - Maximum `banCount` per team (default 5, BAN_LIMIT_REACHED, 422).
+  - `banTarget`: OPPONENT_ROSTER (default) or OWN_ROSTER.
+  - `banOrder`: SIMULTANEOUS (default) or ALTERNATING. In SIMULTANEOUS mode, opponents and spectators
+    only see the count of bans made until both teams confirm; bans lock when both teams confirm
+    (POST /api/matches/{id}/bans/confirm) or when timer expires (keeping bans made so far).
+  - While BAN_PHASE: POST /api/matches/{id}/bans to add ban, DELETE /api/matches/{id}/bans/{banId} to remove ban.
+  - Once a team confirms, it cannot add/delete bans (BANS_ALREADY_CONFIRMED, 422).
+  - Once status is BANS_LOCKED, all bans are revealed and locked.
+- Tournament status COMPLETED is set manually by ADMIN via POST /api/tournaments/{id}/complete.
+
+## SECURITY
+
+- Roles ADMIN / TEAM_USER. Login creates a row in `sessions`; the cookie holds only the
+  random session token (HttpOnly, SameSite=Lax, Secure in production). Same-origin via
+  Nginx (no CORS needed). bcrypt passwords.
+- Implement dependencies `get_current_user`, `require_admin`, `get_current_team`. Every
+  endpoint declares its access rule explicitly through a dependency.
+- ADMIN: create tournament (with rules), add team, import players, create users (POST /api/admin/users),
+  start draft (resets teams.budget_used to 0), pause/resume/cancel draft (POST /api/drafts/{id}/cancel sets tournament back to READY, keeps cancelled session as history), create matches, start ban phase, complete match, complete tournament.
+- TEAM_USER: view draft, pick only on own team's turn, view roster, manage/confirm bans for own team.
+- Ownership is always checked on the backend. Add tests proving a TEAM_USER cannot pick for
+  another team, ban for another team, or call an admin endpoint.
+
+## ERRORS
+
+Define a `DomainError` base class (code, http_status, message) and register exception
+handlers returning RFC 9457 style JSON:
+`{"type", "title", "status", "code", "message"}`. Never return a stack trace. Unexpected
+exceptions -> 500 with code INTERNAL_ERROR and a log entry with a request id.
+HTTP mapping: NOT_YOUR_TURN 403, PLAYER_ALREADY_PICKED 409, \*\_NOT_FOUND 404, other business
+rules 422, validation 400/422.
+Codes: DRAFT_NOT_FOUND DRAFT_NOT_ACTIVE NOT_YOUR_TURN PLAYER_NOT_FOUND PLAYER_NOT_AVAILABLE
+PLAYER_ALREADY_PICKED SEASON_NOT_ALLOWED BUDGET_EXCEEDED BUDGET_INSUFFICIENT_FOR_ROSTER
+TEAM_ROSTER_FULL DRAFT_COMPLETED TURN_EXPIRED DRAFT_POOL_TOO_SMALL MATCH_NOT_FOUND
+MATCH_NOT_ACTIVE PLAYER_NOT_IN_ROSTER BAN_LIMIT_REACHED BANS_ALREADY_CONFIRMED BANS_LOCKED
+POOL_LOCKED.
+
+## API
+
+POST /api/auth/login | /logout, GET /api/auth/me
+POST /api/admin/users (create TEAM_USER linked to a teamId)
+POST/GET /api/seasons
+POST/GET /api/tournaments, GET /api/tournaments/{id} (includes draftId, teams, rules)
+POST /api/tournaments/{id}/complete (ADMIN manual completion)
+POST/GET /api/tournaments/{id}/teams (requires >= 2 teams before draft start)
+GET /api/teams/{id}/roster (team's drafted players)
+GET /api/player-seasons (?seasonId= &position= &search= &page=), GET /api/player-seasons/{id}
+PATCH /api/admin/player-seasons/{id} (ADMIN update salary {salary: int >= 1}, rejected with POOL_LOCKED if draft active)
+POST /api/admin/players/import (multipart CSV, rejected with POOL_LOCKED if draft active), see IMPORT below
+POST /api/tournaments/{id}/draft/start (requires READY status, pool validation, resets teams.budget_used = 0)
+GET /api/drafts/{id}; GET /api/drafts/{id}/picks
+POST /api/drafts/{id}/picks | /pause | /resume | /cancel (cancel sets tournament back to READY)
+POST/GET /api/tournaments/{id}/matches (ADMIN creates match, list matches)
+GET /api/matches/{id}
+POST /api/matches/{id}/bans/start (ADMIN)
+POST /api/matches/{id}/bans (TEAM_USER add ban)
+DELETE /api/matches/{id}/bans/{banId} (TEAM_USER remove pending ban)
+POST /api/matches/{id}/bans/confirm (TEAM_USER confirm bans)
+POST /api/matches/{id}/complete (ADMIN)
+FastAPI generates the OpenAPI spec. Generate TypeScript types from it with
+`openapi-typescript` for the frontend.
+
+## IMPORT (ETL) — keep it a clean pipeline
+
+Source: CSV files from public datasets or FC Online exports.
+CSV Columns: `external_player_id, name, season_code, position, salary, rating, image_url`
+(rating and image_url optional). Unknown `season_code` automatically creates a `Season` row.
+Module `app/importer/` with three clearly separated steps:
+
+1. Extract: stream the CSV in chunks (pandas `chunksize` or `csv`), never load everything.
+2. Transform: pure functions, easy to unit-test:
+   - Position: original position string stored (no collapsing, e.g. LWB, RWB, CF, ST, GK).
+   - Salary: read directly from CSV. `SalaryMapper` is an optional fallback only if salary is missing.
+   - Row validation with Pydantic: externalPlayerId is REQUIRED; rows without it are skipped and reported.
+     Salary must be an integer >= 1.
+3. Load: batch upsert (`INSERT ... ON CONFLICT DO UPDATE`) into players and player_seasons.
+   Idempotent: importing the same file twice must not create duplicates; re-import updates salaries and player metadata.
+   Both re-import and `PATCH /api/admin/player-seasons/{id}` are rejected with `POOL_LOCKED` (422)
+   if any draft session is in `PICKING` or `PAUSED` status.
+   Return an import report: rows read, inserted, updated, skipped (with reasons).
+   Available both as CLI (`uv run python -m app.importer --file ...`) and as admin endpoint.
+   An offline standalone script `docs/tools/calibrate_salary.py` is available to generate synthetic salaries from ratings before import.
+
+## FRONTEND
+
+Pages: Login, Tournament list/detail, Draft board page, Match & Ban page.
+Draft board page (styled per `docs/ui/reference-draft-board.png`):
+
+- Columns per team showing draft order, budgetUsed, budgetRemaining, pickedCount, picked cards.
+- Player card: season badge, season code, position, rating, salary, player name.
+- Available player pool with position filter chips (FW, MF, DF, GK) and text search.
+- PICK button enabled only on team's turn when valid. Realtime updates via WebSocket snapshot.
+
+## TESTS (must exist by the end)
+
+Unit (no DB):
+
+- pick on turn OK; wrong turn rejected (NOT_YOUR_TURN);
+- one pick per turn: turn immediately advances to next team after pick;
+- inactive player rejected (PLAYER_NOT_AVAILABLE);
+- season not allowed rejected (SEASON_NOT_ALLOWED);
+- already picked card rejected (PLAYER_ALREADY_PICKED);
+- already picked player rejected when uniqueBy=PLAYER (PLAYER_ALREADY_PICKED);
+- same player allowed when uniqueBy=CARD;
+- budget exceeded rejected; roster full rejected (rosterSize);
+- salary update (PATCH / re-import) rejected with POOL_LOCKED when draft is PICKING or PAUSED, accepted otherwise;
+- salary validation: salary must be an integer >= 1;
+- timeout -> AutoPickCheapest auto-picks 1 card and advances turn; SkipTurn skips turn and advances turn;
+- draft completed after all rosters full or max rounds or no affordable card;
+- cancel draft sets tournament back to READY; draft start resets teams budget_used to 0;
+- pause/resume recomputes expiry;
+- ban player not in target team roster rejected (PLAYER_NOT_IN_ROSTER);
+- ban limit exceeded rejected (BAN_LIMIT_REACHED);
+- ban on already confirmed team rejected (BANS_ALREADY_CONFIRMED);
+- simultaneous ban hides opponent player identity until both confirm or timer expires;
+- bans locked on confirmation or timeout.
+
+Integration (testcontainers PostgreSQL, real Alembic migrations):
+
+- concurrent picks of the SAME PlayerSeason using `asyncio.gather`: exactly ONE succeeds;
+- pick vs timeout race on the same draft;
+- importer runs twice on fixture CSV -> no duplicates; auto-creates Season for unknown code;
+- auth: TEAM_USER cannot act for another team or call admin endpoints;
+- match ban concurrent submission and confirmation.
+  Playwright: two browser contexts see realtime pick and ban updates.
+  CI commands: `uv run ruff check .`, `uv run mypy --strict app`, `uv run lint-imports`, `uv run pytest`.
+
+## CODE QUALITY
+
+Readable, small functions, meaningful names, no dead code, no commented-out code.
+Do not add features not listed here. If a requirement is ambiguous, pick the simplest
+sensible option, note it in the summary, and continue.
+Phase order is defined in docs/roadmap.md

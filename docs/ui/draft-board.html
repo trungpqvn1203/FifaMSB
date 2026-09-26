@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&amp;family=JetBrains+Mono:wght@500;600;700&amp;family=Space+Grotesk:wght@600;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"tertiary-fixed":"#ffdada","on-primary":"#00390f","tertiary-container":"#ffd5d6","primary-fixed-dim":"#00e556","surface-container-high":"#2a2a2a","on-tertiary-fixed":"#40000c","surface-container":"#201f1f","on-secondary":"#00363d","error":"#ffb4ab","surface-dim":"#131313","tertiary":"#fffbfa","secondary-container":"#00e3fd","surface-container-lowest":"#0e0e0e","on-secondary-container":"#00616d","on-tertiary-fixed-variant":"#920028","on-primary-fixed-variant":"#005319","secondary-fixed-dim":"#00daf3","secondary-fixed":"#9cf0ff","surface-tint":"#00e556","primary":"#f3ffed","on-secondary-fixed":"#001f24","surface":"#131313","error-container":"#93000a","on-error":"#690005","surface-variant":"#353534","outline":"#859581","on-background":"#e5e2e1","surface-container-low":"#1c1b1b","primary-fixed":"#6cff80","on-primary-container":"#007226","on-surface":"#e5e2e1","inverse-surface":"#e5e2e1","on-secondary-fixed-variant":"#004f58","on-error-container":"#ffdad6","surface-container-highest":"#353534","on-primary-fixed":"#002106","surface-bright":"#3a3939","inverse-primary":"#006e25","outline-variant":"#3c4b3a","primary-container":"#3dff6b","inverse-on-surface":"#313030","on-tertiary-container":"#c50039","secondary":"#bdf4ff","on-surface-variant":"#bacbb6","tertiary-fixed-dim":"#ffb3b6","on-tertiary":"#68001a"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{margin:"2rem","space-md":"0.75rem",gutter:"0.75rem","space-xs":"0.25rem","space-sm":"0.5rem","space-lg":"1rem","space-xl":"1.5rem"},fontFamily:{"label-code-lg":["JetBrains Mono"],"body-sm":["Geist"],"body-md":["Geist"],"label-code-md":["JetBrains Mono"],"label-code-sm":["JetBrains Mono"],"headline-md":["Space Grotesk"],"body-lg":["Geist"],"headline-lg":["Space Grotesk"],"display-xl":["Space Grotesk"],"title-sm":["Space Grotesk"]},fontSize:{"label-code-lg":["14px",{lineHeight:"16px",letterSpacing:"0.05em",fontWeight:"700"}],"body-sm":["11px",{lineHeight:"14px",letterSpacing:"0.01em",fontWeight:"400"}],"body-md":["13px",{lineHeight:"18px",letterSpacing:"0em",fontWeight:"400"}],"label-code-md":["12px",{lineHeight:"14px",letterSpacing:"0.08em",fontWeight:"600"}],"label-code-sm":["10px",{lineHeight:"12px",letterSpacing:"0.1em",fontWeight:"500"}],"headline-md":["22px",{lineHeight:"28px",letterSpacing:"-0.01em",fontWeight:"600"}],"body-lg":["15px",{lineHeight:"22px",letterSpacing:"-0.01em",fontWeight:"500"}],"headline-lg":["32px",{lineHeight:"36px",letterSpacing:"-0.02em",fontWeight:"700"}],"display-xl":["48px",{lineHeight:"52px",letterSpacing:"-0.03em",fontWeight:"700"}],"title-sm":["16px",{lineHeight:"20px",letterSpacing:"0em",fontWeight:"600"}]}}}};</script></head><body class="bg-surface-container-lowest text-on-surface font-body-md antialiased selection:bg-primary-container selection:text-on-primary-container"><header class="fixed top-0 left-0 w-full z-50 bg-surface-container-lowest border-b border-outline-variant/40"><div class="h-20 w-full px-margin flex items-center justify-between"><div class="flex items-center gap-space-md"><div class="flex items-center gap-space-xs bg-error-container/30 border border-error/40 px-space-sm py-0.5 rounded-none"><span class="w-2 h-2 rounded-full bg-error animate-pulse"></span><span class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-error">LIVE</span></div><div class="h-4 w-px bg-outline-variant/60"></div><span class="font-headline-md text-headline-md uppercase tracking-tight text-on-surface">APEX CHAMPIONS LEAGUE <span class="text-outline-variant">·</span> SEASON 5 DRAFT DAY</span></div><div class="flex items-center justify-center"><div class="bg-surface-container-low border border-outline-variant/60 px-space-xl py-space-xs flex items-center gap-space-md"><span class="font-label-code-sm text-label-code-sm uppercase text-outline tracking-widest">TURN CLOCK</span><span class="font-display-xl text-display-xl tabular-nums font-bold text-primary-container drop-shadow-[0_0_12px_rgba(61,255,107,0.45)] leading-none">00:30</span></div></div><div class="flex items-center gap-space-lg"><nav class="hidden lg:flex items-center border border-outline-variant/40 p-0.5" data-active-classes="bg-surface-container-high text-on-surface font-title-sm"><a aria-current="page" class="px-space-md py-1 transition-colors bg-surface-container-high text-on-surface font-title-sm" data-path="live-draft-board" href="#">Draft Board</a><a class="px-space-md py-1 font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="team-rosters" href="#">Rosters</a><a class="px-space-md py-1 font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="available-pool" href="#">Hero Pool</a><a class="px-space-md py-1 font-body-md text-body-md text-on-surface-variant hover:text-on-surface transition-colors" data-path="draft-analytics" href="#">Analytics</a></nav><div class="flex items-center gap-space-sm bg-surface-container-low border border-outline-variant/60 px-space-md py-1"><span class="font-label-code-md text-label-code-md text-on-surface uppercase">Pick 52</span><span class="text-outline-variant">·</span><span class="font-label-code-sm text-label-code-sm text-primary uppercase">Round 5</span><span class="w-1.5 h-1.5 bg-primary-container rounded-none ml-1"></span></div><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-20 bg-surface-container-lowest min-h-screen"><div class="flex flex-col w-full text-on-surface select-none">
+<!-- HUD SUB-BAR / BROADCAST TELEMETRY STRIP -->
+<div class="w-full bg-surface-container-low px-margin py-space-xs flex items-center justify-between shadow-sm">
+<div class="flex items-center gap-space-md">
+<span class="font-headline-md text-title-sm uppercase tracking-wider text-primary">APEX CUP · RISE TO GLORY</span>
+<span class="font-label-code-sm text-label-code-sm text-outline tracking-widest">// STAGE 05 DIVISION BRACKET</span>
+</div>
+<div class="flex items-center gap-space-lg font-label-code-sm text-label-code-sm text-on-surface-variant">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 bg-primary-container"></span>
+<span>NETWORK: LOW-LATENCY SPECTATOR TRACE</span>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container px-space-sm py-0.5">
+<span class="text-primary-container font-label-code-md text-label-code-md">S5 / 8 ROUNDS</span>
+</div>
+<div class="flex items-center gap-space-xs text-on-surface">
+<button class="p-1 hover:bg-surface-container-high transition-colors" title="Toggle Broadcast Audio">
+<span class="material-symbols-outlined text-[16px]">volume_up</span>
+</button>
+<button class="p-1 hover:bg-surface-container-high transition-colors" title="Display Configuration">
+<span class="material-symbols-outlined text-[16px]">settings</span>
+</button>
+</div>
+</div>
+</div>
+<!-- BROADCAST DRAFT ARENA: DRAFT BOARD + WEBCAM SIDEBAR -->
+<div class="w-full px-margin py-space-md grid grid-cols-12 gap-space-md">
+<!-- LEFT + CENTER: MULTI-ROUND DRAFT BOARD (9 COLS) -->
+<div class="col-span-9 flex flex-col gap-space-xs bg-surface-container-low p-space-sm shadow-md">
+<!-- BOARD HEADER / TEAM STATUS BARS -->
+<div class="grid grid-cols-12 gap-space-xs items-stretch pb-space-xs">
+<!-- Gutter placeholder for round labels -->
+<div class="col-span-1 flex flex-col justify-end items-center pb-2 bg-surface-container-lowest py-2">
+<span class="font-label-code-sm text-label-code-sm text-outline tracking-widest uppercase">ROUNDS</span>
+</div>
+<!-- TEAM 1: AMT -->
+<div class="col-span-2 bg-surface-container p-space-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<div class="w-6 h-6 bg-surface-container-highest flex items-center justify-center font-headline-md text-label-code-md text-primary">AMT</div>
+<div>
+<div class="font-title-sm text-body-md text-on-surface leading-tight">Apex Titans</div>
+<div class="font-label-code-sm text-label-code-sm text-outline">CAP: 182/305</div>
+</div>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-primary-container">60%</span>
+</div>
+<div class="w-full bg-surface-container-lowest h-1.5 mt-space-xs overflow-hidden">
+<div class="bg-primary-container h-full" style="width: 59.6%;"></div>
+</div>
+</div>
+<!-- TEAM 2: VEX (ON THE CLOCK / ACTIVE DRAFTING) -->
+<div class="col-span-3 bg-primary-container text-on-primary-container p-space-sm flex flex-col justify-between shadow-lg relative overflow-hidden">
+<div class="absolute -right-2 -top-2 opacity-15">
+<span class="material-symbols-outlined text-[64px]">bolt</span>
+</div>
+<div class="flex items-center justify-between z-10">
+<div class="flex items-center gap-space-xs">
+<div class="w-7 h-7 bg-on-primary-container flex items-center justify-center font-headline-md text-label-code-lg text-primary-container">VEX</div>
+<div>
+<div class="font-headline-md text-title-sm text-on-primary-container tracking-tight leading-tight uppercase font-bold">VORTEX GAMING</div>
+<div class="font-label-code-sm text-label-code-sm text-on-primary-container opacity-80 uppercase tracking-widest font-semibold">ON THE CLOCK · R5 P52</div>
+</div>
+</div>
+<span class="bg-on-primary-container text-primary-container font-label-code-sm text-label-code-sm px-1.5 py-0.5 uppercase tracking-wider animate-pulse">LIVE TURN</span>
+</div>
+<div class="flex items-center justify-between mt-space-xs z-10 font-label-code-sm text-label-code-sm">
+<span>BUDGET REMAINING: 211M</span>
+<span class="font-bold">94 / 305 USED</span>
+</div>
+<div class="w-full bg-on-primary-container/20 h-1.5 mt-1 overflow-hidden z-10">
+<div class="bg-on-primary-container h-full" style="width: 30.8%;"></div>
+</div>
+</div>
+<!-- TEAM 3: FFB -->
+<div class="col-span-3 bg-surface-container p-space-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<div class="w-6 h-6 bg-surface-container-highest flex items-center justify-center font-headline-md text-label-code-md text-secondary">FFB</div>
+<div>
+<div class="font-title-sm text-body-md text-on-surface leading-tight">Frostbyte Esports</div>
+<div class="font-label-code-sm text-label-code-sm text-outline">CAP: 210/305</div>
+</div>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-secondary">68%</span>
+</div>
+<div class="w-full bg-surface-container-lowest h-1.5 mt-space-xs overflow-hidden">
+<div class="bg-secondary-container h-full" style="width: 68.8%;"></div>
+</div>
+</div>
+<!-- TEAM 4: TGL -->
+<div class="col-span-3 bg-surface-container p-space-sm flex flex-col justify-between">
+<div class="flex items-center justify-between">
+<div class="flex items-center gap-space-xs">
+<div class="w-6 h-6 bg-surface-container-highest flex items-center justify-center font-headline-md text-label-code-md text-tertiary-fixed-dim">TGL</div>
+<div>
+<div class="font-title-sm text-body-md text-on-surface leading-tight">Titan Global</div>
+<div class="font-label-code-sm text-label-code-sm text-outline">CAP: 145/305</div>
+</div>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-tertiary-fixed-dim">47%</span>
+</div>
+<div class="w-full bg-surface-container-lowest h-1.5 mt-space-xs overflow-hidden">
+<div class="bg-tertiary-fixed-dim h-full" style="width: 47.5%;"></div>
+</div>
+</div>
+</div>
+<!-- BOARD ROUND CELLS (8 ROUNDS) -->
+<div class="flex flex-col gap-1 overflow-y-auto max-h-[385px] pr-1">
+<!-- ROUND 1 -->
+<div class="grid grid-cols-12 gap-space-xs items-stretch min-h-[44px]">
+<div class="col-span-1 bg-surface-container-lowest flex items-center justify-center font-label-code-md text-label-code-md text-outline">
+            1R
+          </div>
+<!-- AMT R1 -->
+<div class="col-span-2 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-primary-container font-label-code-sm text-label-code-sm px-1 py-0.5">ST</span>
+<span class="bg-on-tertiary-fixed-variant text-tertiary-fixed font-label-code-sm text-label-code-sm px-1 py-0.5">TOTY</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">K. Mbappé</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">28M</span>
+</div>
+<!-- VEX R1 -->
+<div class="col-span-3 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-secondary font-label-code-sm text-label-code-sm px-1 py-0.5">CAM</span>
+<span class="bg-on-secondary-container text-secondary-fixed font-label-code-sm text-label-code-sm px-1 py-0.5">ICON</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">Zico</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">26M</span>
+</div>
+<!-- FFB R1 -->
+<div class="col-span-3 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-primary font-label-code-sm text-label-code-sm px-1 py-0.5">CB</span>
+<span class="bg-on-tertiary-fixed-variant text-tertiary-fixed font-label-code-sm text-label-code-sm px-1 py-0.5">TOTY</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">V. van Dijk</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">25M</span>
+</div>
+<!-- TGL R1 -->
+<div class="col-span-3 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-secondary font-label-code-sm text-label-code-sm px-1 py-0.5">CDM</span>
+<span class="bg-on-secondary-container text-secondary-fixed font-label-code-sm text-label-code-sm px-1 py-0.5">ICON</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">P. Vieira</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">27M</span>
+</div>
+</div>
+<!-- ROUND 2 -->
+<div class="grid grid-cols-12 gap-space-xs items-stretch min-h-[44px]">
+<div class="col-span-1 bg-surface-container-lowest flex items-center justify-center font-label-code-md text-label-code-md text-outline">
+            2R
+          </div>
+<!-- AMT R2 -->
+<div class="col-span-2 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-secondary font-label-code-sm text-label-code-sm px-1 py-0.5">CAM</span>
+<span class="bg-on-secondary-container text-secondary-fixed font-label-code-sm text-label-code-sm px-1 py-0.5">ICON</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">Kaká</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">24M</span>
+</div>
+<!-- VEX R2 -->
+<div class="col-span-3 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-primary font-label-code-sm text-label-code-sm px-1 py-0.5">CB</span>
+<span class="bg-on-secondary-container text-secondary-fixed font-label-code-sm text-label-code-sm px-1 py-0.5">ICON</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">P. Maldini</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">25M</span>
+</div>
+<!-- FFB R2 -->
+<div class="col-span-3 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-primary-container font-label-code-sm text-label-code-sm px-1 py-0.5">RW</span>
+<span class="bg-surface-variant text-on-surface font-label-code-sm text-label-code-sm px-1 py-0.5">BTB</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">L. Messi</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">28M</span>
+</div>
+<!-- TGL R2 -->
+<div class="col-span-3 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-primary-container font-label-code-sm text-label-code-sm px-1 py-0.5">ST</span>
+<span class="bg-on-secondary-container text-secondary-fixed font-label-code-sm text-label-code-sm px-1 py-0.5">ICON</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">Ronaldo R9</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">30M</span>
+</div>
+</div>
+<!-- ROUND 3 -->
+<div class="grid grid-cols-12 gap-space-xs items-stretch min-h-[44px]">
+<div class="col-span-1 bg-surface-container-lowest flex items-center justify-center font-label-code-md text-label-code-md text-outline">
+            3R
+          </div>
+<!-- AMT R3 -->
+<div class="col-span-2 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-primary font-label-code-sm text-label-code-sm px-1 py-0.5">CB</span>
+<span class="bg-surface-variant text-on-surface font-label-code-sm text-label-code-sm px-1 py-0.5">WS</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">L. Thuram</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">23M</span>
+</div>
+<!-- VEX R3 -->
+<div class="col-span-3 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-secondary font-label-code-sm text-label-code-sm px-1 py-0.5">CM</span>
+<span class="bg-on-tertiary-fixed-variant text-tertiary-fixed font-label-code-sm text-label-code-sm px-1 py-0.5">TOTY</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">K. De Bruyne</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">24M</span>
+</div>
+<!-- FFB R3 -->
+<div class="col-span-3 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-secondary font-label-code-sm text-label-code-sm px-1 py-0.5">CDM</span>
+<span class="bg-surface-variant text-on-surface font-label-code-sm text-label-code-sm px-1 py-0.5">CAP</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">Y. Touré</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">22M</span>
+</div>
+<!-- TGL R3 -->
+<div class="col-span-3 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-tertiary-fixed-dim font-label-code-sm text-label-code-sm px-1 py-0.5">GK</span>
+<span class="bg-surface-variant text-on-surface font-label-code-sm text-label-code-sm px-1 py-0.5">BTB</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">T. Courtois</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">19M</span>
+</div>
+</div>
+<!-- ROUND 4 -->
+<div class="grid grid-cols-12 gap-space-xs items-stretch min-h-[44px]">
+<div class="col-span-1 bg-surface-container-lowest flex items-center justify-center font-label-code-md text-label-code-md text-outline">
+            4R
+          </div>
+<!-- AMT R4 -->
+<div class="col-span-2 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-secondary font-label-code-sm text-label-code-sm px-1 py-0.5">CM</span>
+<span class="bg-surface-variant text-on-surface font-label-code-sm text-label-code-sm px-1 py-0.5">SPL</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">L. Modrić</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">21M</span>
+</div>
+<!-- VEX R4 -->
+<div class="col-span-3 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-primary-container font-label-code-sm text-label-code-sm px-1 py-0.5">LW</span>
+<span class="bg-on-tertiary-fixed-variant text-tertiary-fixed font-label-code-sm text-label-code-sm px-1 py-0.5">TOTY</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">Vinícius Jr.</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">19M</span>
+</div>
+<!-- FFB R4 -->
+<div class="col-span-3 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-tertiary-fixed-dim font-label-code-sm text-label-code-sm px-1 py-0.5">GK</span>
+<span class="bg-on-secondary-container text-secondary-fixed font-label-code-sm text-label-code-sm px-1 py-0.5">ICON</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">E. van der Sar</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">20M</span>
+</div>
+<!-- TGL R4 -->
+<div class="col-span-3 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-primary font-label-code-sm text-label-code-sm px-1 py-0.5">RB</span>
+<span class="bg-surface-variant text-on-surface font-label-code-sm text-label-code-sm px-1 py-0.5">WS</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">K. Walker</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">18M</span>
+</div>
+</div>
+<!-- ROUND 5 (ACTIVE TURN CELL FOR VEX) -->
+<div class="grid grid-cols-12 gap-space-xs items-stretch min-h-[44px]">
+<div class="col-span-1 bg-primary-container text-on-primary-container flex items-center justify-center font-label-code-lg text-label-code-lg font-bold">
+            5R
+          </div>
+<!-- AMT R5 (Completed) -->
+<div class="col-span-2 bg-surface-container p-1.5 flex items-center justify-between">
+<div class="flex items-center gap-1.5 min-w-0">
+<span class="bg-surface-container-highest text-tertiary-fixed-dim font-label-code-sm text-label-code-sm px-1 py-0.5">GK</span>
+<span class="bg-surface-variant text-on-surface font-label-code-sm text-label-code-sm px-1 py-0.5">CAP</span>
+<span class="font-title-sm text-body-md text-on-surface truncate">M. Maignan</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">16M</span>
+</div>
+<!-- VEX R5 (ACTIVE ON CLOCK SELECTION CELL) -->
+<div class="col-span-3 bg-primary-container text-on-primary-container p-2 flex items-center justify-between shadow-[0_0_16px_rgba(61,255,107,0.35)]">
+<div class="flex items-center gap-2">
+<div class="w-2.5 h-2.5 bg-on-primary-container animate-ping"></div>
+<span class="font-headline-md text-body-lg uppercase font-bold tracking-wider">SELECTING NOW...</span>
+</div>
+<span class="font-label-code-md text-label-code-md bg-on-primary-container text-primary-container px-2 py-0.5 font-bold uppercase">PICK 52</span>
+</div>
+<!-- FFB R5 (Waiting) -->
+<div class="col-span-3 bg-surface-container-lowest/60 p-1.5 flex items-center justify-center text-outline font-label-code-sm text-label-code-sm">
+<span>ON DECK · PICK 53</span>
+</div>
+<!-- TGL R5 (Waiting) -->
+<div class="col-span-3 bg-surface-container-lowest/60 p-1.5 flex items-center justify-center text-outline font-label-code-sm text-label-code-sm">
+<span>QUEUED · PICK 54</span>
+</div>
+</div>
+<!-- ROUND 6 (FUTURE) -->
+<div class="grid grid-cols-12 gap-space-xs items-stretch min-h-[44px]">
+<div class="col-span-1 bg-surface-container-lowest flex items-center justify-center font-label-code-md text-label-code-md text-outline opacity-40">
+            6R
+          </div>
+<div class="col-span-2 bg-surface-container-lowest/40 flex items-center justify-center text-outline/40 font-label-code-sm text-label-code-sm">SLOT 6</div>
+<div class="col-span-3 bg-surface-container-lowest/40 flex items-center justify-center text-outline/40 font-label-code-sm text-label-code-sm">SLOT 6</div>
+<div class="col-span-3 bg-surface-container-lowest/40 flex items-center justify-center text-outline/40 font-label-code-sm text-label-code-sm">SLOT 6</div>
+<div class="col-span-3 bg-surface-container-lowest/40 flex items-center justify-center text-outline/40 font-label-code-sm text-label-code-sm">SLOT 6</div>
+</div>
+<!-- ROUND 7 (FUTURE) -->
+<div class="grid grid-cols-12 gap-space-xs items-stretch min-h-[44px]">
+<div class="col-span-1 bg-surface-container-lowest flex items-center justify-center font-label-code-md text-label-code-md text-outline opacity-40">
+            7R
+          </div>
+<div class="col-span-2 bg-surface-container-lowest/40 flex items-center justify-center text-outline/40 font-label-code-sm text-label-code-sm">SLOT 7</div>
+<div class="col-span-3 bg-surface-container-lowest/40 flex items-center justify-center text-outline/40 font-label-code-sm text-label-code-sm">SLOT 7</div>
+<div class="col-span-3 bg-surface-container-lowest/40 flex items-center justify-center text-outline/40 font-label-code-sm text-label-code-sm">SLOT 7</div>
+<div class="col-span-3 bg-surface-container-lowest/40 flex items-center justify-center text-outline/40 font-label-code-sm text-label-code-sm">SLOT 7</div>
+</div>
+<!-- ROUND 8 (FUTURE) -->
+<div class="grid grid-cols-12 gap-space-xs items-stretch min-h-[44px]">
+<div class="col-span-1 bg-surface-container-lowest flex items-center justify-center font-label-code-md text-label-code-md text-outline opacity-40">
+            8R
+          </div>
+<div class="col-span-2 bg-surface-container-lowest/40 flex items-center justify-center text-outline/40 font-label-code-sm text-label-code-sm">FINAL SLOT</div>
+<div class="col-span-3 bg-surface-container-lowest/40 flex items-center justify-center text-outline/40 font-label-code-sm text-label-code-sm">FINAL SLOT</div>
+<div class="col-span-3 bg-surface-container-lowest/40 flex items-center justify-center text-outline/40 font-label-code-sm text-label-code-sm">FINAL SLOT</div>
+<div class="col-span-3 bg-surface-container-lowest/40 flex items-center justify-center text-outline/40 font-label-code-sm text-label-code-sm">FINAL SLOT</div>
+</div>
+</div>
+</div>
+<!-- RIGHT SIDEBAR: 4 LIVE BROADCAST CAMERAS + LOWER THIRD TICKER (~300px width via 3 Cols) -->
+<div class="col-span-3 flex flex-col gap-space-xs justify-between">
+<!-- CAM 1: AMT -->
+<div class="relative bg-surface-container-low overflow-hidden h-[98px] flex flex-col justify-end shadow-sm group">
+<img class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-luminosity" data-alt="Esports coach and analyst seated in high tech gaming booth with monitors in dark room illuminated by subtle green ambient rim lights, authentic tournament war room camera perspective" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAmmoHMzruZi1A3xY8vc7IiocNAZkgSC9K6Z8bgBS6pe1W6P_31WyAT4EiHxaRcoY1TYIwaGVTOM8RFlavbtXju7evhAv5wXwDPtKXRxaRMJAR7DPXJ2ZG3Q5auIokSbYm2ZgyE_cdQs-HK64zWYfSLuUgo7jELm5jhfiYeBjgqijrhDuxam1wAArY5ajKLV9WT36IC6wleEUPnuvwrpMAurfCddEBjFEjD35H4dV1cDjJcdlm68ZY"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<div class="relative z-10 px-space-sm py-1 bg-surface-container-lowest/90 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+<span class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-on-surface">AMT · APEX TITANS</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">STANDBY</span>
+</div>
+</div>
+<!-- CAM 2: VEX (ACTIVE DRAFTING WAR ROOM) -->
+<div class="relative bg-surface-container-low overflow-hidden h-[98px] flex flex-col justify-end shadow-md group">
+<img class="absolute inset-0 w-full h-full object-cover opacity-85" data-alt="Focused esports professional player and manager gesturing at draft war room screen with neon green tactical lighting in tournament booth, broadcast television style closeup" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC9EU0e030yVzHlhJgvjD6F4ikdzulq3zs50Y_vjiUTJhOrkrSdqEbh9_y5PTUmDElSbl3A2Coa3QX4w6_aGF1TMnn3PZi-Axryaw7nsXiSS1b5_kOJrhIkn_aw8zqrmfkwUaczxH0Ikkr6C3Jir8cpbPpQT0gTsH0xuhME2XpZ2E-_4ii8u7ZJT2AkdzpAcSZ3Lzf5BGZOrhN-7wJLzxw-KmHVIVDN62Z4uYAOlE_RbfrXe45ykfM"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-surface-container-lowest/30 to-transparent"></div>
+<div class="absolute top-1.5 right-1.5 bg-error px-1.5 py-0.2 flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-on-error animate-ping"></span>
+<span class="font-label-code-sm text-label-code-sm text-on-error font-bold uppercase">LIVE FEED</span>
+</div>
+<div class="relative z-10 px-space-sm py-1 bg-primary-container text-on-primary-container flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-2 h-2 rounded-full bg-on-primary-container animate-pulse"></span>
+<span class="font-label-code-sm text-label-code-sm uppercase font-bold tracking-wider">VEX · VORTEX (DRAFTING)</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm font-bold bg-on-primary-container text-primary-container px-1">00:30</span>
+</div>
+</div>
+<!-- CAM 3: FFB -->
+<div class="relative bg-surface-container-low overflow-hidden h-[98px] flex flex-col justify-end shadow-sm group">
+<img class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-luminosity" data-alt="Competitive gaming coach reviewing digital tablet in dark team dugout with ice blue accent lighting and esports team jersey, authentic stage camera feed" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBfohbLZcbde7d-ughRw_khF8Fi7YWjUW4JeOJtoAS1fXakDJTIPG6k_JOVIn2zrvu5y3j6e_9kZ91PpHFvMr2YnKfSj3I1ditkr7NpTR6OuN48IL7kRhOeOwLDL48NGVXz-V2pX_Zkhq8Qy_pNxNEpCTt-CMh4iqi5thIzLETeKmU-oE5yWkc4NRJpML9QDmAZyejS91DsPygJgNgRxbafWOKkAaNY2e8YQF60EH3MQQjsXlLPz6A"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<div class="relative z-10 px-space-sm py-1 bg-surface-container-lowest/90 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+<span class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-on-surface">FFB · FROSTBYTE</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-secondary">NEXT PICK</span>
+</div>
+</div>
+<!-- CAM 4: TGL -->
+<div class="relative bg-surface-container-low overflow-hidden h-[98px] flex flex-col justify-end shadow-sm group">
+<img class="absolute inset-0 w-full h-full object-cover opacity-60 mix-blend-luminosity" data-alt="Two esports team analysts reviewing statistics in dark esports broadcast operations studio with minimal lighting and telemetry visuals" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBccHCwa0--l6UYGP4WQUxMmUy2tusCngzF4oBSy-nf38BTH-URCobuhUhICchSnzK0Ia-j8RnmrAQNqanxSDz1_zpIqTE66i6F1k0usLxNoV0O16aQd_RswdUdXm1kwp-syDJlOXakh1hOqF4SxEW9CmEVR2LmLDA18UtXHF9OG4qRQmqKbcW2GbaqxLfH3E_Kt6oOW2CAknXWpWJQbATrpMLJ8DPxar8pxqVUKmJen71m7vWtTYo"/>
+<div class="absolute inset-0 bg-gradient-to-t from-surface-container-lowest via-transparent to-transparent"></div>
+<div class="relative z-10 px-space-sm py-1 bg-surface-container-lowest/90 flex items-center justify-between">
+<div class="flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-outline"></span>
+<span class="font-label-code-sm text-label-code-sm uppercase tracking-wider text-on-surface">TGL · TITAN GLOBAL</span>
+</div>
+<span class="font-label-code-sm text-label-code-sm text-outline">STANDBY</span>
+</div>
+</div>
+<!-- BROADCAST PROMO BANNER GRAPHIC -->
+<div class="bg-surface-container-highest p-space-sm flex items-center justify-between">
+<div class="flex flex-col">
+<span class="font-headline-md text-label-code-md text-primary tracking-tight uppercase font-bold">RISE TO INFINITY</span>
+<span class="font-label-code-sm text-label-code-sm text-outline tracking-wider">FINAL STAGE DRAFT DAY</span>
+</div>
+<span class="material-symbols-outlined text-primary-container text-[24px]">verified</span>
+</div>
+</div>
+</div>
+<!-- LOWER DOCKED SECTION: TACTICAL PLAYER DRAFT POOL -->
+<div class="w-full px-margin pb-margin">
+<div class="w-full bg-surface-container-low p-space-md flex flex-col gap-space-sm shadow-xl">
+<!-- CONTROLS & FILTER ROW -->
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-sm">
+<!-- POSITION PILLS -->
+<div class="flex items-center flex-wrap gap-1" id="positionFilters">
+<button class="px-2 py-1 bg-primary-container text-on-primary-container font-label-code-sm text-label-code-sm uppercase font-bold">ALL</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">GK</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">CB</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">LB</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">RB</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">LWB</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">RWB</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">CDM</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">CM</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">CAM</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">LM</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">RM</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">LW</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">RW</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">CF</button>
+<button class="px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase">ST</button>
+</div>
+<!-- SEARCH + SORTING UTILITIES -->
+<div class="flex items-center gap-space-sm">
+<div class="relative flex items-center min-w-[280px]">
+<span class="material-symbols-outlined absolute left-2 text-outline text-[18px]">search</span>
+<input class="w-full bg-surface-container py-1.5 pl-8 pr-3 text-on-surface font-body-md text-body-md placeholder:text-outline focus:outline-none focus:bg-surface-container-high transition-colors" id="playerSearch" placeholder="Search player, club, nation..." type="text"/>
+</div>
+<select class="bg-surface-container text-on-surface py-1.5 px-space-sm font-label-code-sm text-label-code-sm uppercase focus:outline-none cursor-pointer">
+<option>Salary: High to Low</option>
+<option>Salary: Low to High</option>
+<option>OVR Rating: 99 - 90</option>
+</select>
+</div>
+</div>
+<!-- PLAYER POOL TABLE / GRID LIST -->
+<div class="w-full bg-surface-container overflow-hidden">
+<!-- Table Column Headers -->
+<div class="grid grid-cols-12 gap-space-sm px-space-md py-2 bg-surface-container-lowest font-label-code-sm text-label-code-sm text-outline uppercase tracking-wider">
+<div class="col-span-4">PLAYER IDENTITY / NATION</div>
+<div class="col-span-2">SERIES CARD</div>
+<div class="col-span-1 text-center">POS</div>
+<div class="col-span-1 text-center">OVR</div>
+<div class="col-span-2 text-center">SALARY COST</div>
+<div class="col-span-2 text-right">DRAFT ACTION</div>
+</div>
+<!-- Scrollable Rows Container -->
+<div class="flex flex-col max-h-[220px] overflow-y-auto" id="playerListRows">
+<!-- ROW 1: SELECTABLE -->
+<div class="grid grid-cols-12 gap-space-sm px-space-md py-2 items-center hover:bg-surface-container-high transition-colors">
+<div class="col-span-4 flex items-center gap-space-sm min-w-0">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex-shrink-0 flex items-center justify-center font-headline-md text-label-code-sm text-primary">
+                ER
+              </div>
+<div class="truncate">
+<div class="font-title-sm text-body-lg text-on-surface leading-tight truncate">Erling Haaland</div>
+<div class="font-label-code-sm text-label-code-sm text-outline">Manchester City · Norway</div>
+</div>
+</div>
+<div class="col-span-2 flex items-center">
+<span class="bg-on-tertiary-fixed-variant text-tertiary-fixed font-label-code-sm text-label-code-sm px-2 py-0.5 font-bold tracking-wide">24TY HERO</span>
+</div>
+<div class="col-span-1 text-center font-label-code-sm text-label-code-sm text-primary-container font-bold">
+              ST
+            </div>
+<div class="col-span-1 text-center font-display-xl text-title-sm text-primary font-bold">
+              98
+            </div>
+<div class="col-span-2 text-center font-label-code-md text-label-code-md text-primary-container">
+              28.0M
+            </div>
+<div class="col-span-2 flex justify-end">
+<button class="bg-primary-container text-on-primary-container font-headline-md text-label-code-sm px-4 py-1 font-bold uppercase tracking-wider hover:bg-white transition-colors" onclick="pickPlayer(this, 'Erling Haaland', 'ST', '24TY')">
+                PICK PLAYER
+              </button>
+</div>
+</div>
+<!-- ROW 2: SELECTABLE -->
+<div class="grid grid-cols-12 gap-space-sm px-space-md py-2 items-center hover:bg-surface-container-high transition-colors">
+<div class="col-span-4 flex items-center gap-space-sm min-w-0">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex-shrink-0 flex items-center justify-center font-headline-md text-label-code-sm text-secondary">
+                JR
+              </div>
+<div class="truncate">
+<div class="font-title-sm text-body-lg text-on-surface leading-tight truncate">Jude Bellingham</div>
+<div class="font-label-code-sm text-label-code-sm text-outline">Real Madrid · England</div>
+</div>
+</div>
+<div class="col-span-2 flex items-center">
+<span class="bg-on-secondary-container text-secondary-fixed font-label-code-sm text-label-code-sm px-2 py-0.5 font-bold tracking-wide">24TY PRIME</span>
+</div>
+<div class="col-span-1 text-center font-label-code-sm text-label-code-sm text-secondary font-bold">
+              CAM
+            </div>
+<div class="col-span-1 text-center font-display-xl text-title-sm text-primary font-bold">
+              97
+            </div>
+<div class="col-span-2 text-center font-label-code-md text-label-code-md text-primary-container">
+              26.0M
+            </div>
+<div class="col-span-2 flex justify-end">
+<button class="bg-primary-container text-on-primary-container font-headline-md text-label-code-sm px-4 py-1 font-bold uppercase tracking-wider hover:bg-white transition-colors" onclick="pickPlayer(this, 'Jude Bellingham', 'CAM', '24TY')">
+                PICK PLAYER
+              </button>
+</div>
+</div>
+<!-- ROW 3: SELECTABLE -->
+<div class="grid grid-cols-12 gap-space-sm px-space-md py-2 items-center hover:bg-surface-container-high transition-colors">
+<div class="col-span-4 flex items-center gap-space-sm min-w-0">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex-shrink-0 flex items-center justify-center font-headline-md text-label-code-sm text-primary">
+                RO
+              </div>
+<div class="truncate">
+<div class="font-title-sm text-body-lg text-on-surface leading-tight truncate">Rodri Cascante</div>
+<div class="font-label-code-sm text-label-code-sm text-outline">Manchester City · Spain</div>
+</div>
+</div>
+<div class="col-span-2 flex items-center">
+<span class="bg-on-secondary-container text-secondary-fixed font-label-code-sm text-label-code-sm px-2 py-0.5 font-bold tracking-wide">BTB MASTER</span>
+</div>
+<div class="col-span-1 text-center font-label-code-sm text-label-code-sm text-secondary font-bold">
+              CDM
+            </div>
+<div class="col-span-1 text-center font-display-xl text-title-sm text-primary font-bold">
+              96
+            </div>
+<div class="col-span-2 text-center font-label-code-md text-label-code-md text-primary-container">
+              24.5M
+            </div>
+<div class="col-span-2 flex justify-end">
+<button class="bg-primary-container text-on-primary-container font-headline-md text-label-code-sm px-4 py-1 font-bold uppercase tracking-wider hover:bg-white transition-colors" onclick="pickPlayer(this, 'Rodri Cascante', 'CDM', 'BTB')">
+                PICK PLAYER
+              </button>
+</div>
+</div>
+<!-- ROW 4: DISABLED / ALREADY DRAFTED -->
+<div class="grid grid-cols-12 gap-space-sm px-space-md py-2 items-center opacity-40 bg-surface-container-lowest/30">
+<div class="col-span-4 flex items-center gap-space-sm min-w-0">
+<div class="w-8 h-8 rounded-full bg-surface-container flex-shrink-0 flex items-center justify-center font-headline-md text-label-code-sm text-outline">
+                KM
+              </div>
+<div class="truncate">
+<div class="font-title-sm text-body-lg text-outline line-through leading-tight truncate">Kylian Mbappé</div>
+<div class="font-label-code-sm text-label-code-sm text-outline">Real Madrid · France</div>
+</div>
+</div>
+<div class="col-span-2 flex items-center">
+<span class="bg-surface-variant text-outline font-label-code-sm text-label-code-sm px-2 py-0.5">DRAFTED (AMT)</span>
+</div>
+<div class="col-span-1 text-center font-label-code-sm text-label-code-sm text-outline">
+              ST
+            </div>
+<div class="col-span-1 text-center font-display-xl text-title-sm text-outline font-bold">
+              99
+            </div>
+<div class="col-span-2 text-center font-label-code-md text-label-code-md text-outline">
+              28.0M
+            </div>
+<div class="col-span-2 flex justify-end">
+<button class="bg-surface-container-highest text-outline font-headline-md text-label-code-sm px-4 py-1 font-bold uppercase tracking-wider cursor-not-allowed" disabled="">
+                UNAVAILABLE
+              </button>
+</div>
+</div>
+<!-- ROW 5: SELECTABLE -->
+<div class="grid grid-cols-12 gap-space-sm px-space-md py-2 items-center hover:bg-surface-container-high transition-colors">
+<div class="col-span-4 flex items-center gap-space-sm min-w-0">
+<div class="w-8 h-8 rounded-full bg-surface-container-highest flex-shrink-0 flex items-center justify-center font-headline-md text-label-code-sm text-tertiary-fixed-dim">
+                AL
+              </div>
+<div class="truncate">
+<div class="font-title-sm text-body-lg text-on-surface leading-tight truncate">Alisson Becker</div>
+<div class="font-label-code-sm text-label-code-sm text-outline">Liverpool · Brazil</div>
+</div>
+</div>
+<div class="col-span-2 flex items-center">
+<span class="bg-surface-variant text-on-surface font-label-code-sm text-label-code-sm px-2 py-0.5 font-bold tracking-wide">CAPTAIN</span>
+</div>
+<div class="col-span-1 text-center font-label-code-sm text-label-code-sm text-tertiary-fixed-dim font-bold">
+              GK
+            </div>
+<div class="col-span-1 text-center font-display-xl text-title-sm text-primary font-bold">
+              94
+            </div>
+<div class="col-span-2 text-center font-label-code-md text-label-code-md text-primary-container">
+              17.0M
+            </div>
+<div class="col-span-2 flex justify-end">
+<button class="bg-primary-container text-on-primary-container font-headline-md text-label-code-sm px-4 py-1 font-bold uppercase tracking-wider hover:bg-white transition-colors" onclick="pickPlayer(this, 'Alisson Becker', 'GK', 'CAP')">
+                PICK PLAYER
+              </button>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- INLINE INTERACTION SCRIPT FOR FILTERING AND DRAFT SELECTION -->
+<script>
+    // Simple filter button interaction
+    const filterButtons = document.querySelectorAll('#positionFilters button');
+    filterButtons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        filterButtons.forEach(b => {
+          b.className = 'px-2 py-1 bg-surface-container text-on-surface-variant hover:text-on-surface font-label-code-sm text-label-code-sm uppercase';
+        });
+        btn.className = 'px-2 py-1 bg-primary-container text-on-primary-container font-label-code-sm text-label-code-sm uppercase font-bold';
+      });
+    });
+
+    // Player search filter
+    const searchInput = document.getElementById('playerSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', (e) => {
+        const query = e.target.value.toLowerCase();
+        const rows = document.querySelectorAll('#playerListRows > div');
+        rows.forEach(row => {
+          const text = row.innerText.toLowerCase();
+          row.style.display = text.includes(query) ? 'grid' : 'none';
+        });
+      });
+    }
+
+    // Pick Player micro-interaction demo
+    function pickPlayer(buttonElement, name, pos, card) {
+      buttonElement.innerText = "CONFIRMED";
+      buttonElement.disabled = true;
+      buttonElement.className = "bg-surface-container-highest text-primary-container font-headline-md text-label-code-sm px-4 py-1 font-bold uppercase tracking-wider";
+    }
+  </script>
+</div></main><footer class="w-full bg-surface-container-lowest border-t border-outline-variant/40 py-space-sm"><div class="w-full px-margin flex items-center justify-between font-label-code-sm text-label-code-sm text-on-surface-variant"><div class="flex items-center gap-space-lg"><span>STAGE FEED: ULTRA-HD FEED 01</span><span class="text-outline-variant">//</span><span>LATENCY: 1.4MS</span><span class="text-outline-variant">//</span><span>PROTOCOL: DIRECT BROADCAST DRAFT ENGINE</span></div><div class="flex items-center gap-space-md"><span class="text-primary">TACTICAL OVERLAY ONLINE</span><span>© 2025 APEX ESPORTS NETWORK</span></div></div></footer></body></html>

@@ -1,0 +1,125 @@
+[project]
+name = "webfifa-backend"
+version = "0.1.0"
+description = "FC Online Player Draft System backend"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.32.0",
+    "pydantic>=2.10.0",
+    "pydantic-settings>=2.6.0",
+    "sqlalchemy>=2.0.36",
+    "asyncpg>=0.30.0",
+    "alembic>=1.14.0",
+    "bcrypt>=4.2.0",
+    "pandas>=2.2.0",
+    "python-multipart>=0.0.18",
+]
+
+[project.optional-dependencies]
+dev = [
+    "ruff>=0.8.0",
+    "mypy>=1.13.0",
+    "pytest>=8.3.0",
+    "pytest-asyncio>=0.24.0",
+    "httpx>=0.28.0",
+    "testcontainers[postgres]>=4.8.0",
+    "import-linter>=2.1",
+    "greenlet>=3.1.0",
+]
+
+# ---------------------------------------------------------------------------
+# Ruff
+# ---------------------------------------------------------------------------
+[tool.ruff]
+target-version = "py312"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "W", "F", "I", "UP", "B", "C4", "SIM", "N", "ANN"]
+ignore = [
+    "ANN401",  # use of Any is sometimes necessary
+    "N818",    # domain error class names match design.md codes (e.g. DraftNotFound)
+    "B008",    # FastAPI Depends() in argument defaults is idiomatic
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["ANN"]        # test functions don't need annotations
+"alembic/*" = ["ANN", "N"] # alembic files use auto-generated names
+
+# ---------------------------------------------------------------------------
+# Mypy
+# ---------------------------------------------------------------------------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]
+exclude = ["alembic/"]
+
+[[tool.mypy.overrides]]
+module = [
+    "testcontainers.*",
+    "asyncpg.*",
+    "pandas.*",
+]
+ignore_missing_imports = true
+
+# ---------------------------------------------------------------------------
+# Pytest
+# ---------------------------------------------------------------------------
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+markers = [
+    "integration: marks tests as integration tests requiring a DB",
+    "unit: marks tests as fast unit tests without DB",
+]
+
+# ---------------------------------------------------------------------------
+# Import-linter
+# ---------------------------------------------------------------------------
+[tool.importlinter]
+root_package = "app"
+include_external_packages = true
+
+[[tool.importlinter.contracts]]
+name = "Domain must not import FastAPI, API modules or repository modules"
+type = "forbidden"
+source_modules = ["app.*.domain"]
+forbidden_modules = [
+    "fastapi",
+    "app.*.api",
+    "app.*.repository",
+]
+
+[[tool.importlinter.contracts]]
+name = "API must not import repository directly"
+type = "forbidden"
+source_modules = ["app.*.api"]
+forbidden_modules = ["app.*.repository"]
+allow_indirect_imports = true
+
+[[tool.importlinter.contracts]]
+name = "Repository must not import API or service"
+type = "forbidden"
+source_modules = ["app.*.repository"]
+forbidden_modules = [
+    "app.*.api",
+    "fastapi",
+]
+
+[[tool.importlinter.contracts]]
+name = "pandas is allowed ONLY inside the importer module"
+type = "forbidden"
+source_modules = [
+    "app.common.*",
+    "app.auth.*",
+    "app.player.*",
+    "app.tournament.*",
+    "app.team.*",
+    "app.draft.*",
+    "app.match.*",
+]
+forbidden_modules = ["pandas"]
+allow_indirect_imports = true
+

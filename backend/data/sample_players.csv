@@ -1,0 +1,380 @@
+external_player_id,name,season_code,position,salary,rating,image_url
+p_gullit,Ruud Gullit,ICON,CF,33,113,https://fifa.example.com/players/p_gullit_icon.png
+p_gullit,Ruud Gullit,CAP,CF,27,108,https://fifa.example.com/players/p_gullit_cap.png
+p_gullit,Ruud Gullit,LN,CF,26,107,https://fifa.example.com/players/p_gullit_ln.png
+p_gullit,Ruud Gullit,BWC,CF,25,106,https://fifa.example.com/players/p_gullit_bwc.png
+p_ronaldo_nazario,Ronaldo Nazário,ICON,ST,34,114,https://fifa.example.com/players/p_ronaldo_nazario_icon.png
+p_ronaldo_nazario,Ronaldo Nazário,LN,ST,28,109,https://fifa.example.com/players/p_ronaldo_nazario_ln.png
+p_ronaldo_nazario,Ronaldo Nazário,BWC,ST,27,108,https://fifa.example.com/players/p_ronaldo_nazario_bwc.png
+p_ronaldo_nazario,Ronaldo Nazário,CC,ST,26,107,https://fifa.example.com/players/p_ronaldo_nazario_cc.png
+p_cr7,Cristiano Ronaldo,CAP,ST,27,108,https://fifa.example.com/players/p_cr7_cap.png
+p_cr7,Cristiano Ronaldo,LN,ST,26,107,https://fifa.example.com/players/p_cr7_ln.png
+p_cr7,Cristiano Ronaldo,23UCL,ST,24,105,https://fifa.example.com/players/p_cr7_23ucl.png
+p_cr7,Cristiano Ronaldo,BWC,ST,25,106,https://fifa.example.com/players/p_cr7_bwc.png
+p_cr7,Cristiano Ronaldo,CC,ST,27,108,https://fifa.example.com/players/p_cr7_cc.png
+p_messi,Lionel Messi,23UCL,RW,26,107,https://fifa.example.com/players/p_messi_23ucl.png
+p_messi,Lionel Messi,CAP,RW,27,108,https://fifa.example.com/players/p_messi_cap.png
+p_messi,Lionel Messi,BWC,RW,28,109,https://fifa.example.com/players/p_messi_bwc.png
+p_messi,Lionel Messi,CC,RW,26,107,https://fifa.example.com/players/p_messi_cc.png
+p_pele,Pelé,ICON,CAM,35,115,https://fifa.example.com/players/p_pele_icon.png
+p_pele,Pelé,LN,CAM,29,110,https://fifa.example.com/players/p_pele_ln.png
+p_pele,Pelé,CC,CAM,28,109,https://fifa.example.com/players/p_pele_cc.png
+p_zidane,Zinedine Zidane,ICON,CAM,33,113,https://fifa.example.com/players/p_zidane_icon.png
+p_zidane,Zinedine Zidane,LN,CAM,28,109,https://fifa.example.com/players/p_zidane_ln.png
+p_zidane,Zinedine Zidane,BWC,CAM,27,108,https://fifa.example.com/players/p_zidane_bwc.png
+p_zidane,Zinedine Zidane,CC,CAM,28,109,https://fifa.example.com/players/p_zidane_cc.png
+p_henry,Thierry Henry,ICON,ST,31,112,https://fifa.example.com/players/p_henry_icon.png
+p_henry,Thierry Henry,LN,ST,26,107,https://fifa.example.com/players/p_henry_ln.png
+p_henry,Thierry Henry,CC,ST,27,108,https://fifa.example.com/players/p_henry_cc.png
+p_shevchenko,Andriy Shevchenko,ICON,ST,29,110,https://fifa.example.com/players/p_shevchenko_icon.png
+p_shevchenko,Andriy Shevchenko,LN,ST,25,106,https://fifa.example.com/players/p_shevchenko_ln.png
+p_shevchenko,Andriy Shevchenko,CC,ST,26,107,https://fifa.example.com/players/p_shevchenko_cc.png
+p_drogba,Didier Drogba,ICON,ST,30,111,https://fifa.example.com/players/p_drogba_icon.png
+p_drogba,Didier Drogba,LN,ST,26,107,https://fifa.example.com/players/p_drogba_ln.png
+p_drogba,Didier Drogba,CAP,ST,25,106,https://fifa.example.com/players/p_drogba_cap.png
+p_torres,Fernando Torres,ICON,ST,29,110,https://fifa.example.com/players/p_torres_icon.png
+p_torres,Fernando Torres,LN,ST,25,106,https://fifa.example.com/players/p_torres_ln.png
+p_torres,Fernando Torres,CC,ST,26,107,https://fifa.example.com/players/p_torres_cc.png
+p_rooney,Wayne Rooney,ICON,CF,29,110,https://fifa.example.com/players/p_rooney_icon.png
+p_rooney,Wayne Rooney,LN,CF,25,106,https://fifa.example.com/players/p_rooney_ln.png
+p_rooney,Wayne Rooney,CAP,CF,26,107,https://fifa.example.com/players/p_rooney_cap.png
+p_kaka,Kaká,ICON,CAM,30,111,https://fifa.example.com/players/p_kaka_icon.png
+p_kaka,Kaká,LN,CAM,27,108,https://fifa.example.com/players/p_kaka_ln.png
+p_kaka,Kaká,CC,CAM,26,107,https://fifa.example.com/players/p_kaka_cc.png
+p_ronaldinho,Ronaldinho,ICON,LW,33,113,https://fifa.example.com/players/p_ronaldinho_icon.png
+p_ronaldinho,Ronaldinho,LN,LW,28,109,https://fifa.example.com/players/p_ronaldinho_ln.png
+p_ronaldinho,Ronaldinho,CC,LW,27,108,https://fifa.example.com/players/p_ronaldinho_cc.png
+p_nedved,Pavel Nedvěd,ICON,LM,29,110,https://fifa.example.com/players/p_nedved_icon.png
+p_nedved,Pavel Nedvěd,LN,LM,26,107,https://fifa.example.com/players/p_nedved_ln.png
+p_nedved,Pavel Nedvěd,CAP,LM,27,108,https://fifa.example.com/players/p_nedved_cap.png
+p_figo,Luís Figo,ICON,RW,29,110,https://fifa.example.com/players/p_figo_icon.png
+p_figo,Luís Figo,LN,RW,25,106,https://fifa.example.com/players/p_figo_ln.png
+p_figo,Luís Figo,CC,RW,26,107,https://fifa.example.com/players/p_figo_cc.png
+p_beckham,David Beckham,ICON,RM,29,110,https://fifa.example.com/players/p_beckham_icon.png
+p_beckham,David Beckham,LN,RM,26,107,https://fifa.example.com/players/p_beckham_ln.png
+p_beckham,David Beckham,CC,RM,27,108,https://fifa.example.com/players/p_beckham_cc.png
+p_ballack,Michael Ballack,ICON,CM,30,111,https://fifa.example.com/players/p_ballack_icon.png
+p_ballack,Michael Ballack,LN,CM,27,108,https://fifa.example.com/players/p_ballack_ln.png
+p_ballack,Michael Ballack,CAP,CM,26,107,https://fifa.example.com/players/p_ballack_cap.png
+p_ballack,Michael Ballack,CC,CM,27,108,https://fifa.example.com/players/p_ballack_cc.png
+p_vieira,Patrick Vieira,ICON,CDM,32,112,https://fifa.example.com/players/p_vieira_icon.png
+p_vieira,Patrick Vieira,LN,CDM,28,108,https://fifa.example.com/players/p_vieira_ln.png
+p_vieira,Patrick Vieira,BWC,CDM,26,107,https://fifa.example.com/players/p_vieira_bwc.png
+p_vieira,Patrick Vieira,CC,CDM,27,108,https://fifa.example.com/players/p_vieira_cc.png
+p_rijkaard,Frank Rijkaard,ICON,CDM,29,110,https://fifa.example.com/players/p_rijkaard_icon.png
+p_rijkaard,Frank Rijkaard,LN,CDM,25,106,https://fifa.example.com/players/p_rijkaard_ln.png
+p_rijkaard,Frank Rijkaard,CC,CDM,26,107,https://fifa.example.com/players/p_rijkaard_cc.png
+p_pirlo,Andrea Pirlo,ICON,CM,29,110,https://fifa.example.com/players/p_pirlo_icon.png
+p_pirlo,Andrea Pirlo,LN,CM,25,106,https://fifa.example.com/players/p_pirlo_ln.png
+p_pirlo,Andrea Pirlo,CC,CM,27,108,https://fifa.example.com/players/p_pirlo_cc.png
+p_seedorf,Clarence Seedorf,ICON,CM,29,110,https://fifa.example.com/players/p_seedorf_icon.png
+p_seedorf,Clarence Seedorf,LN,CM,25,106,https://fifa.example.com/players/p_seedorf_ln.png
+p_seedorf,Clarence Seedorf,CAP,CM,26,107,https://fifa.example.com/players/p_seedorf_cap.png
+p_matthaus,Lothar Matthäus,ICON,CDM,31,112,https://fifa.example.com/players/p_matthaus_icon.png
+p_matthaus,Lothar Matthäus,LN,CDM,27,108,https://fifa.example.com/players/p_matthaus_ln.png
+p_matthaus,Lothar Matthäus,CAP,CDM,28,109,https://fifa.example.com/players/p_matthaus_cap.png
+p_essien,Michael Essien,ICON,CDM,29,110,https://fifa.example.com/players/p_essien_icon.png
+p_essien,Michael Essien,LN,CDM,25,106,https://fifa.example.com/players/p_essien_ln.png
+p_essien,Michael Essien,CC,CDM,26,107,https://fifa.example.com/players/p_essien_cc.png
+p_maldini,Paolo Maldini,ICON,CB,32,112,https://fifa.example.com/players/p_maldini_icon.png
+p_maldini,Paolo Maldini,LN,CB,28,109,https://fifa.example.com/players/p_maldini_ln.png
+p_maldini,Paolo Maldini,BWC,CB,27,108,https://fifa.example.com/players/p_maldini_bwc.png
+p_maldini,Paolo Maldini,CC,CB,27,108,https://fifa.example.com/players/p_maldini_cc.png
+p_nesta,Alessandro Nesta,ICON,CB,29,110,https://fifa.example.com/players/p_nesta_icon.png
+p_nesta,Alessandro Nesta,LN,CB,26,107,https://fifa.example.com/players/p_nesta_ln.png
+p_nesta,Alessandro Nesta,CC,CB,26,107,https://fifa.example.com/players/p_nesta_cc.png
+p_cannavaro,Fabio Cannavaro,ICON,CB,29,110,https://fifa.example.com/players/p_cannavaro_icon.png
+p_cannavaro,Fabio Cannavaro,LN,CB,26,107,https://fifa.example.com/players/p_cannavaro_ln.png
+p_cannavaro,Fabio Cannavaro,CAP,CB,27,108,https://fifa.example.com/players/p_cannavaro_cap.png
+p_ferdinand,Rio Ferdinand,ICON,CB,29,110,https://fifa.example.com/players/p_ferdinand_icon.png
+p_ferdinand,Rio Ferdinand,LN,CB,26,107,https://fifa.example.com/players/p_ferdinand_ln.png
+p_ferdinand,Rio Ferdinand,CC,CB,27,108,https://fifa.example.com/players/p_ferdinand_cc.png
+p_vidic,Nemanja Vidić,ICON,CB,29,110,https://fifa.example.com/players/p_vidic_icon.png
+p_vidic,Nemanja Vidić,LN,CB,25,106,https://fifa.example.com/players/p_vidic_ln.png
+p_vidic,Nemanja Vidić,CC,CB,26,107,https://fifa.example.com/players/p_vidic_cc.png
+p_puyol,Carles Puyol,ICON,CB,28,109,https://fifa.example.com/players/p_puyol_icon.png
+p_puyol,Carles Puyol,LN,CB,25,106,https://fifa.example.com/players/p_puyol_ln.png
+p_puyol,Carles Puyol,CAP,CB,26,107,https://fifa.example.com/players/p_puyol_cap.png
+p_roberto_carlos,Roberto Carlos,ICON,LB,29,110,https://fifa.example.com/players/p_roberto_carlos_icon.png
+p_roberto_carlos,Roberto Carlos,LN,LB,26,107,https://fifa.example.com/players/p_roberto_carlos_ln.png
+p_roberto_carlos,Roberto Carlos,BWC,LB,25,106,https://fifa.example.com/players/p_roberto_carlos_bwc.png
+p_roberto_carlos,Roberto Carlos,CC,LB,27,108,https://fifa.example.com/players/p_roberto_carlos_cc.png
+p_brehme,Andreas Brehme,ICON,LWB,28,109,https://fifa.example.com/players/p_brehme_icon.png
+p_brehme,Andreas Brehme,LN,LWB,25,106,https://fifa.example.com/players/p_brehme_ln.png
+p_brehme,Andreas Brehme,CC,LWB,26,107,https://fifa.example.com/players/p_brehme_cc.png
+p_cafu,Cafu,ICON,RB,29,110,https://fifa.example.com/players/p_cafu_icon.png
+p_cafu,Cafu,LN,RB,26,107,https://fifa.example.com/players/p_cafu_ln.png
+p_cafu,Cafu,BWC,RB,25,106,https://fifa.example.com/players/p_cafu_bwc.png
+p_cafu,Cafu,CC,RB,26,107,https://fifa.example.com/players/p_cafu_cc.png
+p_zanetti,Javier Zanetti,ICON,RWB,28,109,https://fifa.example.com/players/p_zanetti_icon.png
+p_zanetti,Javier Zanetti,LN,RWB,25,106,https://fifa.example.com/players/p_zanetti_ln.png
+p_zanetti,Javier Zanetti,CAP,RWB,26,107,https://fifa.example.com/players/p_zanetti_cap.png
+p_lahm,Philipp Lahm,ICON,RB,29,110,https://fifa.example.com/players/p_lahm_icon.png
+p_lahm,Philipp Lahm,LN,RB,26,107,https://fifa.example.com/players/p_lahm_ln.png
+p_lahm,Philipp Lahm,CAP,RB,27,108,https://fifa.example.com/players/p_lahm_cap.png
+p_cole,Ashley Cole,ICON,LB,27,108,https://fifa.example.com/players/p_cole_icon.png
+p_cole,Ashley Cole,LN,LB,24,105,https://fifa.example.com/players/p_cole_ln.png
+p_cole,Ashley Cole,CC,LB,25,106,https://fifa.example.com/players/p_cole_cc.png
+p_yashin,Lev Yashin,ICON,GK,30,111,https://fifa.example.com/players/p_yashin_icon.png
+p_yashin,Lev Yashin,LN,GK,26,107,https://fifa.example.com/players/p_yashin_ln.png
+p_yashin,Lev Yashin,CC,GK,27,108,https://fifa.example.com/players/p_yashin_cc.png
+p_vds,Edwin van der Sar,ICON,GK,29,110,https://fifa.example.com/players/p_vds_icon.png
+p_vds,Edwin van der Sar,LN,GK,25,106,https://fifa.example.com/players/p_vds_ln.png
+p_vds,Edwin van der Sar,CC,GK,26,107,https://fifa.example.com/players/p_vds_cc.png
+p_schmeichel,Peter Schmeichel,ICON,GK,29,110,https://fifa.example.com/players/p_schmeichel_icon.png
+p_schmeichel,Peter Schmeichel,LN,GK,25,106,https://fifa.example.com/players/p_schmeichel_ln.png
+p_schmeichel,Peter Schmeichel,CAP,GK,26,107,https://fifa.example.com/players/p_schmeichel_cap.png
+p_casillas,Iker Casillas,ICON,GK,28,109,https://fifa.example.com/players/p_casillas_icon.png
+p_casillas,Iker Casillas,LN,GK,25,106,https://fifa.example.com/players/p_casillas_ln.png
+p_casillas,Iker Casillas,CAP,GK,26,107,https://fifa.example.com/players/p_casillas_cap.png
+p_cech,Petr Čech,ICON,GK,29,110,https://fifa.example.com/players/p_cech_icon.png
+p_cech,Petr Čech,LN,GK,26,107,https://fifa.example.com/players/p_cech_ln.png
+p_cech,Petr Čech,CC,GK,27,108,https://fifa.example.com/players/p_cech_cc.png
+p_haaland,Erling Haaland,23UCL,ST,29,110,https://fifa.example.com/players/p_haaland_23ucl.png
+p_haaland,Erling Haaland,24EP,ST,27,108,https://fifa.example.com/players/p_haaland_24ep.png
+p_haaland,Erling Haaland,BWC,ST,25,106,https://fifa.example.com/players/p_haaland_bwc.png
+p_mbappe,Kylian Mbappé,23UCL,ST,29,110,https://fifa.example.com/players/p_mbappe_23ucl.png
+p_mbappe,Kylian Mbappé,24EP,ST,28,109,https://fifa.example.com/players/p_mbappe_24ep.png
+p_mbappe,Kylian Mbappé,BWC,ST,28,109,https://fifa.example.com/players/p_mbappe_bwc.png
+p_kane,Harry Kane,23UCL,ST,27,108,https://fifa.example.com/players/p_kane_23ucl.png
+p_kane,Harry Kane,24EP,ST,26,107,https://fifa.example.com/players/p_kane_24ep.png
+p_kane,Harry Kane,BWC,ST,25,106,https://fifa.example.com/players/p_kane_bwc.png
+p_lewandowski,Robert Lewandowski,23UCL,ST,26,107,https://fifa.example.com/players/p_lewandowski_23ucl.png
+p_lewandowski,Robert Lewandowski,CAP,ST,27,108,https://fifa.example.com/players/p_lewandowski_cap.png
+p_lewandowski,Robert Lewandowski,BWC,ST,26,107,https://fifa.example.com/players/p_lewandowski_bwc.png
+p_benzema,Karim Benzema,23UCL,CF,26,107,https://fifa.example.com/players/p_benzema_23ucl.png
+p_benzema,Karim Benzema,CAP,CF,27,108,https://fifa.example.com/players/p_benzema_cap.png
+p_benzema,Karim Benzema,BWC,CF,27,108,https://fifa.example.com/players/p_benzema_bwc.png
+p_son,Son Heung-min,23UCL,LW,26,107,https://fifa.example.com/players/p_son_23ucl.png
+p_son,Son Heung-min,CAP,LW,26,107,https://fifa.example.com/players/p_son_cap.png
+p_son,Son Heung-min,BWC,LW,25,106,https://fifa.example.com/players/p_son_bwc.png
+p_son,Son Heung-min,CC,LW,27,108,https://fifa.example.com/players/p_son_cc.png
+p_vinicius,Vinícius Jr.,23UCL,LW,28,109,https://fifa.example.com/players/p_vinicius_23ucl.png
+p_vinicius,Vinícius Jr.,24EP,LW,27,108,https://fifa.example.com/players/p_vinicius_24ep.png
+p_vinicius,Vinícius Jr.,BWC,LW,24,105,https://fifa.example.com/players/p_vinicius_bwc.png
+p_salah,Mohamed Salah,23UCL,RW,26,107,https://fifa.example.com/players/p_salah_23ucl.png
+p_salah,Mohamed Salah,CAP,RW,27,108,https://fifa.example.com/players/p_salah_cap.png
+p_salah,Mohamed Salah,BWC,RW,25,106,https://fifa.example.com/players/p_salah_bwc.png
+p_saka,Bukayo Saka,23UCL,RW,25,106,https://fifa.example.com/players/p_saka_23ucl.png
+p_saka,Bukayo Saka,24EP,RW,26,107,https://fifa.example.com/players/p_saka_24ep.png
+p_rodrygo,Rodrygo,23UCL,RW,26,107,https://fifa.example.com/players/p_rodrygo_23ucl.png
+p_rodrygo,Rodrygo,24EP,RW,25,106,https://fifa.example.com/players/p_rodrygo_24ep.png
+p_foden,Phil Foden,23UCL,CAM,27,108,https://fifa.example.com/players/p_foden_23ucl.png
+p_foden,Phil Foden,24EP,CAM,26,107,https://fifa.example.com/players/p_foden_24ep.png
+p_kdb,Kevin De Bruyne,23UCL,CAM,29,110,https://fifa.example.com/players/p_kdb_23ucl.png
+p_kdb,Kevin De Bruyne,CAP,CAM,27,108,https://fifa.example.com/players/p_kdb_cap.png
+p_kdb,Kevin De Bruyne,BWC,CAM,26,107,https://fifa.example.com/players/p_kdb_bwc.png
+p_bellingham,Jude Bellingham,23UCL,CM,28,109,https://fifa.example.com/players/p_bellingham_23ucl.png
+p_bellingham,Jude Bellingham,24EP,CM,28,109,https://fifa.example.com/players/p_bellingham_24ep.png
+p_bellingham,Jude Bellingham,BWC,CM,24,105,https://fifa.example.com/players/p_bellingham_bwc.png
+p_modric,Luka Modrić,23UCL,CM,26,107,https://fifa.example.com/players/p_modric_23ucl.png
+p_modric,Luka Modrić,CAP,CM,27,108,https://fifa.example.com/players/p_modric_cap.png
+p_modric,Luka Modrić,BWC,CM,27,108,https://fifa.example.com/players/p_modric_bwc.png
+p_kroos,Toni Kroos,23UCL,CM,27,108,https://fifa.example.com/players/p_kroos_23ucl.png
+p_kroos,Toni Kroos,CAP,CM,26,107,https://fifa.example.com/players/p_kroos_cap.png
+p_kroos,Toni Kroos,BWC,CM,25,106,https://fifa.example.com/players/p_kroos_bwc.png
+p_valverde,Federico Valverde,23UCL,CM,27,108,https://fifa.example.com/players/p_valverde_23ucl.png
+p_valverde,Federico Valverde,24EP,CM,26,107,https://fifa.example.com/players/p_valverde_24ep.png
+p_rodri,Rodri,23UCL,CDM,29,110,https://fifa.example.com/players/p_rodri_23ucl.png
+p_rodri,Rodri,24EP,CDM,27,108,https://fifa.example.com/players/p_rodri_24ep.png
+p_casemiro,Casemiro,23UCL,CDM,25,106,https://fifa.example.com/players/p_casemiro_23ucl.png
+p_casemiro,Casemiro,BWC,CDM,26,107,https://fifa.example.com/players/p_casemiro_bwc.png
+p_casemiro,Casemiro,CAP,CDM,26,107,https://fifa.example.com/players/p_casemiro_cap.png
+p_kimmich,Joshua Kimmich,23UCL,CDM,26,107,https://fifa.example.com/players/p_kimmich_23ucl.png
+p_kimmich,Joshua Kimmich,CAP,CDM,26,107,https://fifa.example.com/players/p_kimmich_cap.png
+p_rice,Declan Rice,23UCL,CDM,26,107,https://fifa.example.com/players/p_rice_23ucl.png
+p_rice,Declan Rice,24EP,CDM,26,107,https://fifa.example.com/players/p_rice_24ep.png
+p_vvd,Virgil van Dijk,23UCL,CB,27,108,https://fifa.example.com/players/p_vvd_23ucl.png
+p_vvd,Virgil van Dijk,CAP,CB,27,108,https://fifa.example.com/players/p_vvd_cap.png
+p_vvd,Virgil van Dijk,BWC,CB,26,107,https://fifa.example.com/players/p_vvd_bwc.png
+p_ruben_dias,Rúben Dias,23UCL,CB,27,108,https://fifa.example.com/players/p_ruben_dias_23ucl.png
+p_ruben_dias,Rúben Dias,24EP,CB,26,107,https://fifa.example.com/players/p_ruben_dias_24ep.png
+p_rudiger,Antonio Rüdiger,23UCL,CB,27,108,https://fifa.example.com/players/p_rudiger_23ucl.png
+p_rudiger,Antonio Rüdiger,24EP,CB,26,107,https://fifa.example.com/players/p_rudiger_24ep.png
+p_saliba,William Saliba,23UCL,CB,26,107,https://fifa.example.com/players/p_saliba_23ucl.png
+p_saliba,William Saliba,24EP,CB,26,107,https://fifa.example.com/players/p_saliba_24ep.png
+p_militao,Éder Militão,23UCL,CB,26,107,https://fifa.example.com/players/p_militao_23ucl.png
+p_militao,Éder Militão,BWC,CB,24,105,https://fifa.example.com/players/p_militao_bwc.png
+p_theo,Theo Hernández,23UCL,LB,26,107,https://fifa.example.com/players/p_theo_23ucl.png
+p_theo,Theo Hernández,BWC,LB,26,107,https://fifa.example.com/players/p_theo_bwc.png
+p_davies,Alphonso Davies,23UCL,LB,25,106,https://fifa.example.com/players/p_davies_23ucl.png
+p_davies,Alphonso Davies,BWC,LB,24,105,https://fifa.example.com/players/p_davies_bwc.png
+p_dimarco,Federico Dimarco,23UCL,LWB,25,106,https://fifa.example.com/players/p_dimarco_23ucl.png
+p_dimarco,Federico Dimarco,24EP,LWB,24,105,https://fifa.example.com/players/p_dimarco_24ep.png
+p_walker,Kyle Walker,23UCL,RB,26,107,https://fifa.example.com/players/p_walker_23ucl.png
+p_walker,Kyle Walker,BWC,RB,25,106,https://fifa.example.com/players/p_walker_bwc.png
+p_hakimi,Achraf Hakimi,23UCL,RB,26,107,https://fifa.example.com/players/p_hakimi_23ucl.png
+p_hakimi,Achraf Hakimi,BWC,RB,26,107,https://fifa.example.com/players/p_hakimi_bwc.png
+p_frimpong,Jeremie Frimpong,24EP,RWB,26,107,https://fifa.example.com/players/p_frimpong_24ep.png
+p_frimpong,Jeremie Frimpong,23UCL,RWB,24,105,https://fifa.example.com/players/p_frimpong_23ucl.png
+p_courtois,Thibaut Courtois,23UCL,GK,27,108,https://fifa.example.com/players/p_courtois_23ucl.png
+p_courtois,Thibaut Courtois,BWC,GK,26,107,https://fifa.example.com/players/p_courtois_bwc.png
+p_alisson,Alisson,23UCL,GK,26,107,https://fifa.example.com/players/p_alisson_23ucl.png
+p_alisson,Alisson,BWC,GK,26,107,https://fifa.example.com/players/p_alisson_bwc.png
+p_ederson,Ederson,23UCL,GK,26,107,https://fifa.example.com/players/p_ederson_23ucl.png
+p_ederson,Ederson,BWC,GK,25,106,https://fifa.example.com/players/p_ederson_bwc.png
+p_donnarumma,Gianluigi Donnarumma,23UCL,GK,26,107,https://fifa.example.com/players/p_donnarumma_23ucl.png
+p_donnarumma,Gianluigi Donnarumma,24EP,GK,25,106,https://fifa.example.com/players/p_donnarumma_24ep.png
+p_neuer,Manuel Neuer,23UCL,GK,25,106,https://fifa.example.com/players/p_neuer_23ucl.png
+p_neuer,Manuel Neuer,CAP,GK,27,108,https://fifa.example.com/players/p_neuer_cap.png
+p_neuer,Manuel Neuer,BWC,GK,26,107,https://fifa.example.com/players/p_neuer_bwc.png
+p_ter_stegen,Marc-André ter Stegen,23UCL,GK,26,107,https://fifa.example.com/players/p_ter_stegen_23ucl.png
+p_ter_stegen,Marc-André ter Stegen,BWC,GK,25,106,https://fifa.example.com/players/p_ter_stegen_bwc.png
+p_oblak,Jan Oblak,23UCL,GK,25,106,https://fifa.example.com/players/p_oblak_23ucl.png
+p_oblak,Jan Oblak,BWC,GK,25,106,https://fifa.example.com/players/p_oblak_bwc.png
+p_mendy,Édouard Mendy,23UCL,GK,21,103,https://fifa.example.com/players/p_mendy_23ucl.png
+p_mendy,Édouard Mendy,CAP,GK,22,104,https://fifa.example.com/players/p_mendy_cap.png
+p_martinez,Emiliano Martínez,23UCL,GK,25,106,https://fifa.example.com/players/p_martinez_23ucl.png
+p_martinez,Emiliano Martínez,BWC,GK,27,108,https://fifa.example.com/players/p_martinez_bwc.png
+p_quang_hai,Nguyễn Quang Hải,VNM,CAM,18,98,https://fifa.example.com/players/p_quang_hai_vnm.png
+p_quang_hai,Nguyễn Quang Hải,23UCL,CAM,15,95,https://fifa.example.com/players/p_quang_hai_23ucl.png
+p_van_hau,Đoàn Văn Hậu,VNM,LB,17,97,https://fifa.example.com/players/p_van_hau_vnm.png
+p_van_hau,Đoàn Văn Hậu,CAP,LB,14,94,https://fifa.example.com/players/p_van_hau_cap.png
+p_xuan_truong,Lương Xuân Trường,VNM,CM,15,95,https://fifa.example.com/players/p_xuan_truong_vnm.png
+p_cong_phuong,Nguyễn Công Phượng,VNM,CF,16,96,https://fifa.example.com/players/p_cong_phuong_vnm.png
+p_cong_phuong,Nguyễn Công Phượng,CAP,CF,13,93,https://fifa.example.com/players/p_cong_phuong_cap.png
+p_van_lam,Đặng Văn Lâm,VNM,GK,17,97,https://fifa.example.com/players/p_van_lam_vnm.png
+p_van_lam,Đặng Văn Lâm,23UCL,GK,14,94,https://fifa.example.com/players/p_van_lam_23ucl.png
+p_tien_dung_cb,Bùi Tiến Dũng,VNM,CB,15,95,https://fifa.example.com/players/p_tien_dung_cb_vnm.png
+p_tien_dung_gk,Bùi Tiến Dũng,VNM,GK,13,93,https://fifa.example.com/players/p_tien_dung_gk_vnm.png
+p_ngoc_hai,Quế Ngọc Hải,VNM,CB,17,97,https://fifa.example.com/players/p_ngoc_hai_vnm.png
+p_tien_linh,Nguyễn Tiến Linh,VNM,ST,16,96,https://fifa.example.com/players/p_tien_linh_vnm.png
+p_van_thanh,Vũ Văn Thanh,VNM,RB,16,96,https://fifa.example.com/players/p_van_thanh_vnm.png
+p_hoang_duc,Nguyễn Hoàng Đức,VNM,CM,18,98,https://fifa.example.com/players/p_hoang_duc_vnm.png
+p_hung_dung,Đỗ Hùng Dũng,VNM,CM,17,97,https://fifa.example.com/players/p_hung_dung_vnm.png
+p_tan_tai,Hồ Tấn Tài,VNM,RWB,15,95,https://fifa.example.com/players/p_tan_tai_vnm.png
+p_hong_duy,Nguyễn Phong Hồng Duy,VNM,LWB,14,94,https://fifa.example.com/players/p_hong_duy_vnm.png
+p_duy_manh,Đỗ Duy Mạnh,VNM,CB,16,96,https://fifa.example.com/players/p_duy_manh_vnm.png
+p_tuan_anh,Nguyễn Tuấn Anh,VNM,CM,15,95,https://fifa.example.com/players/p_tuan_anh_vnm.png
+p_van_toan,Nguyễn Văn Toàn,VNM,RW,15,95,https://fifa.example.com/players/p_van_toan_vnm.png
+p_phan_van_duc,Phan Văn Đức,VNM,LM,14,94,https://fifa.example.com/players/p_phan_van_duc_vnm.png
+p_duc_chinh,Hà Đức Chinh,VNM,ST,13,93,https://fifa.example.com/players/p_duc_chinh_vnm.png
+p_dinh_trong,Trần Đình Trọng,VNM,CB,15,95,https://fifa.example.com/players/p_dinh_trong_vnm.png
+p_lautaro,Lautaro Martínez,23UCL,ST,27,108,https://fifa.example.com/players/p_lautaro_23ucl.png
+p_lautaro,Lautaro Martínez,BWC,ST,25,106,https://fifa.example.com/players/p_lautaro_bwc.png
+p_alvarez,Julián Álvarez,23UCL,CF,26,107,https://fifa.example.com/players/p_alvarez_23ucl.png
+p_alvarez,Julián Álvarez,24EP,CF,25,106,https://fifa.example.com/players/p_alvarez_24ep.png
+p_osimhen,Victor Osimhen,23UCL,ST,26,107,https://fifa.example.com/players/p_osimhen_23ucl.png
+p_osimhen,Victor Osimhen,24EP,ST,25,106,https://fifa.example.com/players/p_osimhen_24ep.png
+p_isak,Alexander Isak,24EP,ST,24,105,https://fifa.example.com/players/p_isak_24ep.png
+p_nunez,Darwin Núñez,23UCL,ST,23,104,https://fifa.example.com/players/p_nunez_23ucl.png
+p_nunez,Darwin Núñez,24EP,ST,24,105,https://fifa.example.com/players/p_nunez_24ep.png
+p_jesus,Gabriel Jesus,23UCL,ST,24,105,https://fifa.example.com/players/p_jesus_23ucl.png
+p_jesus,Gabriel Jesus,CAP,ST,23,104,https://fifa.example.com/players/p_jesus_cap.png
+p_morata,Álvaro Morata,23UCL,ST,23,104,https://fifa.example.com/players/p_morata_23ucl.png
+p_morata,Álvaro Morata,BWC,ST,23,104,https://fifa.example.com/players/p_morata_bwc.png
+p_giroud,Olivier Giroud,23UCL,ST,24,105,https://fifa.example.com/players/p_giroud_23ucl.png
+p_giroud,Olivier Giroud,BWC,ST,25,106,https://fifa.example.com/players/p_giroud_bwc.png
+p_griezmann,Antoine Griezmann,23UCL,CF,27,108,https://fifa.example.com/players/p_griezmann_23ucl.png
+p_griezmann,Antoine Griezmann,BWC,CF,26,107,https://fifa.example.com/players/p_griezmann_bwc.png
+p_dybala,Paulo Dybala,CAP,CF,25,106,https://fifa.example.com/players/p_dybala_cap.png
+p_dybala,Paulo Dybala,BWC,CF,24,105,https://fifa.example.com/players/p_dybala_bwc.png
+p_muller,Thomas Müller,23UCL,CF,25,106,https://fifa.example.com/players/p_muller_23ucl.png
+p_muller,Thomas Müller,CAP,CF,26,107,https://fifa.example.com/players/p_muller_cap.png
+p_muller,Thomas Müller,BWC,CF,25,106,https://fifa.example.com/players/p_muller_bwc.png
+p_leao,Rafael Leão,23UCL,LW,27,108,https://fifa.example.com/players/p_leao_23ucl.png
+p_leao,Rafael Leão,24EP,LW,26,107,https://fifa.example.com/players/p_leao_24ep.png
+p_kvaratskhelia,Khvicha Kvaratskhelia,23UCL,LW,26,107,https://fifa.example.com/players/p_kvaratskhelia_23ucl.png
+p_kvaratskhelia,Khvicha Kvaratskhelia,24EP,LW,25,106,https://fifa.example.com/players/p_kvaratskhelia_24ep.png
+p_diaz,Luis Díaz,23UCL,LW,25,106,https://fifa.example.com/players/p_diaz_23ucl.png
+p_diaz,Luis Díaz,24EP,LW,25,106,https://fifa.example.com/players/p_diaz_24ep.png
+p_martinelli,Gabriel Martinelli,23UCL,LW,25,106,https://fifa.example.com/players/p_martinelli_23ucl.png
+p_martinelli,Gabriel Martinelli,24EP,LW,25,106,https://fifa.example.com/players/p_martinelli_24ep.png
+p_grealish,Jack Grealish,23UCL,LW,25,106,https://fifa.example.com/players/p_grealish_23ucl.png
+p_rashford,Marcus Rashford,23UCL,LW,24,105,https://fifa.example.com/players/p_rashford_23ucl.png
+p_rashford,Marcus Rashford,BWC,LW,24,105,https://fifa.example.com/players/p_rashford_bwc.png
+p_coman,Kingsley Coman,23UCL,LM,25,106,https://fifa.example.com/players/p_coman_23ucl.png
+p_coman,Kingsley Coman,BWC,LM,24,105,https://fifa.example.com/players/p_coman_bwc.png
+p_sane,Leroy Sané,23UCL,RM,25,106,https://fifa.example.com/players/p_sane_23ucl.png
+p_sane,Leroy Sané,24EP,RM,25,106,https://fifa.example.com/players/p_sane_24ep.png
+p_gnabry,Serge Gnabry,23UCL,RM,24,105,https://fifa.example.com/players/p_gnabry_23ucl.png
+p_dembele,Ousmane Dembélé,23UCL,RW,25,106,https://fifa.example.com/players/p_dembele_23ucl.png
+p_dembele,Ousmane Dembélé,BWC,RW,24,105,https://fifa.example.com/players/p_dembele_bwc.png
+p_chiesa,Federico Chiesa,23UCL,RW,24,105,https://fifa.example.com/players/p_chiesa_23ucl.png
+p_chiesa,Federico Chiesa,CAP,RW,24,105,https://fifa.example.com/players/p_chiesa_cap.png
+p_bernardo,Bernardo Silva,23UCL,RW,27,108,https://fifa.example.com/players/p_bernardo_23ucl.png
+p_bernardo,Bernardo Silva,BWC,RW,25,106,https://fifa.example.com/players/p_bernardo_bwc.png
+p_kulusevski,Dejan Kulusevski,24EP,RW,23,104,https://fifa.example.com/players/p_kulusevski_24ep.png
+p_odegaard,Martin Ødegaard,23UCL,CAM,27,108,https://fifa.example.com/players/p_odegaard_23ucl.png
+p_odegaard,Martin Ødegaard,24EP,CAM,26,107,https://fifa.example.com/players/p_odegaard_24ep.png
+p_musiala,Jamal Musiala,23UCL,CAM,27,108,https://fifa.example.com/players/p_musiala_23ucl.png
+p_musiala,Jamal Musiala,24EP,CAM,27,108,https://fifa.example.com/players/p_musiala_24ep.png
+p_wirtz,Florian Wirtz,24EP,CAM,27,108,https://fifa.example.com/players/p_wirtz_24ep.png
+p_bruno_fernandes,Bruno Fernandes,23UCL,CAM,26,107,https://fifa.example.com/players/p_bruno_fernandes_23ucl.png
+p_bruno_fernandes,Bruno Fernandes,CAP,CAM,26,107,https://fifa.example.com/players/p_bruno_fernandes_cap.png
+p_maddison,James Maddison,24EP,CAM,24,105,https://fifa.example.com/players/p_maddison_24ep.png
+p_pedri,Pedri,23UCL,CM,26,107,https://fifa.example.com/players/p_pedri_23ucl.png
+p_pedri,Pedri,24EP,CM,25,106,https://fifa.example.com/players/p_pedri_24ep.png
+p_gavi,Gavi,23UCL,CM,25,106,https://fifa.example.com/players/p_gavi_23ucl.png
+p_camavinga,Eduardo Camavinga,23UCL,CM,26,107,https://fifa.example.com/players/p_camavinga_23ucl.png
+p_camavinga,Eduardo Camavinga,24EP,CM,25,106,https://fifa.example.com/players/p_camavinga_24ep.png
+p_tchouameni,Aurélien Tchouaméni,23UCL,CDM,26,107,https://fifa.example.com/players/p_tchouameni_23ucl.png
+p_tchouameni,Aurélien Tchouaméni,BWC,CDM,25,106,https://fifa.example.com/players/p_tchouameni_bwc.png
+p_barella,Nicolò Barella,23UCL,CM,27,108,https://fifa.example.com/players/p_barella_23ucl.png
+p_barella,Nicolò Barella,CAP,CM,26,107,https://fifa.example.com/players/p_barella_cap.png
+p_calhanoglu,Hakan Çalhanoğlu,23UCL,CM,26,107,https://fifa.example.com/players/p_calhanoglu_23ucl.png
+p_mac_allister,Alexis Mac Allister,24EP,CM,25,106,https://fifa.example.com/players/p_mac_allister_24ep.png
+p_mac_allister,Alexis Mac Allister,BWC,CM,25,106,https://fifa.example.com/players/p_mac_allister_bwc.png
+p_szoboszlai,Dominik Szoboszlai,24EP,CM,25,106,https://fifa.example.com/players/p_szoboszlai_24ep.png
+p_de_jong,Frenkie de Jong,23UCL,CM,26,107,https://fifa.example.com/players/p_de_jong_23ucl.png
+p_de_jong,Frenkie de Jong,CAP,CM,26,107,https://fifa.example.com/players/p_de_jong_cap.png
+p_palhinha,João Palhinha,24EP,CDM,25,106,https://fifa.example.com/players/p_palhinha_24ep.png
+p_partey,Thomas Partey,23UCL,CDM,24,105,https://fifa.example.com/players/p_partey_23ucl.png
+p_guimaraes,Bruno Guimarães,24EP,CM,25,106,https://fifa.example.com/players/p_guimaraes_24ep.png
+p_kovacic,Mateo Kovačić,23UCL,CM,24,105,https://fifa.example.com/players/p_kovacic_23ucl.png
+p_kovacic,Mateo Kovačić,BWC,CM,24,105,https://fifa.example.com/players/p_kovacic_bwc.png
+p_goretzka,Leon Goretzka,23UCL,CM,25,106,https://fifa.example.com/players/p_goretzka_23ucl.png
+p_goretzka,Leon Goretzka,CAP,CM,25,106,https://fifa.example.com/players/p_goretzka_cap.png
+p_bastoni,Alessandro Bastoni,23UCL,CB,27,108,https://fifa.example.com/players/p_bastoni_23ucl.png
+p_bastoni,Alessandro Bastoni,24EP,CB,26,107,https://fifa.example.com/players/p_bastoni_24ep.png
+p_marquinhos,Marquinhos,23UCL,CB,26,107,https://fifa.example.com/players/p_marquinhos_23ucl.png
+p_marquinhos,Marquinhos,CAP,CB,26,107,https://fifa.example.com/players/p_marquinhos_cap.png
+p_marquinhos,Marquinhos,BWC,CB,25,106,https://fifa.example.com/players/p_marquinhos_bwc.png
+p_araujo,Ronald Araújo,23UCL,CB,26,107,https://fifa.example.com/players/p_araujo_23ucl.png
+p_araujo,Ronald Araújo,24EP,CB,25,106,https://fifa.example.com/players/p_araujo_24ep.png
+p_kounde,Jules Koundé,23UCL,CB,26,107,https://fifa.example.com/players/p_kounde_23ucl.png
+p_kounde,Jules Koundé,24EP,CB,25,106,https://fifa.example.com/players/p_kounde_24ep.png
+p_kim_min_jae,Kim Min-jae,23UCL,CB,26,107,https://fifa.example.com/players/p_kim_min_jae_23ucl.png
+p_kim_min_jae,Kim Min-jae,24EP,CB,25,106,https://fifa.example.com/players/p_kim_min_jae_24ep.png
+p_de_ligt,Matthijs de Ligt,23UCL,CB,25,106,https://fifa.example.com/players/p_de_ligt_23ucl.png
+p_de_ligt,Matthijs de Ligt,CAP,CB,25,106,https://fifa.example.com/players/p_de_ligt_cap.png
+p_upamecano,Dayot Upamecano,23UCL,CB,25,106,https://fifa.example.com/players/p_upamecano_23ucl.png
+p_konate,Ibrahima Konaté,23UCL,CB,25,106,https://fifa.example.com/players/p_konate_23ucl.png
+p_konate,Ibrahima Konaté,24EP,CB,25,106,https://fifa.example.com/players/p_konate_24ep.png
+p_gabriel_magalhaes,Gabriel Magalhães,23UCL,CB,25,106,https://fifa.example.com/players/p_gabriel_magalhaes_23ucl.png
+p_gabriel_magalhaes,Gabriel Magalhães,24EP,CB,25,106,https://fifa.example.com/players/p_gabriel_magalhaes_24ep.png
+p_romero,Cristian Romero,24EP,CB,25,106,https://fifa.example.com/players/p_romero_24ep.png
+p_romero,Cristian Romero,BWC,CB,25,106,https://fifa.example.com/players/p_romero_bwc.png
+p_stones,John Stones,23UCL,CB,26,107,https://fifa.example.com/players/p_stones_23ucl.png
+p_ake,Nathan Aké,23UCL,CB,25,106,https://fifa.example.com/players/p_ake_23ucl.png
+p_gvardiol,Joško Gvardiol,23UCL,LB,26,107,https://fifa.example.com/players/p_gvardiol_23ucl.png
+p_gvardiol,Joško Gvardiol,BWC,LB,26,107,https://fifa.example.com/players/p_gvardiol_bwc.png
+p_mendes,Nuno Mendes,23UCL,LB,25,106,https://fifa.example.com/players/p_mendes_23ucl.png
+p_robertson,Andrew Robertson,23UCL,LB,25,106,https://fifa.example.com/players/p_robertson_23ucl.png
+p_robertson,Andrew Robertson,CAP,LB,26,107,https://fifa.example.com/players/p_robertson_cap.png
+p_shaw,Luke Shaw,23UCL,LB,24,105,https://fifa.example.com/players/p_shaw_23ucl.png
+p_shaw,Luke Shaw,BWC,LB,24,105,https://fifa.example.com/players/p_shaw_bwc.png
+p_cancelo,João Cancelo,23UCL,RB,26,107,https://fifa.example.com/players/p_cancelo_23ucl.png
+p_cancelo,João Cancelo,CAP,RB,26,107,https://fifa.example.com/players/p_cancelo_cap.png
+p_carvajal,Dani Carvajal,23UCL,RB,26,107,https://fifa.example.com/players/p_carvajal_23ucl.png
+p_carvajal,Dani Carvajal,CAP,RB,26,107,https://fifa.example.com/players/p_carvajal_cap.png
+p_trent,Trent Alexander-Arnold,23UCL,RB,26,107,https://fifa.example.com/players/p_trent_23ucl.png
+p_trent,Trent Alexander-Arnold,CAP,RB,26,107,https://fifa.example.com/players/p_trent_cap.png
+p_trippier,Kieran Trippier,23UCL,RB,24,105,https://fifa.example.com/players/p_trippier_23ucl.png
+p_trippier,Kieran Trippier,BWC,RB,24,105,https://fifa.example.com/players/p_trippier_bwc.png
+p_james,Reece James,23UCL,RWB,25,106,https://fifa.example.com/players/p_james_23ucl.png
+p_james,Reece James,CAP,RWB,25,106,https://fifa.example.com/players/p_james_cap.png
+p_porro,Pedro Porro,24EP,RWB,24,105,https://fifa.example.com/players/p_porro_24ep.png
+p_udogie,Destiny Udogie,24EP,LWB,24,105,https://fifa.example.com/players/p_udogie_24ep.png
+p_sommer,Yann Sommer,23UCL,GK,25,106,https://fifa.example.com/players/p_sommer_23ucl.png
+p_sommer,Yann Sommer,BWC,GK,24,105,https://fifa.example.com/players/p_sommer_bwc.png
+p_raya,David Raya,23UCL,GK,25,106,https://fifa.example.com/players/p_raya_23ucl.png
+p_raya,David Raya,24EP,GK,25,106,https://fifa.example.com/players/p_raya_24ep.png
+p_vicario,Guglielmo Vicario,24EP,GK,25,106,https://fifa.example.com/players/p_vicario_24ep.png
+p_maignan,Mike Maignan,23UCL,GK,26,107,https://fifa.example.com/players/p_maignan_23ucl.png
+p_maignan,Mike Maignan,24EP,GK,25,106,https://fifa.example.com/players/p_maignan_24ep.png
+p_kobel,Gregor Kobel,23UCL,GK,26,107,https://fifa.example.com/players/p_kobel_23ucl.png
+p_provedel,Ivan Provedel,23UCL,GK,23,104,https://fifa.example.com/players/p_provedel_23ucl.png
+p_remiro,Álex Remiro,23UCL,GK,23,104,https://fifa.example.com/players/p_remiro_23ucl.png
+p_trubin,Anatoliy Trubin,23UCL,GK,22,103,https://fifa.example.com/players/p_trubin_23ucl.png
+p_lunin,Andriy Lunin,23UCL,GK,25,106,https://fifa.example.com/players/p_lunin_23ucl.png

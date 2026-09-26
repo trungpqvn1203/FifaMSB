@@ -1,0 +1,3255 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "FC Online Draft System",
+    "description": "Realtime multi-team player draft system for Vietnamese FC Online pro tournament.",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": [
+          "Infrastructure"
+        ],
+        "summary": "Health",
+        "description": "Liveness probe \u2014 returns 200 when the process is running.",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Health Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/login": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Login",
+        "description": "Authenticate user with username and password, setting HttpOnly session cookie.",
+        "operationId": "login_api_auth_login_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Logout",
+        "description": "Invalidate current session and remove the session cookie.",
+        "operationId": "logout_api_auth_logout_post",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Logout Api Auth Logout Post"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/me": {
+      "get": {
+        "tags": [
+          "Auth"
+        ],
+        "summary": "Get Me",
+        "description": "Return profile of the currently authenticated user.",
+        "operationId": "get_me_api_auth_me_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/users": {
+      "get": {
+        "tags": [
+          "Admin Users"
+        ],
+        "summary": "List Users",
+        "description": "List all user accounts (Admin only).",
+        "operationId": "list_users_api_admin_users_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/UserResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Users Api Admin Users Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Admin Users"
+        ],
+        "summary": "Create User",
+        "description": "Create a new user account (Admin only).",
+        "operationId": "create_user_api_admin_users_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateUserRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UserResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/seasons": {
+      "get": {
+        "tags": [
+          "Seasons"
+        ],
+        "summary": "List Seasons",
+        "description": "List all card seasons/classes.",
+        "operationId": "list_seasons_api_seasons_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/SeasonResponse"
+                  },
+                  "type": "array",
+                  "title": "Response List Seasons Api Seasons Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Seasons"
+        ],
+        "summary": "Create Season",
+        "description": "Create a new season class (Admin only).",
+        "operationId": "create_season_api_seasons_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateSeasonRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/SeasonResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/player-seasons": {
+      "get": {
+        "tags": [
+          "Player Seasons"
+        ],
+        "summary": "List Player Seasons",
+        "description": "Search and paginate player season cards with filters.\n\nSupports unaccented Vietnamese search, exact position, or position groups (FW, MF, DF, GK).",
+        "operationId": "list_player_seasons_api_player_seasons_get",
+        "parameters": [
+          {
+            "name": "seasonId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string",
+                  "format": "uuid"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Seasonid"
+            }
+          },
+          {
+            "name": "position",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Position"
+            }
+          },
+          {
+            "name": "group",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Group"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Pagesize"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerSeasonListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/player-seasons/{card_id}": {
+      "get": {
+        "tags": [
+          "Player Seasons"
+        ],
+        "summary": "Get Player Season",
+        "description": "Get player season card detail by UUID.",
+        "operationId": "get_player_season_api_player_seasons__card_id__get",
+        "parameters": [
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerSeasonResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/player-seasons/{card_id}": {
+      "patch": {
+        "tags": [
+          "Admin Players"
+        ],
+        "summary": "Update Player Salary",
+        "description": "Update salary of a card (Admin only; rejected with POOL_LOCKED if draft active).",
+        "operationId": "update_player_salary_api_admin_player_seasons__card_id__patch",
+        "parameters": [
+          {
+            "name": "card_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Card Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateSalaryRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PlayerSeasonResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/admin/players/import": {
+      "post": {
+        "tags": [
+          "Admin Players"
+        ],
+        "summary": "Import Players Csv",
+        "description": "Import cards from CSV upload (Admin only; rejected with POOL_LOCKED if draft active).",
+        "operationId": "import_players_csv_api_admin_players_import_post",
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_import_players_csv_api_admin_players_import_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportReport"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tournaments": {
+      "get": {
+        "tags": [
+          "Tournaments"
+        ],
+        "summary": "List Tournaments",
+        "description": "List all tournaments (newest first).",
+        "operationId": "list_tournaments_api_tournaments_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/TournamentListItem"
+                  },
+                  "type": "array",
+                  "title": "Response List Tournaments Api Tournaments Get"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Tournaments"
+        ],
+        "summary": "Create Tournament",
+        "description": "Create a new tournament with validated TournamentRules (ADMIN only).",
+        "operationId": "create_tournament_api_tournaments_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTournamentRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TournamentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tournaments/{tournament_id}": {
+      "get": {
+        "tags": [
+          "Tournaments"
+        ],
+        "summary": "Get Tournament",
+        "description": "Get tournament details with teams.",
+        "operationId": "get_tournament_api_tournaments__tournament_id__get",
+        "parameters": [
+          {
+            "name": "tournament_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tournament Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TournamentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tournaments/{tournament_id}/complete": {
+      "post": {
+        "tags": [
+          "Tournaments"
+        ],
+        "summary": "Complete Tournament",
+        "description": "Manually mark a tournament as COMPLETED (ADMIN only).",
+        "operationId": "complete_tournament_api_tournaments__tournament_id__complete_post",
+        "parameters": [
+          {
+            "name": "tournament_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tournament Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TournamentResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tournaments/{tournament_id}/teams": {
+      "post": {
+        "tags": [
+          "Tournaments"
+        ],
+        "summary": "Add Team",
+        "description": "Add a team to a tournament (ADMIN only).\n\nIf adding this team makes the count >= 2, tournament transitions DRAFT \u2192 READY.",
+        "operationId": "add_team_api_tournaments__tournament_id__teams_post",
+        "parameters": [
+          {
+            "name": "tournament_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tournament Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateTeamRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TeamResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Tournaments"
+        ],
+        "summary": "List Teams",
+        "description": "List teams in a tournament ordered by draft_order.",
+        "operationId": "list_teams_api_tournaments__tournament_id__teams_get",
+        "parameters": [
+          {
+            "name": "tournament_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tournament Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TeamResponse"
+                  },
+                  "title": "Response List Teams Api Tournaments  Tournament Id  Teams Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/teams/{team_id}/roster": {
+      "get": {
+        "tags": [
+          "Teams"
+        ],
+        "summary": "Get Team Roster",
+        "description": "Return the team's drafted roster populated from draft_picks table.",
+        "operationId": "get_team_roster_api_teams__team_id__roster_get",
+        "parameters": [
+          {
+            "name": "team_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Team Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RosterResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tournaments/{tournament_id}/draft/start": {
+      "post": {
+        "tags": [
+          "Drafts"
+        ],
+        "summary": "Start Draft",
+        "description": "Start a new draft session for a READY tournament (ADMIN only).",
+        "operationId": "start_draft_api_tournaments__tournament_id__draft_start_post",
+        "parameters": [
+          {
+            "name": "tournament_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tournament Id"
+            }
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tournaments/{tournament_id}/draft": {
+      "get": {
+        "tags": [
+          "Drafts"
+        ],
+        "summary": "Get Tournament Draft",
+        "description": "Get the latest/active draft session details for a tournament.",
+        "operationId": "get_tournament_draft_api_tournaments__tournament_id__draft_get",
+        "parameters": [
+          {
+            "name": "tournament_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tournament Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/drafts/{draft_id}": {
+      "get": {
+        "tags": [
+          "Drafts"
+        ],
+        "summary": "Get Draft Detail",
+        "description": "Get full draft details, current timer, and team status.",
+        "operationId": "get_draft_detail_api_drafts__draft_id__get",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/DraftDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/drafts/{draft_id}/picks": {
+      "get": {
+        "tags": [
+          "Drafts"
+        ],
+        "summary": "List Draft Picks",
+        "description": "Get all picks in the draft session formatted for the draft board.",
+        "operationId": "list_draft_picks_api_drafts__draft_id__picks_get",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/DraftPickBoardItem"
+                  },
+                  "title": "Response List Draft Picks Api Drafts  Draft Id  Picks Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Drafts"
+        ],
+        "summary": "Make Pick",
+        "description": "Submit a single player card pick for the current team's turn.",
+        "operationId": "make_pick_api_drafts__draft_id__picks_post",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DraftPickRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MakePickResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/drafts/{draft_id}/pause": {
+      "post": {
+        "tags": [
+          "Drafts"
+        ],
+        "summary": "Pause Draft",
+        "description": "Pause an active draft session (ADMIN only).",
+        "operationId": "pause_draft_api_drafts__draft_id__pause_post",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StartDraftResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/drafts/{draft_id}/resume": {
+      "post": {
+        "tags": [
+          "Drafts"
+        ],
+        "summary": "Resume Draft",
+        "description": "Resume a paused draft session (ADMIN only).",
+        "operationId": "resume_draft_api_drafts__draft_id__resume_post",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StartDraftResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/drafts/{draft_id}/cancel": {
+      "post": {
+        "tags": [
+          "Drafts"
+        ],
+        "summary": "Cancel Draft",
+        "description": "Cancel an active draft session (ADMIN only).",
+        "operationId": "cancel_draft_api_drafts__draft_id__cancel_post",
+        "parameters": [
+          {
+            "name": "draft_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Draft Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/StartDraftResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/tournaments/{tournament_id}/matches": {
+      "post": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Create Match",
+        "description": "Schedule a match between two teams in a tournament (ADMIN only).",
+        "operationId": "create_match_api_tournaments__tournament_id__matches_post",
+        "parameters": [
+          {
+            "name": "tournament_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tournament Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMatchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "List Tournament Matches",
+        "description": "List all scheduled and played matches for a tournament.",
+        "operationId": "list_tournament_matches_api_tournaments__tournament_id__matches_get",
+        "parameters": [
+          {
+            "name": "tournament_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Tournament Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/MatchDetailResponse"
+                  },
+                  "title": "Response List Tournament Matches Api Tournaments  Tournament Id  Matches Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/matches/{match_id}": {
+      "get": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Get Match Detail",
+        "description": "Get match details with SIMULTANEOUS ban secrecy applied (BR-M04).",
+        "operationId": "get_match_detail_api_matches__match_id__get",
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Match Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/matches/{match_id}/bans/start": {
+      "post": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Start Ban Phase",
+        "description": "Start Tactical Ban Phase for a SCHEDULED match (ADMIN only).",
+        "operationId": "start_ban_phase_api_matches__match_id__bans_start_post",
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Match Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/matches/{match_id}/bans": {
+      "post": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Submit Ban",
+        "description": "Submit a single player card ban for the authenticated team.",
+        "operationId": "submit_ban_api_matches__match_id__bans_post",
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Match Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SubmitBanRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BanItemResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/matches/{match_id}/bans/{ban_id}": {
+      "delete": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Delete Ban",
+        "description": "Delete a pending ban before confirmation.",
+        "operationId": "delete_ban_api_matches__match_id__bans__ban_id__delete",
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Match Id"
+            }
+          },
+          {
+            "name": "ban_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Ban Id"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/matches/{match_id}/bans/confirm": {
+      "post": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Confirm Bans",
+        "description": "Confirm bans for the authenticated team.",
+        "operationId": "confirm_bans_api_matches__match_id__bans_confirm_post",
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Match Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/matches/{match_id}/complete": {
+      "post": {
+        "tags": [
+          "Matches"
+        ],
+        "summary": "Complete Match",
+        "description": "Mark match as COMPLETED (ADMIN only).",
+        "operationId": "complete_match_api_matches__match_id__complete_post",
+        "parameters": [
+          {
+            "name": "match_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Match Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchDetailResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BanItemResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "banningTeamId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Banningteamid"
+          },
+          "targetTeamId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Targetteamid"
+          },
+          "playerSeasonId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Playerseasonid"
+          },
+          "playerName": {
+            "type": "string",
+            "title": "Playername"
+          },
+          "position": {
+            "type": "string",
+            "title": "Position"
+          },
+          "rating": {
+            "type": "integer",
+            "title": "Rating",
+            "default": 0
+          },
+          "seasonCode": {
+            "type": "string",
+            "title": "Seasoncode"
+          },
+          "seasonBadgeUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Seasonbadgeurl"
+          },
+          "createdAt": {
+            "type": "string",
+            "title": "Createdat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "banningTeamId",
+          "targetTeamId",
+          "playerSeasonId",
+          "playerName",
+          "position",
+          "seasonCode",
+          "createdAt"
+        ],
+        "title": "BanItemResponse"
+      },
+      "Body_import_players_csv_api_admin_players_import_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_import_players_csv_api_admin_players_import_post"
+      },
+      "CreateMatchRequest": {
+        "properties": {
+          "homeTeamId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Hometeamid"
+          },
+          "awayTeamId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Awayteamid"
+          },
+          "scheduledAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduledat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "homeTeamId",
+          "awayTeamId"
+        ],
+        "title": "CreateMatchRequest"
+      },
+      "CreateSeasonRequest": {
+        "properties": {
+          "code": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "minLength": 1,
+            "title": "Name"
+          },
+          "badgeUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Badgeurl"
+          },
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year"
+          },
+          "game": {
+            "type": "string",
+            "title": "Game",
+            "default": "FC Online"
+          }
+        },
+        "type": "object",
+        "required": [
+          "code",
+          "name"
+        ],
+        "title": "CreateSeasonRequest"
+      },
+      "CreateTeamRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "draftOrder": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Draftorder"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "draftOrder"
+        ],
+        "title": "CreateTeamRequest"
+      },
+      "CreateTournamentRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/TournamentRulesSchema"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name"
+        ],
+        "title": "CreateTournamentRequest"
+      },
+      "CreateUserRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          },
+          "teamId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Teamid"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role",
+            "default": "TEAM_USER"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "CreateUserRequest"
+      },
+      "DraftDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "tournamentId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Tournamentid"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "currentRound": {
+            "type": "integer",
+            "title": "Currentround"
+          },
+          "currentTurn": {
+            "type": "integer",
+            "title": "Currentturn"
+          },
+          "currentTeamId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currentteamid"
+          },
+          "turnStartedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnstartedat"
+          },
+          "turnExpiresAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnexpiresat"
+          },
+          "remainingMillis": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remainingmillis"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "serverTime": {
+            "type": "string",
+            "title": "Servertime"
+          },
+          "rulesSnapshot": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Rulessnapshot"
+          },
+          "teams": {
+            "items": {
+              "$ref": "#/components/schemas/TeamDraftStatus"
+            },
+            "type": "array",
+            "title": "Teams"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tournamentId",
+          "status",
+          "currentRound",
+          "currentTurn",
+          "version",
+          "serverTime",
+          "rulesSnapshot",
+          "teams"
+        ],
+        "title": "DraftDetailResponse"
+      },
+      "DraftPickBoardItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "round": {
+            "type": "integer",
+            "title": "Round"
+          },
+          "turnNumber": {
+            "type": "integer",
+            "title": "Turnnumber"
+          },
+          "salaryAtPick": {
+            "type": "integer",
+            "title": "Salaryatpick"
+          },
+          "pickedAt": {
+            "type": "string",
+            "title": "Pickedat"
+          },
+          "team": {
+            "$ref": "#/components/schemas/PickTeamDetail"
+          },
+          "player": {
+            "$ref": "#/components/schemas/PickPlayerDetail"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "round",
+          "turnNumber",
+          "salaryAtPick",
+          "pickedAt",
+          "team",
+          "player"
+        ],
+        "title": "DraftPickBoardItem"
+      },
+      "DraftPickRequest": {
+        "properties": {
+          "playerSeasonId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Playerseasonid"
+          },
+          "expectedVersion": {
+            "type": "integer",
+            "title": "Expectedversion"
+          }
+        },
+        "type": "object",
+        "required": [
+          "playerSeasonId",
+          "expectedVersion"
+        ],
+        "title": "DraftPickRequest"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ImportReport": {
+        "properties": {
+          "rowsRead": {
+            "type": "integer",
+            "title": "Rowsread",
+            "default": 0
+          },
+          "rowsInserted": {
+            "type": "integer",
+            "title": "Rowsinserted",
+            "default": 0
+          },
+          "rowsUpdated": {
+            "type": "integer",
+            "title": "Rowsupdated",
+            "default": 0
+          },
+          "rowsSkipped": {
+            "type": "integer",
+            "title": "Rowsskipped",
+            "default": 0
+          },
+          "errors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Errors"
+          }
+        },
+        "type": "object",
+        "title": "ImportReport",
+        "description": "Execution summary returned by the importer pipeline."
+      },
+      "LoginRequest": {
+        "properties": {
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "password": {
+            "type": "string",
+            "title": "Password"
+          }
+        },
+        "type": "object",
+        "required": [
+          "username",
+          "password"
+        ],
+        "title": "LoginRequest"
+      },
+      "MakePickResponse": {
+        "properties": {
+          "pick": {
+            "$ref": "#/components/schemas/PickResponseItem"
+          },
+          "nextState": {
+            "$ref": "#/components/schemas/NextStateInfo"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pick",
+          "nextState"
+        ],
+        "title": "MakePickResponse"
+      },
+      "MatchDetailResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "tournamentId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Tournamentid"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "scheduledAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Scheduledat"
+          },
+          "banStartedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Banstartedat"
+          },
+          "banExpiresAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Banexpiresat"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          },
+          "serverTime": {
+            "type": "string",
+            "title": "Servertime"
+          },
+          "rulesSnapshot": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Rulessnapshot"
+          },
+          "homeTeam": {
+            "$ref": "#/components/schemas/app__match__api__TeamSummary"
+          },
+          "awayTeam": {
+            "$ref": "#/components/schemas/app__match__api__TeamSummary"
+          },
+          "bans": {
+            "items": {
+              "$ref": "#/components/schemas/BanItemResponse"
+            },
+            "type": "array",
+            "title": "Bans",
+            "default": []
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tournamentId",
+          "status",
+          "version",
+          "serverTime",
+          "rulesSnapshot",
+          "homeTeam",
+          "awayTeam"
+        ],
+        "title": "MatchDetailResponse"
+      },
+      "NextStateInfo": {
+        "properties": {
+          "currentRound": {
+            "type": "integer",
+            "title": "Currentround"
+          },
+          "currentTurn": {
+            "type": "integer",
+            "title": "Currentturn"
+          },
+          "currentTeamId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currentteamid"
+          },
+          "turnExpiresAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnexpiresat"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "currentRound",
+          "currentTurn",
+          "status",
+          "version"
+        ],
+        "title": "NextStateInfo"
+      },
+      "PickPlayerDetail": {
+        "properties": {
+          "playerSeasonId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Playerseasonid"
+          },
+          "playerId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Playerid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "position": {
+            "type": "string",
+            "title": "Position"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating"
+          },
+          "salary": {
+            "type": "integer",
+            "title": "Salary"
+          },
+          "imageUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imageurl"
+          },
+          "season": {
+            "$ref": "#/components/schemas/SeasonSummary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "playerSeasonId",
+          "playerId",
+          "name",
+          "position",
+          "salary",
+          "season"
+        ],
+        "title": "PickPlayerDetail"
+      },
+      "PickResponseItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "round": {
+            "type": "integer",
+            "title": "Round"
+          },
+          "turnNumber": {
+            "type": "integer",
+            "title": "Turnnumber"
+          },
+          "teamId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Teamid"
+          },
+          "playerSeasonId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Playerseasonid"
+          },
+          "playerId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Playerid"
+          },
+          "salaryAtPick": {
+            "type": "integer",
+            "title": "Salaryatpick"
+          },
+          "pickedAt": {
+            "type": "string",
+            "title": "Pickedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "round",
+          "turnNumber",
+          "teamId",
+          "playerSeasonId",
+          "playerId",
+          "salaryAtPick",
+          "pickedAt"
+        ],
+        "title": "PickResponseItem"
+      },
+      "PickTeamDetail": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "draftOrder": {
+            "type": "integer",
+            "title": "Draftorder"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "draftOrder"
+        ],
+        "title": "PickTeamDetail"
+      },
+      "PlayerEmbedded": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "externalPlayerId": {
+            "type": "string",
+            "title": "Externalplayerid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "externalPlayerId"
+        ],
+        "title": "PlayerEmbedded"
+      },
+      "PlayerSeasonListResponse": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/PlayerSeasonResponse"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "pageSize": {
+            "type": "integer",
+            "title": "Pagesize"
+          },
+          "totalPages": {
+            "type": "integer",
+            "title": "Totalpages"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "total",
+          "page",
+          "pageSize",
+          "totalPages"
+        ],
+        "title": "PlayerSeasonListResponse"
+      },
+      "PlayerSeasonResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "playerId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Playerid"
+          },
+          "seasonId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Seasonid"
+          },
+          "position": {
+            "type": "string",
+            "title": "Position"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating"
+          },
+          "salary": {
+            "type": "integer",
+            "title": "Salary"
+          },
+          "imageUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imageurl"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "player": {
+            "$ref": "#/components/schemas/PlayerEmbedded"
+          },
+          "season": {
+            "$ref": "#/components/schemas/SeasonEmbedded"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "playerId",
+          "seasonId",
+          "position",
+          "salary",
+          "status",
+          "player",
+          "season"
+        ],
+        "title": "PlayerSeasonResponse"
+      },
+      "RosterItem": {
+        "properties": {
+          "pickId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Pickid"
+          },
+          "round": {
+            "type": "integer",
+            "title": "Round"
+          },
+          "turnNumber": {
+            "type": "integer",
+            "title": "Turnnumber"
+          },
+          "salaryAtPick": {
+            "type": "integer",
+            "title": "Salaryatpick"
+          },
+          "pickedAt": {
+            "type": "string",
+            "title": "Pickedat"
+          },
+          "player": {
+            "$ref": "#/components/schemas/RosterItemPlayer"
+          }
+        },
+        "type": "object",
+        "required": [
+          "pickId",
+          "round",
+          "turnNumber",
+          "salaryAtPick",
+          "pickedAt",
+          "player"
+        ],
+        "title": "RosterItem"
+      },
+      "RosterItemPlayer": {
+        "properties": {
+          "playerSeasonId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Playerseasonid"
+          },
+          "playerId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Playerid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "position": {
+            "type": "string",
+            "title": "Position"
+          },
+          "rating": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rating"
+          },
+          "salary": {
+            "type": "integer",
+            "title": "Salary"
+          },
+          "season": {
+            "$ref": "#/components/schemas/RosterSeasonSummary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "playerSeasonId",
+          "playerId",
+          "name",
+          "position",
+          "salary",
+          "season"
+        ],
+        "title": "RosterItemPlayer"
+      },
+      "RosterResponse": {
+        "properties": {
+          "teamId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Teamid"
+          },
+          "teamName": {
+            "type": "string",
+            "title": "Teamname"
+          },
+          "rosterCount": {
+            "type": "integer",
+            "title": "Rostercount",
+            "default": 0
+          },
+          "budgetUsed": {
+            "type": "integer",
+            "title": "Budgetused"
+          },
+          "roster": {
+            "items": {
+              "$ref": "#/components/schemas/RosterItem"
+            },
+            "type": "array",
+            "title": "Roster"
+          }
+        },
+        "type": "object",
+        "required": [
+          "teamId",
+          "teamName",
+          "budgetUsed"
+        ],
+        "title": "RosterResponse",
+        "description": "Team roster populated from draft_picks table."
+      },
+      "RosterSeasonSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "badgeUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Badgeurl"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "name"
+        ],
+        "title": "RosterSeasonSummary"
+      },
+      "SeasonEmbedded": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "badgeUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Badgeurl"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code"
+        ],
+        "title": "SeasonEmbedded"
+      },
+      "SeasonResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "badgeUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Badgeurl"
+          },
+          "game": {
+            "type": "string",
+            "title": "Game"
+          },
+          "year": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Year"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "name",
+          "game"
+        ],
+        "title": "SeasonResponse"
+      },
+      "SeasonSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "code": {
+            "type": "string",
+            "title": "Code"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "badgeUrl": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Badgeurl"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "code",
+          "name"
+        ],
+        "title": "SeasonSummary"
+      },
+      "StartDraftResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "tournamentId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Tournamentid"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "currentRound": {
+            "type": "integer",
+            "title": "Currentround"
+          },
+          "currentTurn": {
+            "type": "integer",
+            "title": "Currentturn"
+          },
+          "currentTeamId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Currentteamid"
+          },
+          "turnStartedAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnstartedat"
+          },
+          "turnExpiresAt": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Turnexpiresat"
+          },
+          "remainingMillis": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Remainingmillis"
+          },
+          "rulesSnapshot": {
+            "additionalProperties": true,
+            "type": "object",
+            "title": "Rulessnapshot"
+          },
+          "version": {
+            "type": "integer",
+            "title": "Version"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tournamentId",
+          "status",
+          "currentRound",
+          "currentTurn",
+          "rulesSnapshot",
+          "version"
+        ],
+        "title": "StartDraftResponse"
+      },
+      "SubmitBanRequest": {
+        "properties": {
+          "playerSeasonId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Playerseasonid"
+          },
+          "targetTeamId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Targetteamid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "playerSeasonId"
+        ],
+        "title": "SubmitBanRequest"
+      },
+      "TeamDraftStatus": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "draftOrder": {
+            "type": "integer",
+            "title": "Draftorder"
+          },
+          "budgetUsed": {
+            "type": "integer",
+            "title": "Budgetused"
+          },
+          "budgetRemaining": {
+            "type": "integer",
+            "title": "Budgetremaining"
+          },
+          "pickedCount": {
+            "type": "integer",
+            "title": "Pickedcount"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "draftOrder",
+          "budgetUsed",
+          "budgetRemaining",
+          "pickedCount"
+        ],
+        "title": "TeamDraftStatus"
+      },
+      "TeamResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "tournamentId": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Tournamentid"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "draftOrder": {
+            "type": "integer",
+            "title": "Draftorder"
+          },
+          "budgetUsed": {
+            "type": "integer",
+            "title": "Budgetused"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "tournamentId",
+          "name",
+          "draftOrder",
+          "budgetUsed",
+          "status"
+        ],
+        "title": "TeamResponse"
+      },
+      "TournamentListItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "rules": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TournamentRulesSchema"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "teamCount": {
+            "type": "integer",
+            "title": "Teamcount"
+          },
+          "createdAt": {
+            "type": "string",
+            "title": "Createdat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "status",
+          "teamCount",
+          "createdAt"
+        ],
+        "title": "TournamentListItem"
+      },
+      "TournamentResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "rules": {
+            "$ref": "#/components/schemas/TournamentRulesSchema"
+          },
+          "teams": {
+            "items": {
+              "$ref": "#/components/schemas/app__tournament__api__TeamSummary"
+            },
+            "type": "array",
+            "title": "Teams"
+          },
+          "createdAt": {
+            "type": "string",
+            "title": "Createdat"
+          },
+          "updatedAt": {
+            "type": "string",
+            "title": "Updatedat"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "status",
+          "rules",
+          "teams",
+          "createdAt",
+          "updatedAt"
+        ],
+        "title": "TournamentResponse"
+      },
+      "TournamentRulesSchema": {
+        "properties": {
+          "rulesVersion": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Rulesversion",
+            "default": 1
+          },
+          "rosterSize": {
+            "type": "integer",
+            "maximum": 60.0,
+            "minimum": 1.0,
+            "title": "Rostersize",
+            "default": 24
+          },
+          "budget": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Budget",
+            "default": 305
+          },
+          "pickTimeSeconds": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Picktimeseconds",
+            "default": 30
+          },
+          "uniqueBy": {
+            "type": "string",
+            "enum": [
+              "PLAYER",
+              "CARD"
+            ],
+            "title": "Uniqueby",
+            "default": "PLAYER"
+          },
+          "timeoutPolicy": {
+            "type": "string",
+            "enum": [
+              "SKIP_TURN",
+              "AUTO_PICK_CHEAPEST"
+            ],
+            "title": "Timeoutpolicy",
+            "default": "AUTO_PICK_CHEAPEST"
+          },
+          "allowedSeasonIds": {
+            "items": {
+              "type": "string",
+              "format": "uuid"
+            },
+            "type": "array",
+            "title": "Allowedseasonids"
+          },
+          "banCount": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Bancount",
+            "default": 5
+          },
+          "banTimeSeconds": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Bantimeseconds",
+            "default": 60
+          },
+          "banTarget": {
+            "type": "string",
+            "enum": [
+              "OPPONENT_ROSTER",
+              "OWN_ROSTER"
+            ],
+            "title": "Bantarget",
+            "default": "OPPONENT_ROSTER"
+          },
+          "banOrder": {
+            "type": "string",
+            "enum": [
+              "SIMULTANEOUS",
+              "ALTERNATING"
+            ],
+            "title": "Banorder",
+            "default": "SIMULTANEOUS"
+          }
+        },
+        "type": "object",
+        "title": "TournamentRulesSchema",
+        "description": "API-facing rules schema. Accepts camelCase or snake_case input, outputs camelCase."
+      },
+      "UpdateSalaryRequest": {
+        "properties": {
+          "salary": {
+            "type": "integer",
+            "minimum": 1.0,
+            "title": "Salary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "salary"
+        ],
+        "title": "UpdateSalaryRequest"
+      },
+      "UserResponse": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "username": {
+            "type": "string",
+            "title": "Username"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "teamId": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Teamid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "username",
+          "role"
+        ],
+        "title": "UserResponse"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      },
+      "app__match__api__TeamSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed",
+            "default": false
+          },
+          "banCount": {
+            "type": "integer",
+            "title": "Bancount",
+            "default": 0
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name"
+        ],
+        "title": "TeamSummary"
+      },
+      "app__tournament__api__TeamSummary": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "draftOrder": {
+            "type": "integer",
+            "title": "Draftorder"
+          },
+          "budgetUsed": {
+            "type": "integer",
+            "title": "Budgetused"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "draftOrder",
+          "budgetUsed",
+          "status"
+        ],
+        "title": "TeamSummary"
+      }
+    }
+  }
+}
