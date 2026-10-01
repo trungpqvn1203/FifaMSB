@@ -26,10 +26,14 @@ services:
     restart: unless-stopped
     environment:
       DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-webfifa}
-      SECRET_KEY: ${SECRET_KEY:-webfifa_super_secret_session_key_production_32b}
-      ENVIRONMENT: production
-      ALLOWED_ORIGINS: '["http://localhost", "http://localhost:80", "http://127.0.0.1", "http://127.0.0.1:80"]'
-      CLOCK_MODE: real
+      # .env dùng SESSION_SECRET_KEY, backend đọc là SECRET_KEY
+      SECRET_KEY: ${SESSION_SECRET_KEY:-webfifa_super_secret_session_key_change_me}
+      # Đọc từ .env: ENVIRONMENT=development hoặc production
+      ENVIRONMENT: ${ENVIRONMENT:-development}
+      # Đọc từ .env: CORS_ORIGINS=[...]
+      ALLOWED_ORIGINS: ${CORS_ORIGINS:-["http://localhost","http://localhost:80"]}
+      # Đọc từ .env: CLOCK_MODE=real
+      CLOCK_MODE: ${CLOCK_MODE:-real}
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,7 +53,7 @@ services:
     depends_on:
       - backend
     ports:
-      - "80:80"
+      - "${WEB_PORT:-80}:80"
 
 volumes:
   postgres_data:
