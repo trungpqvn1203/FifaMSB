@@ -354,16 +354,18 @@ class DraftService:
         if picked_count >= roster_size:
             raise TeamRosterFull()
 
-        # BR-P09: Budget check
-        if team.budget_used + card.salary > budget_cap:
-            raise BudgetExceeded()
+        # Budget constraints only apply to the 11 main players
+        if picked_count < 11:
+            # BR-P09: Budget check
+            if team.budget_used + card.salary > budget_cap:
+                raise BudgetExceeded()
 
-        # BR-P11: Budget feasibility check
-        slots_left = roster_size - picked_count
-        budget_remaining = budget_cap - team.budget_used
-        min_salary = await repository.get_min_salary_in_pool(self._session, allowed_season_ids)
-        if not is_budget_feasible(budget_remaining, card.salary, slots_left, min_salary):
-            raise BudgetInsufficientForRoster()
+            # BR-P11: Budget feasibility check
+            slots_left = 11 - picked_count
+            budget_remaining = budget_cap - team.budget_used
+            min_salary = await repository.get_min_salary_in_pool(self._session, allowed_season_ids)
+            if not is_budget_feasible(budget_remaining, card.salary, slots_left, min_salary):
+                raise BudgetInsufficientForRoster()
 
         # BR-P12: Insert DraftPick
         pick = DraftPick(
@@ -380,8 +382,9 @@ class DraftService:
         )
         await repository.create_draft_pick(self._session, pick)
 
-        team.budget_used += card.salary
-        await tournament_repo.save_team(self._session, team)
+        if picked_count < 11:
+            team.budget_used += card.salary
+            await tournament_repo.save_team(self._session, team)
 
         await repository.record_draft_event(
             session=self._session,
@@ -601,7 +604,6 @@ class DraftService:
         )
         unique_by = str(rules.get("uniqueBy") or rules.get("unique_by") or "PLAYER")
         unique_by_player = unique_by == "PLAYER"
-        roster_size = int(str(rules.get("rosterSize", rules.get("roster_size", 24))))
         budget_cap = int(str(rules.get("budget", 305)))
         raw_seasons = rules.get("allowedSeasonIds") or rules.get("allowed_season_ids")
         allowed_season_ids = [
@@ -612,25 +614,40 @@ class DraftService:
             team = await tournament_repo.get_team_by_id(self._session, draft.current_team_id)
             if team:
                 team_picks = await repository.get_team_picks(self._session, team.id)
-                slots_left = roster_size - len(team_picks)
-                budget_remaining = budget_cap - team.budget_used
-                min_salary = await repository.get_min_salary_in_pool(
-                    self._session, allowed_season_ids
-                )
+                picked_count = len(team_picks)
+
+                if picked_count < 11:
+                    slots_left = 11 - picked_count
+                    budget_remaining = budget_cap - team.budget_used
+                    min_salary = await repository.get_min_salary_in_pool(
+                        self._session, allowed_season_ids
+                    )
+                    max_salary = budget_remaining
+                else:
+                    slots_left = 0
+                    budget_remaining = 0
+                    min_salary = 1
+                    max_salary = 999999999  # No budget limit for substitute players
 
                 candidates = await repository.find_available_cards_for_autopick(
                     session=self._session,
                     draft_session_id=draft.id,
                     allowed_season_ids=allowed_season_ids,
                     unique_by_player=unique_by_player,
-                    max_salary=budget_remaining,
+                    max_salary=max_salary,
                 )
 
                 chosen_card = None
-                for card in candidates:
-                    if is_budget_feasible(budget_remaining, card.salary, slots_left, min_salary):
-                        chosen_card = card
-                        break
+                if picked_count < 11:
+                    for card in candidates:
+                        if is_budget_feasible(
+                            budget_remaining, card.salary, slots_left, min_salary
+                        ):
+                            chosen_card = card
+                            break
+                else:
+                    if candidates:
+                        chosen_card = candidates[0]
 
                 if chosen_card:
                     pick = DraftPick(
@@ -646,8 +663,9 @@ class DraftService:
                         picked_at=now,
                     )
                     await repository.create_draft_pick(self._session, pick)
-                    team.budget_used += chosen_card.salary
-                    await tournament_repo.save_team(self._session, team)
+                    if picked_count < 11:
+                        team.budget_used += chosen_card.salary
+                        await tournament_repo.save_team(self._session, team)
 
                     await repository.record_draft_event(
                         session=self._session,
