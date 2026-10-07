@@ -1,0 +1,35 @@
+# Bug Fix & Feature: Khắc phục lỗi đảo thứ tự Draft và chuyển sang Kéo Thả (Drag & Drop)
+
+- **Ngày ghi nhận**: 2026-10-08
+- **Triệu chứng**:
+  - Khi quản trị viên bấm nút "Trộn Thứ Tự" để bốc thăm thứ tự chọn cầu thủ, hệ thống trả về lỗi (HTTP 500) do vi phạm ràng buộc duy nhất trong cơ sở dữ liệu.
+  - Ban tổ chức chỉ có thể bấm nút trộn ngẫu nhiên toàn bộ mà không thể kéo thả hoặc sắp xếp chính xác thứ tự từng đội theo ý muốn (ví dụ: xếp đội hạt giống, thứ tự bốc thăm thực tế).
+- **Nguyên nhân gốc (Root Cause)**:
+  - Bảng `teams` trong PostgreSQL có ràng buộc duy nhất:
+    `uq_teams_tournament_id_draft_order UNIQUE (tournament_id, draft_order)`
+  - Khi hoán đổi số thứ tự giữa các đội hiện có mà không dùng transaction hoán đổi 2 giai đoạn (hoặc deferred constraint), PostgreSQL phát hiện trùng lặp ngay khi câu lệnh UPDATE một hàng chạm vào giá trị `draft_order` đang có của hàng khác.
+  - Hệ thống chưa có API endpoint cho phép gán một danh sách thứ tự cụ thể (reorder), và frontend chưa hỗ trợ cơ chế kéo thả trực quan.
+- **Các file đã sửa**:
+  - `backend/app/common/errors.py`: Bổ sung domain exception `InvalidTeamOrder` (HTTP 422).
+  - `backend/app/tournament/service.py`: Cài đặt `reorder_teams` với cơ chế 2-phase atomic flush (`-(idx + 1)` tạm thời rồi `idx + 1`), tái cấu trúc `randomize_draft_order` sử dụng lại `reorder_teams`.
+  - `backend/app/tournament/api.py`: Thêm schema `ReorderTeamsRequest` và endpoint `POST /api/tournaments/{tournament_id}/teams/reorder` (ADMIN only).
+  - `backend/tests/integration/test_tournament_api.py`: Bổ sung integration test `test_randomize_teams_order`.
+  - `frontend/src/lib/admin-api.ts`: Bổ sung client function `reorderTeams(tournamentId, teamIds)`.
+  - `frontend/src/components/admin/AdminTeamsSection.tsx`: Hỗ trợ Native HTML5 Drag & Drop trên từng hàng bảng đội bóng, bổ sung nút mũi tên di chuyển nhanh (Lên `▲` / Xuống `▼`).
+  - `frontend/src/pages/AdminTournamentPage.tsx`: Tích hợp `reorderTeamsMutation`.
+  - `frontend/src/pages/TournamentDetailPage.tsx`: Hỗ trợ Native HTML5 Drag & Drop trên thẻ Card đội bóng, bổ sung nút mũi tên (Lên `▲` / Xuống `▼`) và chỉ dẫn trực quan cho ban tổ chức.
+- **Cách xử lý**:
+  - **Backend**:
+    - Kiểm tra giải đấu phải ở trạng thái hợp lệ (`DRAFT` hoặc `READY`).
+    - Kiểm tra tập hợp ID đội truyền lên phải khớp 100% với các đội trong giải.
+    - Phase 1: Gán `draft_order = -(idx + 1)` cho từng đội và gọi `await session.flush()` (loại bỏ hoàn toàn khả năng va chạm số dương).
+    - Phase 2: Gán `draft_order = idx + 1` và gọi `await session.flush()`, cập nhật `tournament.updated_at` và `commit()`.
+  - **Frontend**:
+    - Dùng Native HTML5 Drag & Drop (`draggable`, `onDragStart`, `onDragOver`, `onDrop`) không phụ thuộc thư viện ngoài nặng nề.
+    - Bổ sung nút mũi tên Lên/Xuống ngay cạnh huy hiệu số thứ tự giúp đổi vị trí nhanh 1 chạm trên cả PC lẫn thiết bị cảm ứng / trackpad.
+- **Test xác nhận**:
+  - Integration test `test_randomize_teams_order`: PASS (111/111 backend tests).
+  - Typecheck `mypy --strict`: PASS (0 errors).
+  - Linter `ruff check`: PASS (0 errors).
+  - Frontend bundle `npm run build`: PASS (0 errors).
+  - Container Docker `webfifa_backend` và `webfifa_frontend` build & deploy thành công.

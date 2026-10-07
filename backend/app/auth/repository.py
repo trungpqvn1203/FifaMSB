@@ -1,4 +1,4 @@
-"""Database repository for User and UserSession entities."""
+"""Database repository for User, UserSession, and UserTeamHistory entities."""
 
 import uuid
 from datetime import datetime
@@ -8,7 +8,7 @@ from sqlalchemy.engine.cursor import CursorResult
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
-from app.auth.domain import User, UserSession
+from app.auth.domain import User, UserSession, UserTeamHistory
 
 
 async def get_user_by_username(session: AsyncSession, username: str) -> User | None:
@@ -94,3 +94,35 @@ async def delete_expired_sessions(session: AsyncSession, now: datetime) -> int:
     if isinstance(result, CursorResult):
         return int(result.rowcount)
     return 0
+
+
+async def create_user_team_history(
+    session: AsyncSession,
+    user_id: uuid.UUID,
+    team_id: uuid.UUID,
+    tournament_id: uuid.UUID,
+    joined_at: datetime,
+) -> UserTeamHistory:
+    """Append one history row recording that user was assigned to a team."""
+    record = UserTeamHistory(
+        user_id=user_id,
+        team_id=team_id,
+        tournament_id=tournament_id,
+        joined_at=joined_at,
+    )
+    session.add(record)
+    await session.flush()
+    return record
+
+
+async def get_user_team_history(
+    session: AsyncSession, user_id: uuid.UUID
+) -> list[UserTeamHistory]:
+    """Return all team assignment records for a user, newest first."""
+    stmt = (
+        select(UserTeamHistory)
+        .where(UserTeamHistory.user_id == user_id)
+        .order_by(UserTeamHistory.joined_at.desc())
+    )
+    result = await session.execute(stmt)
+    return list(result.scalars().all())

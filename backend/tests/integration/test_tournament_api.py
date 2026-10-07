@@ -354,3 +354,62 @@ async def test_complete_tournament_forbidden_for_team_user(
     await _login(client, "team_trn_test", "team_pass")
     res = await client.post(f"/api/tournaments/{tournament_id}/complete")
     assert res.status_code == 403
+
+
+@pytest.mark.integration
+async def test_randomize_teams_order(
+    client: AsyncClient, tournament_users: dict[str, Any]
+) -> None:
+    """POST /api/tournaments/{id}/teams/randomize successfully shuffles team draft orders."""
+    await _login(client, "admin_trn_test", "admin_pass")
+    create_res = await client.post("/api/tournaments", json={"name": "Randomize Test"})
+    tournament_id = create_res.json()["id"]
+
+    for i in range(1, 5):
+        await client.post(
+            f"/api/tournaments/{tournament_id}/teams",
+            json={"name": f"Team {i}", "draftOrder": i},
+        )
+
+    res = await client.post(f"/api/tournaments/{tournament_id}/teams/randomize")
+    assert res.status_code == 200
+    teams = res.json()
+    assert len(teams) == 4
+    orders = [t["draftOrder"] for t in teams]
+    assert sorted(orders) == [1, 2, 3, 4]
+
+
+@pytest.mark.integration
+async def test_reorder_teams_locked_when_tournament_not_modifiable(
+    client: AsyncClient, tournament_users: dict[str, Any]
+) -> None:
+    """Cannot reorder or randomize teams when tournament is completed or locked."""
+    await _login(client, "admin_trn_test", "admin_pass")
+    create_res = await client.post("/api/tournaments", json={"name": "Lock Test Tourney"})
+    tournament_id = create_res.json()["id"]
+
+    t1 = await client.post(
+        f"/api/tournaments/{tournament_id}/teams",
+        json={"name": "Team 1", "draftOrder": 1},
+    )
+    t2 = await client.post(
+        f"/api/tournaments/{tournament_id}/teams",
+        json={"name": "Team 2", "draftOrder": 2},
+    )
+    team1_id = t1.json()["id"]
+    team2_id = t2.json()["id"]
+
+    # Complete tournament so status becomes COMPLETED
+    complete_res = await client.post(f"/api/tournaments/{tournament_id}/complete")
+    assert complete_res.status_code == 200
+
+    # Try reorder — should fail with 409
+    reorder_res = await client.post(
+        f"/api/tournaments/{tournament_id}/teams/reorder",
+        json={"teamIds": [team2_id, team1_id]},
+    )
+    assert reorder_res.status_code == 409
+
+    # Try randomize — should fail with 409
+    rand_res = await client.post(f"/api/tournaments/{tournament_id}/teams/randomize")
+    assert rand_res.status_code == 409

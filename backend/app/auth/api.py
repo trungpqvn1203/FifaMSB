@@ -43,7 +43,29 @@ class CreateUserRequest(BaseModel):
     username: str
     password: str
     team_id: uuid.UUID | None = Field(default=None, alias="teamId")
+    # tournament_id is used to write the initial UserTeamHistory row on creation
+    tournament_id: uuid.UUID | None = Field(default=None, alias="tournamentId")
     role: str = "TEAM_USER"
+
+
+class AssignTeamRequest(BaseModel):
+    """Body for PATCH /admin/users/{user_id}/team."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    team_id: uuid.UUID = Field(alias="teamId")
+    tournament_id: uuid.UUID = Field(alias="tournamentId")
+
+
+class UserTeamHistoryItem(BaseModel):
+    """One row from user_team_history — shown in the history endpoint."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    id: uuid.UUID
+    team_id: uuid.UUID | None = Field(default=None, serialization_alias="teamId")
+    tournament_id: uuid.UUID | None = Field(default=None, serialization_alias="tournamentId")
+    joined_at: str = Field(serialization_alias="joinedAt")
 
 
 # ---------------------------------------------------------------------------
@@ -126,6 +148,7 @@ async def create_user(
         password=payload.password,
         role=payload.role,
         team_id=payload.team_id,
+        tournament_id=payload.tournament_id,
     )
     return UserResponse.model_validate(user)
 
@@ -141,3 +164,53 @@ async def list_users(
     """List all user accounts (Admin only)."""
     users = await auth_service.list_users()
     return [UserResponse.model_validate(u) for u in users]
+
+
+@admin_users_router.patch(
+    "/users/{user_id}/team",
+    response_model=UserResponse,
+    dependencies=[Depends(require_admin)],
+)
+async def reassign_user_team(
+    user_id: uuid.UUID,
+    payload: AssignTeamRequest,
+    auth_service: AuthService = Depends(get_auth_service),
+) -> UserResponse:
+    """Reassign an existing user to a new team in a new tournament (Admin only).
+
+    Use this when a coordinator from a previous tournament is participating again:
+    instead of creating a new account, update their team_id and keep the same
+    username / password. History of past assignments is preserved in user_team_history.
+    """
+    user = await auth_service.reassign_user_to_team(
+        user_id=user_id,
+        team_id=payload.team_id,
+        tournament_id=payload.tournament_id,
+    )
+    return UserResponse.model_validate(user)
+
+
+@admin_users_router.get(
+    "/users/{user_id}/history",
+    response_model=list[UserTeamHistoryItem],
+    dependencies=[Depends(require_admin)],
+)
+async def get_user_history(
+    user_id: uuid.UUID,
+    auth_service: AuthService = Depends(get_auth_service),
+) -> list[UserTeamHistoryItem]:
+    """Return the full team-assignment history for a user (Admin only).
+
+    Useful to see which tournaments a coordinator has participated in before
+    reassigning them to a new tournament.
+    """
+    history = await auth_service.get_user_history(user_id)
+    return [
+        UserTeamHistoryItem(
+            id=h.id,
+            team_id=h.team_id,
+            tournament_id=h.tournament_id,
+            joined_at=h.joined_at.isoformat(),
+        )
+        for h in history
+    ]

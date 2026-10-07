@@ -9,12 +9,14 @@ from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth import repository
-from app.auth.domain import User
+from app.auth.domain import User, UserTeamHistory
 from app.common.clock import Clock
 from app.common.errors import (
     InvalidCredentials,
     Unauthorized,
+    UserAlreadyAssignedToTeam,
     UsernameAlreadyExists,
+    UserNotFound,
 )
 from app.config import settings
 
@@ -111,8 +113,13 @@ class AuthService:
         password: str,
         role: str = "TEAM_USER",
         team_id: uuid.UUID | None = None,
+        # tournament_id is needed to write the history row; optional because ADMIN users have none
+        tournament_id: uuid.UUID | None = None,
     ) -> User:
         """Create a new user with hashed password.
+
+        If team_id is provided, also writes one UserTeamHistory row so we can
+        track which tournaments this coordinator has participated in.
 
         Raises:
             UsernameAlreadyExists: If the username is already taken.
@@ -126,6 +133,15 @@ class AuthService:
                 role=role,
                 team_id=team_id,
             )
+            # Write history row immediately if a team assignment exists
+            if team_id is not None and tournament_id is not None:
+                await repository.create_user_team_history(
+                    session=self.session,
+                    user_id=user.id,
+                    team_id=team_id,
+                    tournament_id=tournament_id,
+                    joined_at=self.clock.now(),
+                )
             await self.session.commit()
             return user
         except IntegrityError as exc:
@@ -138,3 +154,56 @@ class AuthService:
     async def list_users(self) -> list[User]:
         """List all users."""
         return await repository.list_users(self.session)
+
+    async def get_user_by_id(self, user_id: uuid.UUID) -> User:
+        """Return a user by ID or raise UserNotFound."""
+        user = await repository.get_user_by_id(self.session, user_id)
+        if user is None:
+            raise UserNotFound(str(user_id))
+        return user
+
+    async def reassign_user_to_team(
+        self,
+        user_id: uuid.UUID,
+        team_id: uuid.UUID,
+        tournament_id: uuid.UUID,
+    ) -> User:
+        """Move an existing TEAM_USER to a different team in a new tournament.
+
+        Updates user.team_id and appends one UserTeamHistory row.
+        This is the main "reuse account across tournaments" operation.
+
+        Raises:
+            UserNotFound: If user_id does not exist.
+            UserAlreadyAssignedToTeam: If user is already on that exact team.
+        """
+        user = await repository.get_user_by_id(self.session, user_id)
+        if user is None:
+            raise UserNotFound(str(user_id))
+
+        # Guard: already on the same team — nothing to do, likely a client mistake
+        if user.team_id == team_id:
+            raise UserAlreadyAssignedToTeam(str(team_id))
+
+        user.team_id = team_id
+        # Write history before commit so both changes land in the same transaction
+        await repository.create_user_team_history(
+            session=self.session,
+            user_id=user.id,
+            team_id=team_id,
+            tournament_id=tournament_id,
+            joined_at=self.clock.now(),
+        )
+        await self.session.commit()
+        # Re-fetch to return a clean, fully-loaded object
+        refreshed = await repository.get_user_by_id(self.session, user.id)
+        assert refreshed is not None
+        return refreshed
+
+    async def get_user_history(self, user_id: uuid.UUID) -> list[UserTeamHistory]:
+        """Return the full team assignment history for a user, newest first."""
+        # Ensure user exists before returning history
+        user = await repository.get_user_by_id(self.session, user_id)
+        if user is None:
+            raise UserNotFound(str(user_id))
+        return await repository.get_user_team_history(self.session, user_id)

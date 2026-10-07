@@ -1,4 +1,4 @@
-"""SQLAlchemy domain models for User and Session (auth)."""
+"""SQLAlchemy domain models for User, UserSession, and UserTeamHistory (auth)."""
 
 import uuid
 from datetime import datetime
@@ -68,3 +68,34 @@ class UserSession(Base):
 
     # Relationships
     user: Mapped["User"] = relationship("User", back_populates="sessions")
+
+
+class UserTeamHistory(Base):
+    """Audit log: every time a user is assigned to a team, we write one row.
+
+    This is an append-only table — rows are never updated or deleted.
+    Used to answer: "which tournaments has this user (coordinator) participated in?"
+    """
+
+    __tablename__ = "user_team_history"
+
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="CASCADE"),
+        nullable=False,
+    )
+    team_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        # SET NULL so history survives even if team is removed
+        ForeignKey("teams.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    tournament_id: Mapped[uuid.UUID] = mapped_column(
+        UUID(as_uuid=True),
+        # SET NULL so history survives even if tournament is removed
+        ForeignKey("tournaments.id", ondelete="SET NULL"),
+        nullable=True,
+    )
+    # UTC timestamp when this assignment happened
+    joined_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), nullable=False)

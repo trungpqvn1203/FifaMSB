@@ -1,0 +1,24 @@
+# Bug Fix & UX: Đưa tính năng liên kết tài khoản đội trưởng ra trang Giải Đấu & Xử lý Nginx SPA Cache
+
+- **Ngày ghi nhận**: 2026-10-08
+- **Triệu chứng**:
+  - Tính năng tái sử dụng tài khoản đội trưởng từ các giải trước chỉ có mặt ở trang Cấu hình Admin (`/admin/tournaments/:id`), trong khi trang Chi tiết giải đấu (`/tournaments/:id`) không có, gây bất tiện khi ban tổ chức cần phân bổ tài khoản trực tiếp trên thẻ đội.
+  - Khi cập nhật mã nguồn frontend và rebuild Docker container, trình duyệt người dùng vẫn nạp file `index.html` cũ do cache của Nginx/trình duyệt, khiến các tính năng mới không hiển thị ngay.
+- **Nguyên nhân gốc (Root Cause)**:
+  - `TournamentDetailPage.tsx` chưa tích hợp modal liên kết tài khoản đội trưởng gồm 2 tab ("Tạo Mới" và "Dùng Lại Tài Khoản Cũ").
+  - File cấu hình `nginx.conf` của container frontend chưa có chỉ thị `Cache-Control: no-cache` cho file `index.html`, dẫn đến việc trình duyệt giữ file HTML cũ trỏ về hash asset JS cũ.
+- **Các file đã sửa**:
+  - `frontend/src/pages/TournamentDetailPage.tsx`:
+    - Thêm modal `Modal` liên kết tài khoản đội trưởng với 2 tab: Tạo Mới & Dùng Lại từ giải trước.
+    - Tích hợp `HistoryBadge` hiển thị trạng thái từng tham gia giải trước.
+    - Tích hợp các mutations `createUserMutation` và `reassignUserMutation`.
+    - Thêm nút liên kết trực tiếp trên từng thẻ đội bóng.
+  - `docker/nginx.conf`:
+    - Cấu hình chỉ thị `add_header Cache-Control "no-cache, no-store, must-revalidate"` riêng cho `index.html`.
+    - Giữ cache lâu dài `max-age=31536000, immutable` cho các file tĩnh trong `/assets/` có hash.
+- **Cách xử lý**:
+  - Đưa toàn bộ workflow quản lý đội trưởng (tạo mới / tái sử dụng) ra ngoài giao diện công khai của giải đấu cho quản trị viên.
+  - Đảm bảo trình duyệt luôn fetch bản mới nhất của `index.html`, từ đó luôn tải chính xác mã JavaScript mới sau mỗi lần deploy.
+- **Test xác nhận**:
+  - `npm run build` thành công.
+  - Docker container frontend rebuild và reload Nginx thành công.

@@ -18,6 +18,14 @@ export interface CreateUserPayload {
   password: string
   role?: 'ADMIN' | 'TEAM_USER'
   teamId?: string | null
+  tournamentId?: string | null
+}
+
+export interface UserTeamHistoryItem {
+  id: string
+  teamId: string | null
+  tournamentId: string | null
+  joinedAt: string
 }
 
 export const adminApi = {
@@ -56,6 +64,18 @@ export const adminApi = {
     return res.data
   },
 
+  randomizeDraftOrder: async (tournamentId: string): Promise<Team[]> => {
+    const res = await apiClient.post<Team[]>(`/tournaments/${tournamentId}/teams/randomize`)
+    return res.data
+  },
+
+  reorderTeams: async (tournamentId: string, teamIds: string[]): Promise<Team[]> => {
+    const res = await apiClient.post<Team[]>(`/tournaments/${tournamentId}/teams/reorder`, {
+      teamIds,
+    })
+    return res.data
+  },
+
   // 3. User Accounts
   listUsers: async (): Promise<User[]> => {
     const res = await apiClient.get<User[]>('/admin/users')
@@ -64,6 +84,23 @@ export const adminApi = {
 
   createUser: async (payload: CreateUserPayload): Promise<User> => {
     const res = await apiClient.post<User>('/admin/users', payload)
+    return res.data
+  },
+
+  reassignUserTeam: async (
+    userId: string,
+    teamId: string,
+    tournamentId: string
+  ): Promise<User> => {
+    const res = await apiClient.patch<User>(`/admin/users/${userId}/team`, {
+      teamId,
+      tournamentId,
+    })
+    return res.data
+  },
+
+  getUserHistory: async (userId: string): Promise<UserTeamHistoryItem[]> => {
+    const res = await apiClient.get<UserTeamHistoryItem[]>(`/admin/users/${userId}/history`)
     return res.data
   },
 

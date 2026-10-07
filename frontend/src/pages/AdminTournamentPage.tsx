@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { useQuery, useMutation } from '@tanstack/react-query'
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { adminApi } from '@/lib/admin-api'
 import { useAuth } from '@/context/AuthContext'
 import { AdminHeader } from '@/components/admin/AdminHeader'
@@ -23,6 +23,7 @@ export const AdminTournamentPage: React.FC = () => {
   const { id: routeTournamentId } = useParams<{ id: string }>()
   const navigate = useNavigate()
   const { isAdmin } = useAuth()
+  const queryClient = useQueryClient()
 
   // Basic Info State
   const [name, setName] = useState('FVPL SUMMER 2026: RISE TO INFINITY')
@@ -112,6 +113,15 @@ export const AdminTournamentPage: React.FC = () => {
     queryFn: () => adminApi.listMatches(routeTournamentId!),
     enabled: !!routeTournamentId,
   })
+
+  // Check if draft or ban phase or tournament progress locks team ordering
+  const isDraftActive = draftInfo?.status === 'PICKING' || draftInfo?.status === 'PAUSED'
+  const isDraftCompleted = draftInfo?.status === 'COMPLETED'
+  const isBanPhaseActive = matches.some((m) => m.status === 'BAN_PHASE')
+  const isTournamentRunningOrCompleted =
+    existingTournament?.status === 'RUNNING' || existingTournament?.status === 'COMPLETED'
+  const isOrderLocked =
+    isDraftActive || isDraftCompleted || isBanPhaseActive || isTournamentRunningOrCompleted
 
   // ---------------------------------------------------------------------------
   // Mutations
@@ -216,6 +226,7 @@ export const AdminTournamentPage: React.FC = () => {
         password,
         role: 'TEAM_USER',
         teamId,
+        tournamentId: routeTournamentId,
       })
     },
     onSuccess: () => {
@@ -225,6 +236,72 @@ export const AdminTournamentPage: React.FC = () => {
     },
     onError: (err: any) => {
       setActionError(err.message || 'Không thể tạo tài khoản đội trưởng.')
+    },
+  })
+
+  // Reassign User Mutation
+  const reassignUserMutation = useMutation({
+    mutationFn: async ({
+      userId,
+      teamId,
+    }: {
+      userId: string
+      teamId: string
+    }) => {
+      if (!routeTournamentId) {
+        throw new Error('Vui lòng khởi tạo giải đấu trước khi liên kết đội.')
+      }
+      return await adminApi.reassignUserTeam(userId, teamId, routeTournamentId)
+    },
+    onSuccess: () => {
+      refetchUsers()
+      setSuccessMessage('Đã tái sử dụng và liên kết tài khoản đội trưởng thành công!')
+      setActionError(null)
+    },
+    onError: (err: any) => {
+      setActionError(err.message || 'Không thể liên kết lại tài khoản đội trưởng.')
+    },
+  })
+
+  // Randomize Draft Order Mutation
+  const randomizeOrderMutation = useMutation({
+    mutationFn: async () => {
+      if (!routeTournamentId) {
+        throw new Error('Vui lòng khởi tạo giải đấu trước khi trộn thứ tự.')
+      }
+      return await adminApi.randomizeDraftOrder(routeTournamentId)
+    },
+    onSuccess: () => {
+      refetchTeams()
+      queryClient.invalidateQueries({ queryKey: ['admin-teams', routeTournamentId] })
+      queryClient.invalidateQueries({ queryKey: ['tournament-teams', routeTournamentId] })
+      queryClient.invalidateQueries({ queryKey: ['tournament', routeTournamentId] })
+      setSuccessMessage('Đã đảo ngẫu nhiên thứ tự bốc thăm Draft!')
+      setActionError(null)
+    },
+    onError: (err: any) => {
+      setActionError(err.message || 'Không thể đảo thứ tự Draft.')
+    },
+  })
+
+  // Reorder Teams Mutation (Drag and Drop)
+  const reorderTeamsMutation = useMutation({
+    mutationFn: async (teamIds: string[]) => {
+      if (!routeTournamentId) {
+        throw new Error('Vui lòng khởi tạo giải đấu trước khi thay đổi thứ tự.')
+      }
+      return await adminApi.reorderTeams(routeTournamentId, teamIds)
+    },
+    onSuccess: () => {
+      refetchTeams()
+      queryClient.invalidateQueries({ queryKey: ['admin-teams', routeTournamentId] })
+      queryClient.invalidateQueries({ queryKey: ['tournament-teams', routeTournamentId] })
+      queryClient.invalidateQueries({ queryKey: ['tournament', routeTournamentId] })
+      setSuccessMessage('Đã cập nhật thứ tự bốc thăm Draft!')
+      setActionError(null)
+    },
+    onError: (err: any) => {
+      setActionError(err.message || 'Không thể cập nhật thứ tự Draft.')
     },
   })
 
@@ -463,15 +540,24 @@ export const AdminTournamentPage: React.FC = () => {
         <AdminTeamsSection
           teams={teams}
           users={users}
+          tournamentId={routeTournamentId}
           onAddTeam={(teamName, draftOrder) => addTeamMutation.mutate({ teamName, draftOrder })}
           onCreateUserForTeam={(teamId, username, password) =>
             createUserMutation.mutate({ teamId, username, password })
           }
-          onRandomizeOrder={() => {
-            // Randomize local order
-            setSuccessMessage('Teams shuffled randomly!')
-          }}
-          isSubmitting={addTeamMutation.isPending || createUserMutation.isPending}
+          onReassignUserToTeam={(userId, teamId) =>
+            reassignUserMutation.mutate({ userId, teamId })
+          }
+          onRandomizeOrder={() => randomizeOrderMutation.mutate()}
+          onReorderTeams={(teamIds) => reorderTeamsMutation.mutate(teamIds)}
+          isSubmitting={
+            addTeamMutation.isPending ||
+            createUserMutation.isPending ||
+            reassignUserMutation.isPending ||
+            randomizeOrderMutation.isPending ||
+            reorderTeamsMutation.isPending
+          }
+          isLocked={isOrderLocked}
         />
 
         {/* SECTION 5: CSV PLAYER IMPORT */}

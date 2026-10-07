@@ -1,6 +1,6 @@
 # Project Context — FIFA/FC Online Player Draft System
 
-> **Cập nhật lần cuối**: 2026-09-20
+> **Cập nhật lần cuối**: 2026-10-08
 > Đây là file "quick status card" — đọc file này đầu tiên để biết đang ở đâu.
 > Chi tiết: `docs/Roadmap .md` (full phase list) · `docs/design/` (domain/API spec) · `AGENTS.md` (coding rules)
 
@@ -16,7 +16,7 @@
 | 1 | Base Infra, DB & Alembic Migrations | ✅ Hoàn thành | 12/12 |
 | 2 | Authentication & RBAC | ✅ Hoàn thành | 53/53 |
 | 3 | Seasons, Player Catalogue & Importer | ✅ Hoàn thành | 74/74 |
-| 4 | Tournaments, Rules JSONB & Teams | ✅ Hoàn thành | 110/110 |
+| 4 | Tournaments, Rules JSONB & Teams | ✅ Hoàn thành | 112/112 |
 | 5 | Draft Engine Core | ✅ Hoàn thành | 137/137 |
 | 6 | Draft Timer & WebSocket Realtime | ✅ Hoàn thành | 156/156 |
 | 7 | Frontend Foundation (React + Vite) | ✅ Hoàn thành | Build & Codegen PASS |

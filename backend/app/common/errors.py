@@ -343,6 +343,24 @@ class TeamNotFound(DomainError):
         )
 
 
+class InvalidTeamOrder(DomainError):
+    def __init__(self, message: str = "Invalid team order list.") -> None:
+        super().__init__(
+            code="INVALID_TEAM_ORDER",
+            http_status=422,
+            message=message,
+        )
+
+
+class DraftOrderLocked(DomainError):
+    def __init__(self, reason: str = "Phiên Draft hoặc giai đoạn cấm chọn đang diễn ra.") -> None:
+        super().__init__(
+            code="DRAFT_ORDER_LOCKED",
+            http_status=409,
+            message=f"Không thể thay đổi thứ tự hoặc danh sách đội: {reason}",
+        )
+
+
 # ---------------------------------------------------------------------------
 # Auth & User errors
 # ---------------------------------------------------------------------------
@@ -399,4 +417,15 @@ class NoTeamAssigned(DomainError):
             code="NO_TEAM_ASSIGNED",
             http_status=403,
             message="The authenticated user is not assigned to any team.",
+        )
+
+
+class UserAlreadyAssignedToTeam(DomainError):
+    """Raised when trying to reassign a user who is already on the target team."""
+
+    def __init__(self, team_id: str) -> None:
+        super().__init__(
+            code="USER_ALREADY_ASSIGNED_TO_TEAM",
+            http_status=409,
+            message=f"User is already assigned to team '{team_id}'.",
         )

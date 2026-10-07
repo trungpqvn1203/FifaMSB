@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState, useMemo } from 'react'
 import { useParams, Link, useNavigate } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
@@ -13,6 +13,12 @@ import {
   Radio,
   Swords,
   Settings,
+  Search,
+  RefreshCw,
+  GripVertical,
+  ChevronUp,
+  ChevronDown,
+  Lock,
 } from 'lucide-react'
 import { apiClient, ApiError } from '@/lib/api-client'
 import { adminApi } from '@/lib/admin-api'
@@ -112,7 +118,7 @@ export const TournamentDetailPage: React.FC = () => {
   })
 
   // 5. Fetch Users for Admin team account linking
-  const { data: users = [], refetch: refetchUsers } = useQuery<User[]>({
+  const { data: users = [] } = useQuery<User[]>({
     queryKey: ['admin-users'],
     queryFn: () => adminApi.listUsers(),
     enabled: isAdmin,
@@ -125,12 +131,34 @@ export const TournamentDetailPage: React.FC = () => {
     }
   })
 
-  // User account creation modal state
+  // User account creation & linking modal state
   const [isCreateUserOpen, setIsCreateUserOpen] = useState(false)
   const [linkingTeam, setLinkingTeam] = useState<Team | null>(null)
+  const [linkTab, setLinkTab] = useState<'create' | 'reuse'>('create')
   const [newUsername, setNewUsername] = useState('')
   const [newPassword, setNewPassword] = useState('password123')
+  const [searchQuery, setSearchQuery] = useState('')
+  const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [userError, setUserError] = useState<string | null>(null)
+
+  const currentTournamentTeamIds = useMemo(
+    () => new Set((teams || []).map((t) => t.id)),
+    [teams]
+  )
+
+  const reusableUsers = useMemo(
+    () =>
+      users.filter(
+        (u) => u.role === 'TEAM_USER' && (!u.teamId || !currentTournamentTeamIds.has(u.teamId))
+      ),
+    [users, currentTournamentTeamIds]
+  )
+
+  const filteredReusable = useMemo(() => {
+    const q = searchQuery.toLowerCase().trim()
+    if (!q) return reusableUsers
+    return reusableUsers.filter((u) => u.username.toLowerCase().includes(q))
+  }, [reusableUsers, searchQuery])
 
   const createUserMutation = useMutation({
     mutationFn: async () => {
@@ -140,10 +168,12 @@ export const TournamentDetailPage: React.FC = () => {
         password: newPassword.trim(),
         role: 'TEAM_USER',
         teamId: linkingTeam.id,
+        tournamentId: tournamentId,
       })
     },
     onSuccess: () => {
-      refetchUsers()
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+      queryClient.invalidateQueries({ queryKey: ['tournament-teams', tournamentId] })
       setIsCreateUserOpen(false)
       setLinkingTeam(null)
       setUserError(null)
@@ -152,6 +182,104 @@ export const TournamentDetailPage: React.FC = () => {
       setUserError(err instanceof ApiError ? err.message : 'Không thể tạo tài khoản đội trưởng.')
     },
   })
+
+  const reassignUserMutation = useMutation({
+    mutationFn: async () => {
+      if (!linkingTeam || !selectedUserId || !tournamentId) return
+      return await adminApi.reassignUserTeam(selectedUserId, linkingTeam.id, tournamentId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] })
+      queryClient.invalidateQueries({ queryKey: ['tournament-teams', tournamentId] })
+      setIsCreateUserOpen(false)
+      setLinkingTeam(null)
+      setSelectedUserId(null)
+      setUserError(null)
+    },
+    onError: (err: any) => {
+      setUserError(
+        err instanceof ApiError
+          ? err.message
+          : err.message || 'Không thể liên kết lại tài khoản đội trưởng.'
+      )
+    },
+  })
+
+  // Randomize Draft Order Mutation
+  const randomizeOrderMutation = useMutation({
+    mutationFn: async () => {
+      if (!tournamentId) return
+      return await adminApi.randomizeDraftOrder(tournamentId)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tournament-teams', tournamentId] })
+      queryClient.invalidateQueries({ queryKey: ['tournament', tournamentId] })
+      setActionError(null)
+    },
+    onError: (err: any) => {
+      setActionError(err.message || 'Không thể đảo thứ tự Draft.')
+    },
+  })
+
+  // Reorder Teams Mutation (Drag and drop)
+  const reorderTeamsMutation = useMutation({
+    mutationFn: async (teamIds: string[]) => {
+      if (!tournamentId) return
+      return await adminApi.reorderTeams(tournamentId, teamIds)
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tournament-teams', tournamentId] })
+      queryClient.invalidateQueries({ queryKey: ['tournament', tournamentId] })
+      setActionError(null)
+    },
+    onError: (err: any) => {
+      setActionError(err.message || 'Không thể cập nhật thứ tự Draft.')
+    },
+  })
+
+  // Drag and drop state for team cards
+  const [draggedTeamIndex, setDraggedTeamIndex] = useState<number | null>(null)
+  const [dragOverTeamIndex, setDragOverTeamIndex] = useState<number | null>(null)
+
+  const handleMoveTeam = (fromIdx: number, toIdx: number) => {
+    if (!teams || fromIdx === toIdx || toIdx < 0 || toIdx >= teams.length) return
+    const nextTeams = [...teams]
+    const [moved] = nextTeams.splice(fromIdx, 1)
+    nextTeams.splice(toIdx, 0, moved)
+    reorderTeamsMutation.mutate(nextTeams.map((t) => t.id))
+  }
+
+  const handleTeamDragStart = (e: React.DragEvent, idx: number) => {
+    setDraggedTeamIndex(idx)
+    e.dataTransfer.effectAllowed = 'move'
+    e.dataTransfer.setData('text/plain', String(idx))
+  }
+
+  const handleTeamDragOver = (e: React.DragEvent, idx: number) => {
+    e.preventDefault()
+    e.dataTransfer.dropEffect = 'move'
+    if (dragOverTeamIndex !== idx) {
+      setDragOverTeamIndex(idx)
+    }
+  }
+
+  const handleTeamDrop = (e: React.DragEvent, targetIdx: number) => {
+    e.preventDefault()
+    if (draggedTeamIndex === null || draggedTeamIndex === targetIdx || !teams) {
+      setDraggedTeamIndex(null)
+      setDragOverTeamIndex(null)
+      return
+    }
+
+    handleMoveTeam(draggedTeamIndex, targetIdx)
+    setDraggedTeamIndex(null)
+    setDragOverTeamIndex(null)
+  }
+
+  const handleTeamDragEnd = () => {
+    setDraggedTeamIndex(null)
+    setDragOverTeamIndex(null)
+  }
 
   // Add Team Mutation
   const addTeamMutation = useMutation({
@@ -237,6 +365,12 @@ export const TournamentDetailPage: React.FC = () => {
 
   const rules = tournament.rules
   const isDraftRunning = draftInfo?.status === 'PICKING' || draftInfo?.status === 'PAUSED'
+  const isDraftCompleted = draftInfo?.status === 'COMPLETED'
+  const isBanPhaseActive = matches?.some((m) => m.status === 'BAN_PHASE')
+  const isTournamentRunningOrCompleted =
+    tournament.status === 'RUNNING' || tournament.status === 'COMPLETED'
+  const isOrderLocked =
+    isDraftRunning || isDraftCompleted || isBanPhaseActive || isTournamentRunningOrCompleted
 
   const getStatusLabel = (status: string) => {
     switch (status) {
@@ -291,17 +425,28 @@ export const TournamentDetailPage: React.FC = () => {
               </Link>
             )}
 
-            {isAdmin && tournament.status === 'DRAFT' && (
-              <Button
-                variant="outline"
-                size="md"
-                onClick={() => {
-                  setDraftOrder((teams?.length || 0) + 1)
-                  setIsAddTeamOpen(true)
-                }}
-              >
-                <Plus className="w-4 h-4 mr-1.5" /> Thêm Đội
-              </Button>
+            {isAdmin && (tournament.status === 'DRAFT' || tournament.status === 'READY') && !isDraftRunning && (
+              <>
+                <Button
+                  variant="outline"
+                  size="md"
+                  onClick={() => randomizeOrderMutation.mutate()}
+                  disabled={(teams?.length || 0) < 2 || randomizeOrderMutation.isPending}
+                  isLoading={randomizeOrderMutation.isPending}
+                >
+                  <RefreshCw className="w-4 h-4 mr-1.5" /> Trộn Thứ Tự
+                </Button>
+                <Button
+                  variant="outline"
+                  size="md"
+                  onClick={() => {
+                    setDraftOrder((teams?.length || 0) + 1)
+                    setIsAddTeamOpen(true)
+                  }}
+                >
+                  <Plus className="w-4 h-4 mr-1.5" /> Thêm Đội
+                </Button>
+              </>
             )}
 
             {isAdmin && tournament.status === 'READY' && !isDraftRunning && (
@@ -413,21 +558,44 @@ export const TournamentDetailPage: React.FC = () => {
       {/* Teams Roster & Standings */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="font-display text-base font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
-            <Users className="w-4 h-4 text-cyan" /> Danh Sách Đội Tham Gia ({teams?.length || 0})
-          </h2>
+          <div className="flex flex-col gap-0.5">
+            <h2 className="font-display text-base font-bold uppercase tracking-wider text-zinc-300 flex items-center gap-2">
+              <Users className="w-4 h-4 text-cyan" /> Danh Sách Đội Tham Gia ({teams?.length || 0})
+            </h2>
+            {isAdmin && (teams?.length || 0) > 1 && !isOrderLocked && (
+              <span className="text-[11px] font-mono text-zinc-400">
+                💡 <span className="text-neon">Kéo thả</span> thẻ đội để đổi thứ tự bốc thăm chính xác
+              </span>
+            )}
+            {isAdmin && isOrderLocked && (
+              <span className="text-[11px] font-mono text-amber-400/90 flex items-center gap-1">
+                <Lock className="w-3 h-3 text-amber-400 inline" /> Thứ tự Draft đã khóa (Đang cấm chọn hoặc giải đấu đang chạy)
+              </span>
+            )}
+          </div>
 
-          {isAdmin && tournament.status === 'DRAFT' && (
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => {
-                setDraftOrder((teams?.length || 0) + 1)
-                setIsAddTeamOpen(true)
-              }}
-            >
-              <Plus className="w-3.5 h-3.5 mr-1" /> Thêm Đội
-            </Button>
+          {isAdmin && !isOrderLocked && (
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => randomizeOrderMutation.mutate()}
+                disabled={(teams?.length || 0) < 2 || randomizeOrderMutation.isPending || reorderTeamsMutation.isPending}
+                isLoading={randomizeOrderMutation.isPending}
+              >
+                <RefreshCw className="w-3.5 h-3.5 mr-1" /> Trộn Thứ Tự
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setDraftOrder((teams?.length || 0) + 1)
+                  setIsAddTeamOpen(true)
+                }}
+              >
+                <Plus className="w-3.5 h-3.5 mr-1" /> Thêm Đội
+              </Button>
+            </div>
           )}
         </div>
 
@@ -444,19 +612,74 @@ export const TournamentDetailPage: React.FC = () => {
         )}
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {teams?.map((team) => {
+          {teams?.map((team, idx) => {
             const budgetPercent = Math.min(
               100,
               Math.round((team.budgetUsed / rules.budget) * 100)
             )
 
+            const canDrag = isAdmin && !isOrderLocked && (teams?.length || 0) > 1
+
             return (
-              <Card key={team.id} className="p-4 bg-surface-card border-border-default flex flex-col gap-3">
+              <Card
+                key={team.id}
+                draggable={canDrag}
+                onDragStart={(e) => canDrag && handleTeamDragStart(e, idx)}
+                onDragOver={(e) => canDrag && handleTeamDragOver(e, idx)}
+                onDragLeave={() => {
+                  if (dragOverTeamIndex === idx) setDragOverTeamIndex(null)
+                }}
+                onDrop={(e) => canDrag && handleTeamDrop(e, idx)}
+                onDragEnd={handleTeamDragEnd}
+                className={`p-4 bg-surface-card border-border-default flex flex-col gap-3 transition-all select-none ${
+                  draggedTeamIndex === idx
+                    ? 'opacity-30 border-dashed border-neon'
+                    : dragOverTeamIndex === idx
+                    ? 'border-2 border-neon bg-neon/5 scale-[1.01]'
+                    : ''
+                }`}
+              >
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
+                    {canDrag && (
+                      <div
+                        className="cursor-grab active:cursor-grabbing text-zinc-500 hover:text-neon transition-colors p-0.5 rounded"
+                        title="Kéo thả thẻ này để thay đổi thứ tự"
+                      >
+                        <GripVertical className="w-4 h-4" />
+                      </div>
+                    )}
                     <div className="w-8 h-8 rounded-lg bg-surface-elevated border border-border-prominent flex items-center justify-center font-mono font-bold text-sm text-neon">
-                      #{team.draftOrder}
+                      #{team.draftOrder || idx + 1}
                     </div>
+                    {canDrag && (
+                      <div className="flex flex-col gap-0.5">
+                        <button
+                          type="button"
+                          disabled={idx === 0 || reorderTeamsMutation.isPending}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleMoveTeam(idx, idx - 1)
+                          }}
+                          className="text-zinc-500 hover:text-neon disabled:opacity-20 transition-colors p-0.5 rounded"
+                          title="Di chuyển lên trên"
+                        >
+                          <ChevronUp className="w-3 h-3" />
+                        </button>
+                        <button
+                          type="button"
+                          disabled={idx === (teams?.length || 0) - 1 || reorderTeamsMutation.isPending}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            handleMoveTeam(idx, idx + 1)
+                          }}
+                          className="text-zinc-500 hover:text-neon disabled:opacity-20 transition-colors p-0.5 rounded"
+                          title="Di chuyển xuống dưới"
+                        >
+                          <ChevronDown className="w-3 h-3" />
+                        </button>
+                      </div>
+                    )}
                     <div>
                       <h3 className="font-display font-bold text-base text-white">{team.name}</h3>
                       <span className="font-mono text-[10px] text-zinc-400">Mã: {team.id.slice(0, 8)}</span>
@@ -488,13 +711,30 @@ export const TournamentDetailPage: React.FC = () => {
                 {isAdmin && (
                   <div className="pt-2 border-t border-border-subtle flex items-center justify-between text-xs font-mono">
                     {userByTeamId.has(team.id) ? (
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400" />
-                        <span className="text-zinc-400">Đội trưởng:</span>
-                        <span className="text-white font-bold">@{userByTeamId.get(team.id)!.username}</span>
-                        <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-400/30">
-                          SẴN SÀNG
-                        </Badge>
+                      <div className="flex items-center justify-between w-full">
+                        <div className="flex items-center gap-2">
+                          <span className="w-2 h-2 rounded-full bg-emerald-400" />
+                          <span className="text-zinc-400">Đội trưởng:</span>
+                          <span className="text-white font-bold">@{userByTeamId.get(team.id)!.username}</span>
+                          <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-400/30">
+                            SẴN SÀNG
+                          </Badge>
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="text-xs font-mono text-zinc-400 hover:text-white py-0.5 h-7"
+                          onClick={() => {
+                            setLinkingTeam(team)
+                            setLinkTab('reuse')
+                            setSelectedUserId(null)
+                            setSearchQuery('')
+                            setUserError(null)
+                            setIsCreateUserOpen(true)
+                          }}
+                        >
+                          Đổi Đội Trưởng
+                        </Button>
                       </div>
                     ) : (
                       <div className="flex items-center justify-between w-full">
@@ -511,10 +751,14 @@ export const TournamentDetailPage: React.FC = () => {
                             const clean = team.name.toLowerCase().replace(/[^a-z0-9]/g, '')
                             setNewUsername(`${clean || 'team'}_captain`)
                             setNewPassword('password123')
+                            setLinkTab('create')
+                            setSelectedUserId(null)
+                            setSearchQuery('')
+                            setUserError(null)
                             setIsCreateUserOpen(true)
                           }}
                         >
-                          + Tạo Tài Khoản
+                          + Liên Kết / Tạo TK
                         </Button>
                       </div>
                     )}
@@ -789,80 +1033,249 @@ export const TournamentDetailPage: React.FC = () => {
         </form>
       </Modal>
 
-      {/* Create Captain Account Modal */}
+      {/* Create / Link Captain Account Modal */}
       <Modal
         isOpen={isCreateUserOpen}
         onClose={() => {
           setIsCreateUserOpen(false)
           setLinkingTeam(null)
+          setSelectedUserId(null)
           setUserError(null)
         }}
-        title={`Cấp Tài Khoản Đội Trưởng - ${linkingTeam?.name || ''}`}
+        title={`Liên Kết Tài Khoản Đội Trưởng - ${linkingTeam?.name || ''}`}
       >
-        <p className="text-xs text-zinc-400 font-mono -mt-2">
-          Tài khoản này dùng để đội trưởng đăng nhập và tự chọn cầu thủ (Pick) trong phiên Draft.
-        </p>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            createUserMutation.mutate()
-          }}
-          className="flex flex-col gap-4 mt-2"
-        >
+        <div className="flex flex-col gap-4">
+          <p className="text-xs text-zinc-400 font-mono -mt-2">
+            Tài khoản này dùng để đội trưởng đăng nhập và tự chọn cầu thủ (Pick) trong phiên Draft &amp; Cấm chọn.
+          </p>
+
+          {/* Tab Selector */}
+          <div className="flex border-b border-border-subtle gap-2">
+            <button
+              type="button"
+              onClick={() => setLinkTab('create')}
+              className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-mono font-semibold border-b-2 transition-all ${
+                linkTab === 'create'
+                  ? 'border-neon text-neon'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Tạo Mới
+            </button>
+            <button
+              type="button"
+              onClick={() => setLinkTab('reuse')}
+              className={`flex items-center gap-2 pb-2.5 px-3 text-xs font-mono font-semibold border-b-2 transition-all ${
+                linkTab === 'reuse'
+                  ? 'border-neon text-neon'
+                  : 'border-transparent text-zinc-400 hover:text-zinc-200'
+              }`}
+            >
+              <RefreshCw className="w-3.5 h-3.5" />
+              Dùng Lại ({reusableUsers.length})
+            </button>
+          </div>
+
           {userError && (
-            <div className="p-3 bg-danger/10 border border-danger/30 rounded text-danger text-xs">
-              {userError}
+            <div className="p-3 bg-danger/10 border border-danger/30 rounded text-danger text-xs font-mono">
+              ⚠️ {userError}
             </div>
           )}
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-mono font-medium text-zinc-300">
-              Tên Đăng Nhập (Username)
-            </label>
-            <Input
-              value={newUsername}
-              onChange={(e) => setNewUsername(e.target.value)}
-              placeholder="vd: test1_captain"
-              required
-            />
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs font-mono font-medium text-zinc-300">
-              Mật Khẩu (Password)
-            </label>
-            <Input
-              type="text"
-              value={newPassword}
-              onChange={(e) => setNewPassword(e.target.value)}
-              placeholder="Mật khẩu đăng nhập"
-              required
-            />
-          </div>
-
-          <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-border-subtle">
-            <Button
-              type="button"
-              variant="ghost"
-              size="md"
-              onClick={() => {
-                setIsCreateUserOpen(false)
-                setLinkingTeam(null)
+          {/* TAB 1: TẠO MỚI */}
+          {linkTab === 'create' && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                createUserMutation.mutate()
               }}
-              disabled={createUserMutation.isPending}
+              className="flex flex-col gap-4"
             >
-              Huỷ Bỏ
-            </Button>
-            <Button
-              type="submit"
-              variant="neon"
-              size="md"
-              isLoading={createUserMutation.isPending}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-mono font-medium text-zinc-300">
+                  Tên Đăng Nhập (Username)
+                </label>
+                <Input
+                  value={newUsername}
+                  onChange={(e) => setNewUsername(e.target.value)}
+                  placeholder="vd: test1_captain"
+                  disabled={createUserMutation.isPending}
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <label className="text-xs font-mono font-medium text-zinc-300">
+                  Mật Khẩu (Password)
+                </label>
+                <Input
+                  type="text"
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  placeholder="Mật khẩu đăng nhập"
+                  disabled={createUserMutation.isPending}
+                  required
+                />
+              </div>
+
+              <div className="flex items-center justify-end gap-3 mt-2 pt-4 border-t border-border-subtle">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="md"
+                  onClick={() => {
+                    setIsCreateUserOpen(false)
+                    setLinkingTeam(null)
+                  }}
+                  disabled={createUserMutation.isPending}
+                >
+                  Huỷ Bỏ
+                </Button>
+                <Button
+                  type="submit"
+                  variant="neon"
+                  size="md"
+                  isLoading={createUserMutation.isPending}
+                >
+                  Tạo &amp; Liên Kết Đội
+                </Button>
+              </div>
+            </form>
+          )}
+
+          {/* TAB 2: DÙNG LẠI TÀI KHOẢN GIẢI TRƯỚC */}
+          {linkTab === 'reuse' && (
+            <form
+              onSubmit={(e) => {
+                e.preventDefault()
+                reassignUserMutation.mutate()
+              }}
+              className="flex flex-col gap-4"
             >
-              Tạo &amp; Liên Kết Đội
-            </Button>
-          </div>
-        </form>
+              <div className="p-3 rounded-lg bg-surface-card border border-border-subtle text-xs text-zinc-300 space-y-1">
+                <p className="font-semibold text-white flex items-center gap-1.5 font-display uppercase tracking-wider">
+                  <Shield className="w-3.5 h-3.5 text-neon" />
+                  Tái sử dụng tài khoản đội trưởng
+                </p>
+                <p className="text-zinc-400 text-[11px] font-mono leading-relaxed">
+                  Đội trưởng giữ nguyên username và mật khẩu cũ. Lịch sử các giải đấu trước vẫn được bảo toàn nguyên vẹn trong hệ thống.
+                </p>
+              </div>
+
+              {reusableUsers.length === 0 ? (
+                <div className="py-8 text-center text-zinc-500 font-mono text-xs border border-dashed border-border-subtle rounded-lg">
+                  Không có tài khoản đội trưởng cũ nào khả dụng. Vui lòng chuyển sang tab &quot;Tạo Mới&quot;.
+                </div>
+              ) : (
+                <>
+                  <div className="flex flex-col gap-2">
+                    <label className="text-xs font-mono text-zinc-300">
+                      Tìm kiếm &amp; Chọn Tài Khoản ({reusableUsers.length} khả dụng)
+                    </label>
+                    <div className="relative">
+                      <Search className="w-4 h-4 absolute left-3 top-2.5 text-zinc-400" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Gõ để lọc theo username..."
+                        className="w-full bg-surface-elevated border border-border rounded-lg pl-9 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-neon font-mono"
+                      />
+                    </div>
+
+                    <div className="max-h-48 overflow-y-auto border border-border-subtle rounded-lg bg-surface-card divide-y divide-border-subtle">
+                      {filteredReusable.length === 0 ? (
+                        <div className="p-3 text-xs text-zinc-500 text-center font-mono">
+                          Không tìm thấy tài khoản phù hợp với từ khóa
+                        </div>
+                      ) : (
+                        filteredReusable.map((u) => {
+                          const isSelected = selectedUserId === u.id
+                          const hasPrevious = Boolean(
+                            u.teamId && !currentTournamentTeamIds.has(u.teamId)
+                          )
+                          return (
+                            <button
+                              key={u.id}
+                              type="button"
+                              onClick={() => setSelectedUserId(u.id)}
+                              className={`w-full text-left px-3 py-2.5 flex items-center justify-between transition-colors ${
+                                isSelected
+                                  ? 'bg-neon/15 border-l-2 border-neon'
+                                  : 'hover:bg-surface-elevated'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2.5">
+                                <div
+                                  className={`w-4 h-4 rounded-full border flex items-center justify-center ${
+                                    isSelected ? 'border-neon bg-neon' : 'border-zinc-600'
+                                  }`}
+                                >
+                                  {isSelected && <span className="w-1.5 h-1.5 rounded-full bg-black" />}
+                                </div>
+                                <div>
+                                  <span className="font-mono text-xs font-bold text-white block">
+                                    @{u.username}
+                                  </span>
+                                  <span className="text-[10px] text-zinc-400 font-mono">
+                                    Mã: {u.id.substring(0, 8)}
+                                  </span>
+                                </div>
+                              </div>
+                              {hasPrevious ? (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded bg-indigo-500/15 border border-indigo-500/30 text-indigo-300 text-[10px] font-mono">
+                                  <Shield className="w-2.5 h-2.5" />
+                                  Đã tham gia giải trước
+                                </span>
+                              ) : (
+                                <span className="text-zinc-500 text-[10px] font-mono">Giải đầu tiên</span>
+                              )}
+                            </button>
+                          )
+                        })
+                      )}
+                    </div>
+                  </div>
+
+                  {selectedUserId && (
+                    <div className="p-2.5 bg-surface-elevated border border-border-subtle rounded text-xs flex items-center justify-between">
+                      <span className="text-zinc-300 font-mono">
+                        Đã chọn: <strong className="text-neon">@{users.find((u) => u.id === selectedUserId)?.username}</strong>
+                      </span>
+                      <span className="text-[10px] text-zinc-400 font-mono">Sẵn sàng liên kết</span>
+                    </div>
+                  )}
+                </>
+              )}
+
+              <div className="flex items-center justify-end gap-3 mt-2 pt-4 border-t border-border-subtle">
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="md"
+                  onClick={() => {
+                    setIsCreateUserOpen(false)
+                    setLinkingTeam(null)
+                    setSelectedUserId(null)
+                  }}
+                  disabled={reassignUserMutation.isPending}
+                >
+                  Huỷ Bỏ
+                </Button>
+                <Button
+                  type="submit"
+                  variant="neon"
+                  size="md"
+                  disabled={reassignUserMutation.isPending || !selectedUserId}
+                  isLoading={reassignUserMutation.isPending}
+                >
+                  Xác Nhận Dùng Lại
+                </Button>
+              </div>
+            </form>
+          )}
+        </div>
       </Modal>
     </div>
   )

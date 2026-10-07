@@ -1,4 +1,4 @@
-﻿# PROJECT: FIFA / FC Online Player Draft System (Python backend)
+# PROJECT: FIFA / FC Online Player Draft System (Python backend)
 
 Build a realtime multi-team player draft system for a Vietnamese FC Online pro tournament.
 Work in PHASES. After finishing each phase: run lint, type-check and tests, summarize what
@@ -20,6 +20,27 @@ Do not start the next phase on your own. Do not over-engineer.
 - `.agents/rules/coding-standards.md`: Detailed coding guidelines, Alembic rules & import-linter contracts.
 - `.agents/rules/quick-ref.md`: Quick reference tables for entities, error codes, and endpoints.
 - If documents conflict, STOP and ask me. Do not silently pick one.
+
+## SESSION START PROTOCOL (token-efficient — đọc theo thứ tự này)
+
+> **MANDATORY**: Đọc đúng thứ tự dưới đây khi bắt đầu session mới. KHÔNG load toàn bộ docs.
+
+1. **`CONTEXT.md`** → Trạng thái hiện tại: phase đang làm, test count, schema snapshot.
+2. **`docs/dev-history.md`** → Bảng phase status (index nhỏ ~30 dòng, links sang chi tiết).
+3. **`docs/history/phase-X.md`** → Chỉ đọc phase đang implement hoặc phase trước đó nếu cần tham khảo pattern.
+4. **`docs/design/0X-*.md`** → Chỉ đọc spec liên quan đến task hiện tại.
+5. **`docs/bugs/README.md`** → Khi đang debug: đọc index bug trước để tránh re-investigate lỗi cũ.
+
+**KHÔNG đọc** toàn bộ `docs/design/` hay toàn bộ `docs/history/` trừ khi cần thiết.
+
+### Khi phát triển tính năng mới (New Phase)
+- Tạo file `docs/history/phase-X-<name>.md` với template: Mục tiêu → File chính → API Endpoints → Quality Gates → Python Concepts.
+- Cập nhật bảng phase trong `docs/dev-history.md` (thêm 1 dòng + link).
+- Cập nhật `CONTEXT.md` sau khi phase hoàn thành.
+
+### Khi fix lỗi / thay đổi logic
+- Tạo file `docs/bugs/YYYY-MM-DD-<ten-loi>.md` với template: Triệu chứng → Root Cause → Files sửa → Cách fix → Test xác nhận.
+- Thêm 1 dòng vào bảng trong `docs/bugs/README.md`.
 
 ## PROJECT LOCATION
 

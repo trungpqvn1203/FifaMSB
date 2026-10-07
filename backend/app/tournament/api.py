@@ -180,6 +180,12 @@ class CreateTeamRequest(BaseModel):
     draft_order: int = Field(ge=1, alias="draftOrder", serialization_alias="draftOrder")
 
 
+class ReorderTeamsRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    team_ids: list[uuid.UUID] = Field(alias="teamIds")
+
+
 class TeamResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
@@ -345,6 +351,35 @@ async def list_teams(
 ) -> list[TeamResponse]:
     """List teams in a tournament ordered by draft_order."""
     teams = await service.list_teams(tournament_id)
+    return [TeamResponse.from_domain(t) for t in teams]
+
+
+@tournaments_router.post(
+    "/{tournament_id}/teams/randomize",
+    response_model=list[TeamResponse],
+)
+async def randomize_teams_order(
+    tournament_id: uuid.UUID,
+    _admin: object = Depends(require_admin),
+    service: TournamentService = Depends(_get_service),
+) -> list[TeamResponse]:
+    """Randomize draft_order for all teams in a tournament (ADMIN only)."""
+    teams = await service.randomize_draft_order(tournament_id)
+    return [TeamResponse.from_domain(t) for t in teams]
+
+
+@tournaments_router.post(
+    "/{tournament_id}/teams/reorder",
+    response_model=list[TeamResponse],
+)
+async def reorder_teams(
+    tournament_id: uuid.UUID,
+    body: ReorderTeamsRequest,
+    _admin: object = Depends(require_admin),
+    service: TournamentService = Depends(_get_service),
+) -> list[TeamResponse]:
+    """Reorder teams according to explicit teamIds list (ADMIN only)."""
+    teams = await service.reorder_teams(tournament_id, body.team_ids)
     return [TeamResponse.from_domain(t) for t in teams]
 
 
