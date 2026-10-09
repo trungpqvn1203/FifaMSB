@@ -4,6 +4,7 @@ import os
 import uuid
 from collections.abc import AsyncGenerator
 from typing import Any
+from unittest.mock import AsyncMock, patch
 
 import pytest
 from httpx import AsyncClient
@@ -275,3 +276,57 @@ async def test_admin_import_csv_endpoint(
         or report.get("rows_inserted") == 1
         or report.get("rows_updated") == 1
     )
+
+
+@pytest.mark.integration
+async def test_admin_sync_nexon_endpoint(
+    client: AsyncClient,
+    db_session: AsyncSession,
+    setup_catalogue_and_users: dict[str, Any],
+) -> None:
+    """POST /api/admin/players/sync-nexon syncs cards and returns ImportReport."""
+    sample_html = (
+        '<div class="content data_detail">'
+        '<div class="ovr value">120</div>'
+        '<div class="position">ST</div>'
+        '<div class="pay_side">30</div>'
+        '<div class="name">테스트 호날두</div>'
+        '<div class="season"><img src="https://ssl.nexon.com/.../UC.png" /></div>'
+        '<div class="txt">스피드</div><div class="value">125</div>'
+        '<div class="txt">슛</div><div class="value">124</div>'
+        "</div>"
+    )
+    with (
+        patch(
+            "app.importer.nexon_pipeline.NexonClient.fetch_player_ability_html",
+            new=AsyncMock(return_value=sample_html),
+        ),
+        patch(
+            "app.importer.nexon_pipeline.NexonClient.fetch_season_metadata",
+            new=AsyncMock(return_value=[{"seasonId": 877, "className": "UC"}]),
+        ),
+    ):
+        # 1. Team user -> 403 Forbidden
+        await client.post(
+            "/api/auth/login",
+            json={"username": "team_player_test", "password": "team_pass"},
+        )
+        res_403 = await client.post(
+            "/api/admin/players/sync-nexon",
+            json={"spids": [877020801]},
+        )
+        assert res_403.status_code == 403
+
+        # 2. Admin user -> 200 OK
+        await client.post(
+            "/api/auth/login",
+            json={"username": "admin_player_test", "password": "admin_pass"},
+        )
+        res_200 = await client.post(
+            "/api/admin/players/sync-nexon",
+            json={"spids": [877020801]},
+        )
+        assert res_200.status_code == 200
+        report = res_200.json()
+        assert report["rowsRead"] == 1
+        assert report["rowsInserted"] == 1 or report["rowsUpdated"] == 1

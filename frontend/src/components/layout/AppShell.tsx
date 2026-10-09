@@ -58,17 +58,30 @@ export const AppShell: React.FC<{ children: React.ReactNode }> = ({ children }) 
             </Link>
 
             {isAdmin && (
-              <Link
-                to="/admin/tournaments/new"
-                className={`px-3.5 py-1.5 rounded-md font-display text-xs uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
-                  location.pathname.startsWith('/admin')
-                    ? 'bg-neon/15 text-neon border border-neon/30 font-bold'
-                    : 'text-zinc-400 hover:text-neon hover:bg-surface-card'
-                }`}
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse" />
-                Quản Trị Admin
-              </Link>
+              <>
+                <Link
+                  to="/admin/players"
+                  className={`px-3.5 py-1.5 rounded-md font-display text-xs uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
+                    location.pathname.startsWith('/admin/players')
+                      ? 'bg-neon/15 text-neon border border-neon/30 font-bold'
+                      : 'text-zinc-400 hover:text-neon hover:bg-surface-card'
+                  }`}
+                >
+                  <span>⚡</span> Kho Cầu Thủ
+                </Link>
+
+                <Link
+                  to="/admin/tournaments/new"
+                  className={`px-3.5 py-1.5 rounded-md font-display text-xs uppercase tracking-wider transition-colors flex items-center gap-1.5 ${
+                    location.pathname.startsWith('/admin/tournaments')
+                      ? 'bg-neon/15 text-neon border border-neon/30 font-bold'
+                      : 'text-zinc-400 hover:text-neon hover:bg-surface-card'
+                  }`}
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-neon animate-pulse" />
+                  Quản Trị Giải
+                </Link>
+              </>
             )}
           </nav>
 

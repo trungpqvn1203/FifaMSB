@@ -25,6 +25,7 @@
 | 10 | Ban UI (Arena & WebSocket Hook) | ✅ Hoàn thành | Build & Visual Verification PASS |
 | 11 | Admin UI & Operations Console | ✅ Hoàn thành | Build PASS (0 errors, 48 mypy files) |
 | **12** | **E2E, Docker, Nginx & Hardening** | **✅ Hoàn thành** | **Full E2E suite, Multi-stage Docker, Compose PASS** |
+| **Sync** | **Đồng Bộ Cầu Thủ FC Online (Nexon API)** | **✅ Hoàn thành** | **102 unit, 76 int (PASS)** |
 
 ---
 

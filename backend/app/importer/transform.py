@@ -17,6 +17,12 @@ class ValidatedPlayerRow(BaseModel):
     salary: int = Field(ge=1)
     rating: int | None = None
     image_url: str | None = None
+    pace: int | None = None
+    shooting: int | None = None
+    passing: int | None = None
+    dribbling: int | None = None
+    defending: int | None = None
+    physical: int | None = None
 
     @field_validator("external_player_id", "name", "season_code", mode="before")
     @classmethod
@@ -68,6 +74,18 @@ class ValidatedPlayerRow(BaseModel):
             return None
         return str(v).strip()
 
+    @field_validator(
+        "pace", "shooting", "passing", "dribbling", "defending", "physical", mode="before"
+    )
+    @classmethod
+    def parse_optional_stat(cls, v: Any) -> int | None:
+        if v is None or str(v).strip() == "":
+            return None
+        try:
+            return int(v)
+        except (ValueError, TypeError):
+            return None
+
 
 def transform_row(
     raw_dict: dict[str, Any],
@@ -93,6 +111,12 @@ def transform_row(
             salary=raw_dict.get("salary", 0),
             rating=raw_dict.get("rating"),
             image_url=raw_dict.get("image_url") or raw_dict.get("imageUrl"),
+            pace=raw_dict.get("pace"),
+            shooting=raw_dict.get("shooting"),
+            passing=raw_dict.get("passing"),
+            dribbling=raw_dict.get("dribbling"),
+            defending=raw_dict.get("defending"),
+            physical=raw_dict.get("physical"),
         )
         return row, None
     except Exception as exc:

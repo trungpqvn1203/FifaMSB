@@ -115,9 +115,7 @@ async def create_user_team_history(
     return record
 
 
-async def get_user_team_history(
-    session: AsyncSession, user_id: uuid.UUID
-) -> list[UserTeamHistory]:
+async def get_user_team_history(session: AsyncSession, user_id: uuid.UUID) -> list[UserTeamHistory]:
     """Return all team assignment records for a user, newest first."""
     stmt = (
         select(UserTeamHistory)

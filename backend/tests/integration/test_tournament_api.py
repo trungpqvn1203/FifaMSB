@@ -357,9 +357,7 @@ async def test_complete_tournament_forbidden_for_team_user(
 
 
 @pytest.mark.integration
-async def test_randomize_teams_order(
-    client: AsyncClient, tournament_users: dict[str, Any]
-) -> None:
+async def test_randomize_teams_order(client: AsyncClient, tournament_users: dict[str, Any]) -> None:
     """POST /api/tournaments/{id}/teams/randomize successfully shuffles team draft orders."""
     await _login(client, "admin_trn_test", "admin_pass")
     create_res = await client.post("/api/tournaments", json={"name": "Randomize Test"})

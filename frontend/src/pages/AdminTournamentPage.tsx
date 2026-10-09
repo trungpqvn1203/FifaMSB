@@ -8,7 +8,6 @@ import { AdminBasicInfoSection } from '@/components/admin/AdminBasicInfoSection'
 import { AdminDraftRulesSection } from '@/components/admin/AdminDraftRulesSection'
 import { AdminBanRulesSection } from '@/components/admin/AdminBanRulesSection'
 import { AdminTeamsSection } from '@/components/admin/AdminTeamsSection'
-import { AdminCsvImportSection } from '@/components/admin/AdminCsvImportSection'
 import { AdminOperationsSection } from '@/components/admin/AdminOperationsSection'
 import type {
   Tournament,
@@ -446,20 +445,20 @@ export const AdminTournamentPage: React.FC = () => {
           >
             <span className="text-[#3DFF6B] font-bold">04</span> Đội Tham Gia ({teams.length})
           </a>
-          <a
-            href="#player-import"
-            className="px-3 py-1.5 rounded bg-[#181C1F] border border-[#2A3138] text-gray-300 hover:text-[#3DFF6B] hover:border-[#3DFF6B]/40 transition-colors whitespace-nowrap"
-          >
-            <span className="text-[#3DFF6B] font-bold">05</span> Nhập CSV Cầu Thủ
-          </a>
           {routeTournamentId && (
             <a
               href="#draft-operations"
               className="px-3 py-1.5 rounded bg-[#181C1F] border border-cyan-500/40 text-cyan-300 hover:text-white transition-colors whitespace-nowrap"
             >
-              <span className="text-cyan-400 font-bold">06</span> Vận Hành Trực Tiếp
+              <span className="text-cyan-400 font-bold">05</span> Vận Hành Trực Tiếp
             </a>
           )}
+          <Link
+            to="/admin/players"
+            className="px-3 py-1.5 rounded bg-[#181C1F] border border-neon/40 text-neon hover:bg-neon/10 transition-colors whitespace-nowrap flex items-center gap-1.5 font-bold"
+          >
+            <span>⚡</span> Kho Cầu Thủ Toàn Hệ Thống ↗
+          </Link>
         </div>
       </div>
 
@@ -560,12 +559,7 @@ export const AdminTournamentPage: React.FC = () => {
           isLocked={isOrderLocked}
         />
 
-        {/* SECTION 5: CSV PLAYER IMPORT */}
-        <AdminCsvImportSection
-          onImportCsv={(file) => adminApi.importPlayersCsv(file)}
-        />
-
-        {/* SECTION 6: OPERATIONS CONSOLE (when tournament exists) */}
+        {/* OPERATIONS CONSOLE (when tournament exists) */}
         {routeTournamentId && (
           <AdminOperationsSection
             tournamentId={routeTournamentId}

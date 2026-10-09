@@ -11,6 +11,7 @@ import { TournamentDetailPage } from '@/pages/TournamentDetailPage'
 import { DraftBoardPage } from '@/pages/DraftBoardPage'
 import { MatchBanPage } from '@/pages/MatchBanPage'
 import { AdminTournamentPage } from '@/pages/AdminTournamentPage'
+import { AdminPlayersPage } from '@/pages/AdminPlayersPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -93,6 +94,17 @@ export const App: React.FC = () => {
             />
 
             {/* Admin Operations Portal routes (Phase 11) */}
+            <Route
+              path="/admin/players"
+              element={
+                <ProtectedRoute requiredRole="ADMIN">
+                  <AppShell>
+                    <AdminPlayersPage />
+                  </AppShell>
+                </ProtectedRoute>
+              }
+            />
+
             <Route
               path="/admin/tournaments/new"
               element={

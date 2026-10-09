@@ -117,6 +117,12 @@ async def load_chunk(
                 "rating": r.rating,
                 "image_url": r.image_url,
                 "status": "ACTIVE",
+                "pace": r.pace,
+                "shooting": r.shooting,
+                "passing": r.passing,
+                "dribbling": r.dribbling,
+                "defending": r.defending,
+                "physical": r.physical,
             }
         )
 
@@ -129,6 +135,12 @@ async def load_chunk(
             "salary": card_stmt.excluded.salary,
             "rating": card_stmt.excluded.rating,
             "image_url": card_stmt.excluded.image_url,
+            "pace": card_stmt.excluded.pace,
+            "shooting": card_stmt.excluded.shooting,
+            "passing": card_stmt.excluded.passing,
+            "dribbling": card_stmt.excluded.dribbling,
+            "defending": card_stmt.excluded.defending,
+            "physical": card_stmt.excluded.physical,
         },
     )
     await session.execute(card_stmt)

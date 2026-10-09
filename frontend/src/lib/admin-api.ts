@@ -28,6 +28,28 @@ export interface UserTeamHistoryItem {
   joinedAt: string
 }
 
+export interface NexonSeasonMeta {
+  season_id: number
+  code: string
+  name: string
+  badge_url: string | null
+  player_count: number
+}
+
+export interface NexonPlayerSearchItem {
+  spid: number
+  name: string
+  season_id: number
+  season_code: string
+  badge_url: string | null
+}
+
+export interface NexonSyncParams {
+  spids?: number[]
+  season_id?: number
+  limit?: number
+}
+
 export const adminApi = {
   // 1. Tournaments
   listTournaments: async (): Promise<TournamentListItem[]> => {
@@ -119,6 +141,25 @@ export const adminApi = {
         'Content-Type': 'multipart/form-data',
       },
     })
+    return res.data
+  },
+
+  // 5.1 Nexon FC Online Sync
+  getNexonSeasons: async (): Promise<NexonSeasonMeta[]> => {
+    const res = await apiClient.get<NexonSeasonMeta[]>('/admin/players/nexon-meta/seasons')
+    return res.data
+  },
+
+  searchNexonPlayers: async (q: string, limit = 30): Promise<NexonPlayerSearchItem[]> => {
+    const res = await apiClient.get<NexonPlayerSearchItem[]>('/admin/players/nexon-meta/search', {
+      params: { q, limit },
+    })
+    return res.data
+  },
+
+  syncNexonPlayers: async (params: NexonSyncParams | number[]): Promise<ImportReport> => {
+    const payload = Array.isArray(params) ? { spids: params } : params
+    const res = await apiClient.post<ImportReport>('/admin/players/sync-nexon', payload)
     return res.data
   },
 

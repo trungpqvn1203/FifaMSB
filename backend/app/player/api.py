@@ -18,6 +18,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.auth.dependencies import require_admin
 from app.common.clock import Clock, get_clock
 from app.db import get_session
+from app.importer.nexon_meta import NexonMetadataRegistry
+from app.importer.nexon_pipeline import run_nexon_sync_pipeline
 from app.importer.pipeline import ImportReport, run_import_pipeline
 from app.player.dependencies import get_player_service
 from app.player.domain import Season
@@ -32,6 +34,44 @@ admin_player_router = APIRouter()
 # ---------------------------------------------------------------------------
 # Schemas
 # ---------------------------------------------------------------------------
+
+
+class NexonSyncRequest(BaseModel):
+    """Payload for synchronizing cards from Nexon FC Online."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    spids: list[int] = Field(
+        default_factory=list,
+        max_length=500,
+        description="Explicit list of SPIDs to synchronize.",
+    )
+    season_id: int | None = Field(
+        default=None,
+        description="Optional season ID to sync all/top cards from that season.",
+    )
+    limit: int | None = Field(
+        default=None,
+        ge=1,
+        le=500,
+        description="Optional limit on how many cards to sync in one batch.",
+    )
+
+
+class NexonSeasonResponse(BaseModel):
+    season_id: int
+    code: str
+    name: str
+    badge_url: str | None
+    player_count: int
+
+
+class NexonPlayerSearchItem(BaseModel):
+    spid: int
+    name: str
+    season_id: int
+    season_code: str
+    badge_url: str | None
 
 
 class SeasonResponse(BaseModel):
@@ -216,3 +256,52 @@ async def import_players_csv(
         pool_lock_policy=pool_lock_policy,
         source=file.file,
     )
+
+
+@admin_player_router.post(
+    "/players/sync-nexon",
+    response_model=ImportReport,
+    dependencies=[Depends(require_admin)],
+)
+async def sync_players_nexon(
+    payload: NexonSyncRequest,
+    session: AsyncSession = Depends(get_session),
+    clock: Clock = Depends(get_clock),
+    pool_lock_policy: PoolLockPolicy = Depends(get_pool_lock_policy),
+) -> ImportReport:
+    """Synchronize player cards from Nexon FC Online DataCenter (Admin only)."""
+    return await run_nexon_sync_pipeline(
+        session=session,
+        clock=clock,
+        pool_lock_policy=pool_lock_policy,
+        spids=payload.spids if payload.spids else None,
+        season_id=payload.season_id,
+        limit=payload.limit,
+    )
+
+
+@admin_player_router.get(
+    "/players/nexon-meta/seasons",
+    response_model=list[NexonSeasonResponse],
+    dependencies=[Depends(require_admin)],
+)
+async def get_nexon_seasons() -> list[NexonSeasonResponse]:
+    """Get list of available seasons from Nexon metadata with player counts (Admin only)."""
+    registry = NexonMetadataRegistry.get_instance()
+    seasons = registry.get_all_seasons()
+    return [NexonSeasonResponse(**s.to_dict()) for s in seasons]
+
+
+@admin_player_router.get(
+    "/players/nexon-meta/search",
+    response_model=list[NexonPlayerSearchItem],
+    dependencies=[Depends(require_admin)],
+)
+async def search_nexon_players(
+    q: Annotated[str, Query(min_length=1, max_length=50, description="English player name query")],
+    limit: Annotated[int, Query(ge=1, le=50)] = 30,
+) -> list[NexonPlayerSearchItem]:
+    """Search available cards by English player name (Admin only)."""
+    registry = NexonMetadataRegistry.get_instance()
+    results = registry.search_players(q, limit=limit)
+    return [NexonPlayerSearchItem(**r.to_dict()) for r in results]

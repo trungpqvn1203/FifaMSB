@@ -18,9 +18,10 @@
 | **Phase 7** | Frontend Foundation (React + Vite + Tailwind) | **Hoàn thành** | Build PASS | [phase-7-frontend.md](history/phase-7-frontend.md) |
 | **Phase 8** | Draft Board UI & WebSocket Hook | **Hoàn thành** | Build PASS, 157/157 | [phase-8-draft-board.md](history/phase-8-draft-board.md) |
 | **Phase 9** | Matches & Tactical Bans (backend) | **Hoàn thành** | 169/169 | [phase-9-matches.md](history/phase-9-matches.md) |
-| **Phase 10** | Ban UI | *Chờ thực hiện* | - | - |
-| **Phase 11** | Admin UI | *Chờ thực hiện* | - | - |
-| **Phase 12** | E2E, Docker & Hardening | *Chờ thực hiện* | - | - |
+| **Phase 10** | Ban UI | *Hoàn thành* | - | [phase-10-ban-ui.md](history/phase-10-ban-ui.md) |
+| **Phase 11** | Admin UI & Operations Console | *Hoàn thành* | - | [phase-11-admin-ui.md](history/phase-11-admin-ui.md) |
+| **Phase 12** | E2E, Docker & Hardening | *Hoàn thành* | Full E2E | [phase-12-e2e-docker.md](history/phase-12-e2e-docker.md) |
+| **Feature Sync** | Đồng Bộ Cầu Thủ FC Online (Nexon API) | **Hoàn thành** | 102/102 unit | [nexon-player-sync.md](history/nexon-player-sync.md) |
 
 ---
 
