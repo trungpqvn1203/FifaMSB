@@ -18,6 +18,13 @@ export type DraftPickRequest = components['schemas']['DraftPickRequest']
 export type PlayerSeason = components['schemas']['PlayerSeasonResponse']
 export type PlayerSeasonList = components['schemas']['PlayerSeasonListResponse']
 
+export interface SeasonOption {
+  id: string
+  code: string
+  name: string
+  badgeUrl?: string | null
+}
+
 export interface PickedPlayerDetail {
   playerSeasonId: string
   playerId: string
@@ -25,6 +32,8 @@ export interface PickedPlayerDetail {
   position: string
   rating: number
   salary: number
+  imageUrl?: string | null
+  externalPlayerId?: string | null
   season?: {
     id: string
     code: string

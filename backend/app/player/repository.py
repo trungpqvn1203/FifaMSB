@@ -3,7 +3,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -148,10 +148,13 @@ async def list_player_seasons(
             query = query.where(PlayerSeason.position.in_(positions))
             count_query = count_query.where(PlayerSeason.position.in_(positions))
 
-    # Accent-insensitive player name search using immutable_unaccent
+    # Accent-insensitive player name or season code search
     if search and search.strip():
         term = f"%{search.strip()}%"
-        search_filter = func.immutable_unaccent(Player.name).ilike(func.immutable_unaccent(term))
+        search_filter = or_(
+            func.immutable_unaccent(Player.name).ilike(func.immutable_unaccent(term)),
+            Season.code.ilike(term),
+        )
         query = query.where(search_filter)
         count_query = count_query.where(search_filter)
 

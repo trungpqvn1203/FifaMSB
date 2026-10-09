@@ -211,6 +211,12 @@ class DraftService:
                 "position": last_picked_card.position,
                 "rating": last_picked_card.rating or 0,
                 "salary": last_picked_card.salary,
+                "imageUrl": last_picked_card.image_url,
+                "externalPlayerId": (
+                    last_picked_card.player.external_player_id
+                    if last_picked_card.player
+                    else None
+                ),
                 "season": season_info,
             }
 

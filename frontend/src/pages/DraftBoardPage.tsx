@@ -10,11 +10,13 @@ import { DraftTeamHeader } from '@/components/draft/DraftTeamHeader'
 import { DraftMatrix } from '@/components/draft/DraftMatrix'
 import { WarRoomSidebar } from '@/components/draft/WarRoomSidebar'
 import { PlayerPoolDrawer } from '@/components/draft/PlayerPoolDrawer'
+import { PlayerPickReveal, type RevealPlayerData } from '@/components/draft/PlayerPickReveal'
 import type {
   DraftDetail,
   DraftPickBoardItem,
   Tournament,
   DraftSocketEvent,
+  PlayerSeason,
 } from '@/types/domain'
 
 export const DraftBoardPage: React.FC = () => {
@@ -26,6 +28,8 @@ export const DraftBoardPage: React.FC = () => {
   const { user, isAdmin } = useAuth()
   const queryClient = useQueryClient()
   const [actionError, setActionError] = useState<string | null>(null)
+  const [revealedPlayer, setRevealedPlayer] = useState<RevealPlayerData | null>(null)
+  const [lastPickedCard, setLastPickedCard] = useState<PlayerSeason | null>(null)
 
   // 1. Resolve Tournament or Draft Detail
   // If we arrived via /tournaments/:tournamentId/draft, fetch via /tournaments/:id/draft
@@ -79,13 +83,32 @@ export const DraftBoardPage: React.FC = () => {
   }, [effectiveDraftId, queryClient])
 
   const handlePickMade = useCallback(
-    (_event: DraftSocketEvent) => {
+    (event: DraftSocketEvent) => {
       if (effectiveDraftId) {
         queryClient.invalidateQueries({ queryKey: ['draft-picks', effectiveDraftId] })
         queryClient.invalidateQueries({ queryKey: ['draft-detail', effectiveDraftId] })
       }
+
+      if (event.pickedPlayer) {
+        const isMyTeamPick = Boolean(user?.teamId && event.currentTeamId === user.teamId)
+        const teamName = event.teams?.find((t) => t.id === event.currentTeamId)?.name || 'ĐỘI DRAFT'
+        setRevealedPlayer({
+          name: event.pickedPlayer.name,
+          position: event.pickedPlayer.position,
+          rating: event.pickedPlayer.rating,
+          salary: event.pickedPlayer.salary,
+          imageUrl: event.pickedPlayer.imageUrl,
+          externalPlayerId: event.pickedPlayer.externalPlayerId,
+          seasonCode: event.pickedPlayer.season?.code,
+          seasonBadgeUrl: event.pickedPlayer.season?.badgeUrl,
+          teamName,
+          isMyPick: isMyTeamPick,
+          roundNumber: event.currentRound,
+          turnNumber: event.currentTurn,
+        })
+      }
     },
-    [effectiveDraftId, queryClient]
+    [effectiveDraftId, queryClient, user]
   )
 
   // 4. WebSocket Realtime Hook
@@ -144,6 +167,22 @@ export const DraftBoardPage: React.FC = () => {
     },
     onSuccess: () => {
       setActionError(null)
+      if (lastPickedCard) {
+        setRevealedPlayer({
+          name: lastPickedCard.player.name,
+          position: lastPickedCard.position,
+          rating: lastPickedCard.rating,
+          salary: lastPickedCard.salary,
+          imageUrl: lastPickedCard.imageUrl,
+          externalPlayerId: lastPickedCard.player.externalPlayerId,
+          seasonCode: lastPickedCard.season.code,
+          seasonBadgeUrl: lastPickedCard.season.badgeUrl,
+          teamName: currentTeam?.name || 'ĐỘI CỦA BẠN',
+          isMyPick: true,
+          roundNumber: activeRound,
+          turnNumber: activeTurn,
+        })
+      }
       handleResync()
     },
     onError: (err) => {
@@ -154,6 +193,30 @@ export const DraftBoardPage: React.FC = () => {
       }
     },
   })
+
+  const handleMakePick = (playerSeasonId: string, card?: PlayerSeason) => {
+    if (card) {
+      setLastPickedCard(card)
+    }
+    makePickMutation.mutate(playerSeasonId)
+  }
+
+  const handlePreviewCard = (card: PlayerSeason) => {
+    setRevealedPlayer({
+      name: card.player.name,
+      position: card.position,
+      rating: card.rating,
+      salary: card.salary,
+      imageUrl: card.imageUrl,
+      externalPlayerId: card.player.externalPlayerId,
+      seasonCode: card.season.code,
+      seasonBadgeUrl: card.season.badgeUrl,
+      teamName: currentTeam?.name || 'CHẾ ĐỘ XEM TRƯỚC',
+      isMyPick: true,
+      roundNumber: activeRound,
+      turnNumber: activeTurn,
+    })
+  }
 
   // 6. Admin Action Mutations
   const pauseMutation = useMutation({
@@ -281,9 +344,13 @@ export const DraftBoardPage: React.FC = () => {
             draftStatus={activeStatus}
             picks={picks}
             isMyTurn={isMyTurn}
-            onMakePick={(playerSeasonId) => makePickMutation.mutate(playerSeasonId)}
+            onMakePick={handleMakePick}
+            onPreviewCard={handlePreviewCard}
             isPickingLoading={makePickMutation.isPending}
             pickError={actionError}
+            currentRound={activeRound}
+            currentTurn={activeTurn}
+            secondsRemaining={secondsRemaining}
           />
         </div>
       </main>
@@ -300,6 +367,12 @@ export const DraftBoardPage: React.FC = () => {
           <span>© 2026 FC ONLINE PRO DRAFT</span>
         </div>
       </footer>
+
+      {/* Walkout / Reveal Showcase Overlay */}
+      <PlayerPickReveal
+        data={revealedPlayer}
+        onDismiss={() => setRevealedPlayer(null)}
+      />
     </div>
   )
 }
