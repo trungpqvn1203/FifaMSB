@@ -6,6 +6,7 @@ interface TacticalActionDockProps {
   isConfirmed: boolean
   isLocked: boolean
   isPendingAction: boolean
+  isSupervisor?: boolean
   status: 'SCHEDULED' | 'BAN_PHASE' | 'BANS_LOCKED' | 'COMPLETED'
   onUndoLastPick: () => void
   onConfirmBans: () => void
@@ -17,6 +18,7 @@ export const TacticalActionDock: React.FC<TacticalActionDockProps> = ({
   isConfirmed,
   isLocked,
   isPendingAction,
+  isSupervisor = false,
   status,
   onUndoLastPick,
   onConfirmBans,
@@ -125,7 +127,12 @@ export const TacticalActionDock: React.FC<TacticalActionDockProps> = ({
           )}
 
           {/* Primary Lock Action Button */}
-          {status === 'BANS_LOCKED' || status === 'COMPLETED' ? (
+          {isSupervisor ? (
+            <div className="px-5 py-2.5 rounded-lg bg-zinc-800 text-zinc-400 font-mono text-xs border border-zinc-700 flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-blue-500 animate-pulse" />
+              <span>CHẾ ĐỘ GIÁM SÁT · CHỈ ĐỘI TRƯỞNG MỚI ĐƯỢC CẤM</span>
+            </div>
+          ) : status === 'BANS_LOCKED' || status === 'COMPLETED' ? (
             <button
               type="button"
               disabled

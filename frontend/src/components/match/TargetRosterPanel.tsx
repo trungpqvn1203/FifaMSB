@@ -44,7 +44,7 @@ export const TargetRosterPanel: React.FC<TargetRosterPanelProps> = ({
   })
 
   const currentCount = bans.length
-  const progressPercent = Math.min(100, Math.round((currentCount / maxBans) * 100))
+  const progressPercent = maxBans > 0 ? Math.min(100, Math.round((currentCount / maxBans) * 100)) : 100
   const remainingCount = Math.max(0, maxBans - currentCount)
 
   return (

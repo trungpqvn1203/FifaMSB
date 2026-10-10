@@ -25,8 +25,8 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({
   const friendlyTeam = isAwayUser ? awayTeam : homeTeam
   const targetTeam = isAwayUser ? homeTeam : awayTeam
 
-  const banQuota = rules.banCount ?? rules.banQuota ?? 5
-  const banOrder = rules.banOrder ?? 'SIMULTANEOUS'
+  const banQuota = rules.banCount ?? (rules as any).ban_count ?? rules.banQuota ?? 5
+  const banOrder = rules.banOrder ?? (rules as any).ban_order ?? 'SIMULTANEOUS'
   const budget = rules.budget ?? 305
 
   // Formatted countdown time

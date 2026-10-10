@@ -93,6 +93,7 @@ export const TournamentDetailPage: React.FC = () => {
   const {
     data: matches,
     isLoading: isMatchesLoading,
+    error: matchesError,
   } = useQuery<MatchDetail[]>({
     queryKey: ['tournament-matches', tournamentId],
     queryFn: () => matchApi.listTournamentMatches(tournamentId!),
@@ -804,6 +805,13 @@ export const TournamentDetailPage: React.FC = () => {
 
         {isMatchesLoading ? (
           <div className="text-zinc-500 font-mono text-xs py-6">Đang tải danh sách trận đấu...</div>
+        ) : matchesError ? (
+          <Card className="p-6 flex flex-col items-center justify-center text-center gap-2 border-danger/30 bg-danger/5">
+            <AlertCircle className="w-6 h-6 text-danger" />
+            <span className="text-xs text-danger font-medium">
+              Không thể tải danh sách trận đấu. Đang tự động kết nối lại...
+            </span>
+          </Card>
         ) : !matches || matches.length === 0 ? (
           <Card className="p-8 flex flex-col items-center justify-center text-center gap-3 border-dashed border-border-subtle bg-surface-card/40">
             <Swords className="w-10 h-10 text-zinc-600" />

@@ -123,7 +123,10 @@ class MatchService:
         if match.status != "SCHEDULED":
             raise MatchNotActive()
 
-        ban_seconds = int(match.rules_snapshot.get("banTimeSeconds", 60))
+        raw_ban_seconds = match.rules_snapshot.get(
+            "banTimeSeconds", match.rules_snapshot.get("ban_time_seconds", 60)
+        )
+        ban_seconds = int(raw_ban_seconds)
         match.status = "BAN_PHASE"
         match.ban_started_at = now
         match.ban_expires_at = now + timedelta(seconds=ban_seconds)
@@ -161,6 +164,9 @@ class MatchService:
             match.version += 1
             match.updated_at = now
             await self._session.commit()
+            full_match = await repository.get_match_by_id(self._session, match_id)
+            if full_match:
+                await self._broadcast_match_event(full_match, "BANS_LOCKED")
             raise BansLocked()
 
         if not match.is_participant(banning_team_id):
@@ -170,14 +176,14 @@ class MatchService:
             raise BansAlreadyConfirmed()
 
         # Resolve target team
-        ban_target = match.rules_snapshot.get("banTarget", "OPPONENT_ROSTER")
+        ban_target = match.rules_snapshot.get(
+            "banTarget", match.rules_snapshot.get("ban_target", "OPPONENT_ROSTER")
+        )
         resolved_target = (
             match.get_opponent_team_id(banning_team_id)
             if ban_target == "OPPONENT_ROSTER"
             else banning_team_id
         )
-        if target_team_id is not None and target_team_id != resolved_target:
-            resolved_target = target_team_id
 
         # BR-M01: Target player must belong to the target team's drafted roster
         is_drafted = await repository.is_card_drafted_by_team(
@@ -187,7 +193,10 @@ class MatchService:
             raise PlayerNotInRoster()
 
         # BR-M02: Check ban limit
-        max_bans = int(match.rules_snapshot.get("banCount", 5))
+        raw_max_bans = match.rules_snapshot.get(
+            "banCount", match.rules_snapshot.get("ban_count", 5)
+        )
+        max_bans = int(raw_max_bans)
         current_bans_count = await repository.get_team_bans_count(
             self._session, match_id, banning_team_id
         )
@@ -245,6 +254,9 @@ class MatchService:
             match.version += 1
             match.updated_at = now
             await self._session.commit()
+            full_match = await repository.get_match_by_id(self._session, match_id)
+            if full_match:
+                await self._broadcast_match_event(full_match, "BANS_LOCKED")
             raise BansLocked()
 
         if not match.is_participant(banning_team_id):
@@ -353,10 +365,11 @@ class MatchService:
         - Spectator / unauthenticated viewer sees only ban counts for both teams.
         - Once BANS_LOCKED or COMPLETED: all bans are revealed to everyone.
         """
+        ban_order = match.rules_snapshot.get(
+            "banOrder", match.rules_snapshot.get("ban_order", "SIMULTANEOUS")
+        )
         is_secret_phase = (
-            match.status == "BAN_PHASE"
-            and match.rules_snapshot.get("banOrder", "SIMULTANEOUS") == "SIMULTANEOUS"
-            and not is_admin
+            match.status == "BAN_PHASE" and ban_order == "SIMULTANEOUS" and not is_admin
         )
 
         home_bans = [b for b in match.bans if b.banning_team_id == match.home_team_id]

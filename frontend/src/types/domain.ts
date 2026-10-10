@@ -46,6 +46,8 @@ export interface DraftSocketEvent {
     | 'INITIAL_SNAPSHOT'
     | 'PICK_MADE'
     | 'TURN_TIMEOUT'
+    | 'TIMEOUT_AUTO_PICK'
+    | 'TURN_SKIPPED'
     | 'DRAFT_PAUSED'
     | 'DRAFT_RESUMED'
     | 'DRAFT_COMPLETED'

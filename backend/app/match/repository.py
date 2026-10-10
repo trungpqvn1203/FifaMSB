@@ -57,6 +57,14 @@ async def list_matches_for_tournament(
         .options(
             selectinload(Match.home_team),
             selectinload(Match.away_team),
+            selectinload(Match.bans)
+            .selectinload(MatchBan.player_season)
+            .selectinload(PlayerSeason.player),
+            selectinload(Match.bans)
+            .selectinload(MatchBan.player_season)
+            .selectinload(PlayerSeason.season),
+            selectinload(Match.bans).selectinload(MatchBan.banning_team),
+            selectinload(Match.bans).selectinload(MatchBan.target_team),
         )
         .order_by(Match.scheduled_at.asc().nulls_last(), Match.created_at.asc())
     )
@@ -110,6 +118,7 @@ async def is_card_drafted_by_team(
         .join(DraftSession, DraftPick.draft_session_id == DraftSession.id)
         .where(
             DraftSession.tournament_id == tournament_id,
+            DraftSession.status != "CANCELLED",
             DraftPick.team_id == team_id,
             DraftPick.player_season_id == player_season_id,
         )

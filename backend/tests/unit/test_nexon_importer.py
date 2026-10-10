@@ -277,4 +277,3 @@ def test_nexon_metadata_registry() -> None:
     search_results = registry.search_players("ronaldo", limit=10)
     assert len(search_results) > 0
     assert any("ronaldo" in r.name.lower() for r in search_results)
-

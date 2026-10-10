@@ -153,7 +153,12 @@ export function useDraftSocket({
           setDraftState(payload)
           onDraftEventRef.current?.(payload)
 
-          if (payload.eventType === 'PICK_MADE') {
+          if (
+            payload.eventType === 'PICK_MADE' ||
+            payload.eventType === 'TIMEOUT_AUTO_PICK' ||
+            payload.eventType === 'DRAFT_COMPLETED' ||
+            Boolean(payload.pickedPlayer)
+          ) {
             onPickMadeRef.current?.(payload)
           }
         } catch {

@@ -102,20 +102,38 @@ export const MatchBanPage: React.FC = () => {
     },
   })
 
-  // Prefer socket state over fetched REST data
-  const currentMatch = socketMatch || fetchedMatch
+  // Merge socket and fetched match data
+  const currentMatch = useMemo(() => {
+    if (!socketMatch && !fetchedMatch) return null
+    if (!socketMatch) return fetchedMatch
+    if (!fetchedMatch) return socketMatch
+
+    // When in BAN_PHASE, socket broadcast masks private bans (bans: []).
+    // Preserve the team's private bans returned by REST getMatchDetail:
+    const bans =
+      socketMatch.status === 'BAN_PHASE' && socketMatch.bans.length === 0 && fetchedMatch.bans.length > 0
+        ? fetchedMatch.bans
+        : socketMatch.bans
+
+    return {
+      ...fetchedMatch,
+      ...socketMatch,
+      bans,
+    }
+  }, [socketMatch, fetchedMatch])
 
   // Determine user perspective
   const userTeamId = user?.teamId
-  const isAwayUser = userTeamId && currentMatch && userTeamId === currentMatch.awayTeam.id
+  const isSupervisor = Boolean(isAdmin && !userTeamId)
+  const isAwayUser = Boolean(userTeamId && currentMatch && userTeamId === currentMatch.awayTeam.id)
 
   const friendlyTeam = useMemo(() => {
-    if (!currentMatch) return { id: 'friendly', name: 'Valiant FC', confirmed: false, banCount: 0 }
+    if (!currentMatch) return { id: 'friendly', name: 'Đội Nhà', confirmed: false, banCount: 0 }
     return isAwayUser ? currentMatch.awayTeam : currentMatch.homeTeam
   }, [currentMatch, isAwayUser])
 
   const targetTeam = useMemo(() => {
-    if (!currentMatch) return { id: 'target', name: 'Titan Esports', confirmed: false, banCount: 0 }
+    if (!currentMatch) return { id: 'target', name: 'Đội Khách', confirmed: false, banCount: 0 }
     return isAwayUser ? currentMatch.homeTeam : currentMatch.awayTeam
   }, [currentMatch, isAwayUser])
 
@@ -135,16 +153,20 @@ export const MatchBanPage: React.FC = () => {
   const friendlyRoster =
     friendlyRosterData?.roster && friendlyRosterData.roster.length > 0
       ? friendlyRosterData.roster
-      : SAMPLE_FRIENDLY_ROSTER
+      : simulatedMode !== 'live'
+      ? SAMPLE_FRIENDLY_ROSTER
+      : []
 
   const targetRoster =
     targetRosterData?.roster && targetRosterData.roster.length > 0
       ? targetRosterData.roster
-      : SAMPLE_TARGET_ROSTER
+      : simulatedMode !== 'live'
+      ? SAMPLE_TARGET_ROSTER
+      : []
 
   // Filter bans
   const rules = currentMatch?.rulesSnapshot || {}
-  const maxBans = rules.banCount ?? rules.banQuota ?? 5
+  const maxBans = Number(rules.banCount ?? rules.ban_count ?? rules.banQuota ?? 5)
 
   // 4. Mutations for bans
   const submitBanMutation = useMutation({
@@ -378,7 +400,7 @@ export const MatchBanPage: React.FC = () => {
             roster={targetRoster}
             bans={simulatedTargetBans}
             maxBans={maxBans}
-            isLocked={effectiveConfirmed || isBansRevealed}
+            isLocked={isSupervisor || effectiveConfirmed || isBansRevealed}
             isPendingAction={isPendingAction}
             onSelectBan={handleSelectBan}
             onRemoveBan={handleRemoveBan}
@@ -393,6 +415,7 @@ export const MatchBanPage: React.FC = () => {
         isConfirmed={effectiveConfirmed}
         isLocked={isBansRevealed}
         isPendingAction={isPendingAction}
+        isSupervisor={isSupervisor}
         status={effectiveStatus}
         onUndoLastPick={handleUndoLastPick}
         onConfirmBans={handleConfirmBans}

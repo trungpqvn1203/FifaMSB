@@ -83,10 +83,14 @@ export const AdminTournamentPage: React.FC = () => {
         if (rules.timeoutPolicy) setTimeoutPolicy(rules.timeoutPolicy)
         if (rules.allowedSeasonIds) setAllowedSeasons(rules.allowedSeasonIds)
         if (rules.banCount !== undefined) setBanQuota(rules.banCount)
+        else if (rules.ban_count !== undefined) setBanQuota(rules.ban_count)
         else if (rules.banQuota !== undefined) setBanQuota(rules.banQuota)
         if (rules.banTimeSeconds !== undefined) setBanTimeSeconds(rules.banTimeSeconds)
+        else if (rules.ban_time_seconds !== undefined) setBanTimeSeconds(rules.ban_time_seconds)
         if (rules.banTarget) setBanTarget(rules.banTarget)
+        else if (rules.ban_target) setBanTarget(rules.ban_target)
         if (rules.banOrder) setBanOrder(rules.banOrder)
+        else if (rules.ban_order) setBanOrder(rules.ban_order)
       }
     }
   }, [existingTournament])

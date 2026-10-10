@@ -26,6 +26,8 @@
 | 2026-10-08 | Liên kết đội trưởng ngoài trang giải & Nginx SPA cache | Phase 4, 7 & 12 | [2026-10-08-lien-ket-doi-truong-va-cache-nginx.md](2026-10-08-lien-ket-doi-truong-va-cache-nginx.md) |
 | 2026-10-08 | Lỗi đảo thứ tự Draft & Nâng cấp Kéo Thả (Drag & Drop) | Phase 4, 5 & 11 | [2026-10-08-draft-order-reorder-drag-drop.md](2026-10-08-draft-order-reorder-drag-drop.md) |
 | 2026-10-08 | Khóa thay đổi thứ tự khi đang cấm chọn / giải đấu chạy | Phase 4, 5, 9 & 11 | [2026-10-08-khoa-thu-tu-khi-cam-chon.md](2026-10-08-khoa-thu-tu-khi-cam-chon.md) |
+| 2026-10-10 | Cộng dồn lượt pick phiên cũ làm phiên kết thúc sớm | Phase 5 & 6 | [2026-10-10-cong-don-pick-phien-draft-cu.md](2026-10-10-cong-don-pick-phien-draft-cu.md) |
+| 2026-10-11 | Sửa toàn diện logic cấm cầu thủ trong trận (Rules, Masking, Admin, Timer) | Phase 7 & 8 | [2026-10-11-sua-loi-logic-ban-tran-dau.md](2026-10-11-sua-loi-logic-ban-tran-dau.md) |
 
 ---
 

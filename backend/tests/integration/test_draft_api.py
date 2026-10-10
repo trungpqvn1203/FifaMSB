@@ -494,3 +494,55 @@ async def test_get_tournament_draft(client: AsyncClient, draft_env: dict[str, An
     assert data["tournamentId"] == str(trn_id)
     assert data["status"] == "PICKING"
     assert len(data["teams"]) == 2
+
+
+@pytest.mark.integration
+async def test_cancelled_draft_does_not_accumulate_picks_in_new_draft(
+    client: AsyncClient, draft_env: dict[str, Any]
+) -> None:
+    """When a draft is cancelled, its picks must not accumulate into a subsequent draft session."""
+    trn_id = draft_env["tournament"].id
+    card1 = draft_env["cards"][0]
+    card2 = draft_env["cards"][1]
+
+    # Start first draft
+    await _login(client, "admin_drf_test", "admin_pass")
+    res1 = await client.post(f"/api/tournaments/{trn_id}/draft/start")
+    draft1_id = res1.json()["id"]
+
+    # Team 1 makes a pick in draft 1
+    await _login(client, "team1_drf_test", "team1_pass")
+    pick1_res = await client.post(
+        f"/api/drafts/{draft1_id}/picks",
+        json={"playerSeasonId": str(card1.id), "expectedVersion": 1},
+    )
+    assert pick1_res.status_code == 201
+
+    # Admin cancels draft 1
+    await _login(client, "admin_drf_test", "admin_pass")
+    cancel_res = await client.post(f"/api/drafts/{draft1_id}/cancel")
+    assert cancel_res.status_code == 200
+
+    # Admin starts draft 2
+    res2 = await client.post(f"/api/tournaments/{trn_id}/draft/start")
+    assert res2.status_code == 201
+    draft2_id = res2.json()["id"]
+
+    # Draft 2 should have 0 picks for team 1
+    draft2_detail = await client.get(f"/api/drafts/{draft2_id}")
+    team1_info = next(t for t in draft2_detail.json()["teams"] if t["name"] == "Flash Team 1")
+    assert team1_info["pickedCount"] == 0
+    assert team1_info["budgetUsed"] == 0
+
+    # Team 1 makes pick in draft 2
+    await _login(client, "team1_drf_test", "team1_pass")
+    pick2_res = await client.post(
+        f"/api/drafts/{draft2_id}/picks",
+        json={"playerSeasonId": str(card2.id), "expectedVersion": 1},
+    )
+    assert pick2_res.status_code == 201
+
+    # Team 1 should now have pickedCount = 1, NOT 2
+    draft2_detail = await client.get(f"/api/drafts/{draft2_id}")
+    team1_info = next(t for t in draft2_detail.json()["teams"] if t["name"] == "Flash Team 1")
+    assert team1_info["pickedCount"] == 1

@@ -213,9 +213,7 @@ class DraftService:
                 "salary": last_picked_card.salary,
                 "imageUrl": last_picked_card.image_url,
                 "externalPlayerId": (
-                    last_picked_card.player.external_player_id
-                    if last_picked_card.player
-                    else None
+                    last_picked_card.player.external_player_id if last_picked_card.player else None
                 ),
                 "season": season_info,
             }
@@ -353,7 +351,9 @@ class DraftService:
         team = await tournament_repo.get_team_by_id(self._session, team_id)
         assert team is not None  # current_team_id comes from DB FK
 
-        team_picks = await repository.get_team_picks(self._session, team_id)
+        team_picks = await repository.get_team_picks(
+            self._session, team_id, draft_session_id=draft.id
+        )
         picked_count = len(team_picks)
 
         # BR-P10: Team roster full check
@@ -509,6 +509,15 @@ class DraftService:
             tournament.updated_at = now
             await tournament_repo.save_tournament(self._session, tournament)
 
+        # Reset teams.budget_used = 0 for all teams in tournament
+        teams = await tournament_repo.list_teams(self._session, draft.tournament_id)
+        for t in teams:
+            t.budget_used = 0
+            await tournament_repo.save_team(self._session, t)
+
+        # Delete picks belonging to this cancelled draft session
+        await repository.delete_draft_picks_by_session(self._session, draft.id)
+
         await repository.record_draft_event(
             session=self._session,
             draft_session_id=draft.id,
@@ -560,7 +569,9 @@ class DraftService:
         teams = await tournament_repo.list_teams(self._session, draft.tournament_id)
         team_turn_infos: list[TeamTurnInfo] = []
         for t in teams:
-            t_picks = await repository.get_team_picks(self._session, t.id)
+            t_picks = await repository.get_team_picks(
+                self._session, t.id, draft_session_id=draft.id
+            )
             team_turn_infos.append(
                 TeamTurnInfo(
                     team_id=t.id,
@@ -619,7 +630,9 @@ class DraftService:
         if timeout_policy == "AUTO_PICK_CHEAPEST" and draft.current_team_id is not None:
             team = await tournament_repo.get_team_by_id(self._session, draft.current_team_id)
             if team:
-                team_picks = await repository.get_team_picks(self._session, team.id)
+                team_picks = await repository.get_team_picks(
+                    self._session, team.id, draft_session_id=draft.id
+                )
                 picked_count = len(team_picks)
 
                 if picked_count < 11:

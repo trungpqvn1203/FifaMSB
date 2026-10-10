@@ -531,3 +531,52 @@ async def test_complete_match_lifecycle(client: AsyncClient, match_env: dict[str
     res = await client.post(f"/api/matches/{match_id}/complete")
     assert res.status_code == 200
     assert res.json()["status"] == "COMPLETED"
+
+
+@pytest.mark.integration
+async def test_snake_case_rules_parsed_correctly(
+    client: AsyncClient, match_env: dict[str, Any], db_session: AsyncSession
+) -> None:
+    """MatchService must parse snake_case rules correctly (ban_count, ban_time_seconds, etc.)."""
+    trn = match_env["tournament"]
+    cards = match_env["cards"]
+
+    # Update tournament rules to snake_case only (as stored by TournamentRules.to_dict())
+    trn.rules = {
+        "rules_version": 1,
+        "roster_size": 3,
+        "budget": 300,
+        "ban_count": 1,
+        "ban_time_seconds": 120,
+        "ban_target": "OPPONENT_ROSTER",
+        "ban_order": "SIMULTANEOUS",
+    }
+    await db_session.commit()
+
+    await _login(client, "admin_mch_test", "admin_pass")
+    create_res = await client.post(
+        f"/api/tournaments/{trn.id}/matches",
+        json={"homeTeamId": str(match_env["team1"].id), "awayTeamId": str(match_env["team2"].id)},
+    )
+    assert create_res.status_code == 201
+    m_id = create_res.json()["id"]
+
+    start_res = await client.post(f"/api/matches/{m_id}/bans/start")
+    assert start_res.status_code == 200
+    assert start_res.json()["status"] == "BAN_PHASE"
+
+    # Team 1 submits 1 ban on opponent's card (cards[3] belongs to Team 2) -> OK
+    await _login(client, "team1_mch_test", "team1_pass")
+    ban1_res = await client.post(
+        f"/api/matches/{m_id}/bans",
+        json={"playerSeasonId": str(cards[3].id)},
+    )
+    assert ban1_res.status_code == 201
+
+    # Team 1 submits 2nd ban -> fails with BAN_LIMIT_REACHED because ban_count is 1
+    ban2_res = await client.post(
+        f"/api/matches/{m_id}/bans",
+        json={"playerSeasonId": str(cards[4].id)},
+    )
+    assert ban2_res.status_code == 422
+    assert ban2_res.json()["code"] == "BAN_LIMIT_REACHED"

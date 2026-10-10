@@ -5,7 +5,7 @@ from collections.abc import Sequence
 from datetime import datetime
 from typing import Any
 
-from sqlalchemy import func, select
+from sqlalchemy import delete, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import joinedload
 
@@ -103,8 +103,13 @@ async def list_draft_picks(
 async def get_team_picks(
     session: AsyncSession,
     team_id: uuid.UUID,
+    draft_session_id: uuid.UUID | None = None,
 ) -> list[DraftPick]:
-    """Return all picks for a team across all rounds ordered by round."""
+    """Return all picks for a team across all rounds ordered by round.
+
+    If draft_session_id is provided, only picks for that session are returned.
+    Otherwise, picks from cancelled draft sessions are excluded.
+    """
     stmt = (
         select(DraftPick)
         .where(DraftPick.team_id == team_id)
@@ -114,8 +119,23 @@ async def get_team_picks(
         )
         .order_by(DraftPick.round.asc())
     )
+    if draft_session_id is not None:
+        stmt = stmt.where(DraftPick.draft_session_id == draft_session_id)
+    else:
+        stmt = stmt.join(DraftSession, DraftPick.draft_session_id == DraftSession.id).where(
+            DraftSession.status != "CANCELLED"
+        )
     result = await session.execute(stmt)
     return list(result.scalars().unique().all())
+
+
+async def delete_draft_picks_by_session(
+    session: AsyncSession,
+    draft_session_id: uuid.UUID,
+) -> None:
+    """Delete all DraftPick records belonging to a draft session."""
+    stmt = delete(DraftPick).where(DraftPick.draft_session_id == draft_session_id)
+    await session.execute(stmt)
 
 
 async def get_picked_player_season_ids(
