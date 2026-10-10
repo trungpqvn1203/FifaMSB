@@ -9,6 +9,7 @@ import { MatchScoreboard } from '@/components/match/MatchScoreboard'
 import { FriendlyRosterPanel } from '@/components/match/FriendlyRosterPanel'
 import { TargetRosterPanel } from '@/components/match/TargetRosterPanel'
 import { TacticalActionDock } from '@/components/match/TacticalActionDock'
+import { RecordScoreModal } from '@/components/match/RecordScoreModal'
 import type {
   MatchDetail,
   TeamRosterResponse,
@@ -78,6 +79,7 @@ export const MatchBanPage: React.FC = () => {
   // State Simulator mode: 'live' (real WS/REST), 'active' (3/5), 'locked', 'revealed'
   const [simulatedMode, setSimulatedMode] = useState<'live' | 'active' | 'locked' | 'revealed'>('live')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [isRecordScoreOpen, setIsRecordScoreOpen] = useState(false)
 
   // 1. Fetch initial match data via REST
   const {
@@ -324,6 +326,20 @@ export const MatchBanPage: React.FC = () => {
     deleteBanMutation.isPending ||
     confirmBansMutation.isPending
 
+  const recordScoreMutation = useMutation({
+    mutationFn: async ({ matchId, homeScore, awayScore }: { matchId: string; homeScore: number; awayScore: number }) => {
+      return matchApi.recordScore(matchId, { homeScore, awayScore })
+    },
+    onSuccess: (updated) => {
+      refetchMatch()
+      setMatchState(updated)
+      setIsRecordScoreOpen(false)
+    },
+    onError: (err: any) => {
+      setErrorMessage(err?.message || 'Không thể lưu tỉ số trận đấu.')
+    },
+  })
+
   return (
     <div className="min-h-screen bg-[#0c0d10] text-[#e0e3eb] selection:bg-[#3DFF6B] selection:text-black flex flex-col justify-between overflow-x-hidden font-sans">
       {/* 1. Top Header Banner */}
@@ -335,6 +351,9 @@ export const MatchBanPage: React.FC = () => {
           setSimulatedMode(mode)
           setErrorMessage(null)
         }}
+        isAdmin={isAdmin}
+        status={effectiveStatus}
+        onOpenScoreModal={() => setIsRecordScoreOpen(true)}
       />
 
       {/* Admin Start Ban Phase Action if scheduled */}
@@ -420,6 +439,19 @@ export const MatchBanPage: React.FC = () => {
         onUndoLastPick={handleUndoLastPick}
         onConfirmBans={handleConfirmBans}
       />
+
+      {/* 5. Admin Record Score Modal */}
+      {isAdmin && (
+        <RecordScoreModal
+          isOpen={isRecordScoreOpen}
+          onClose={() => setIsRecordScoreOpen(false)}
+          match={currentMatch}
+          onSaveScore={async (id, homeScore, awayScore) => {
+            await recordScoreMutation.mutateAsync({ matchId: id, homeScore, awayScore })
+          }}
+          isLoading={recordScoreMutation.isPending}
+        />
+      )}
     </div>
   )
 }

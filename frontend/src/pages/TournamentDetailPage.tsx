@@ -19,6 +19,7 @@ import {
   ChevronUp,
   ChevronDown,
   Lock,
+  Trophy,
 } from 'lucide-react'
 import { apiClient, ApiError } from '@/lib/api-client'
 import { adminApi } from '@/lib/admin-api'
@@ -29,7 +30,9 @@ import { Badge } from '@/components/ui/Badge'
 import { Card } from '@/components/ui/Card'
 import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
-import type { Tournament, Team, DraftDetail, CreateTeamRequest, MatchDetail, User } from '@/types/domain'
+import { TournamentStandingsSection } from '@/components/tournament/TournamentStandingsSection'
+import { RecordScoreModal } from '@/components/match/RecordScoreModal'
+import type { Tournament, Team, DraftDetail, CreateTeamRequest, MatchDetail, User, TeamStanding } from '@/types/domain'
 
 export const TournamentDetailPage: React.FC = () => {
   const { id: tournamentId } = useParams<{ id: string }>()
@@ -99,6 +102,40 @@ export const TournamentDetailPage: React.FC = () => {
     queryFn: () => matchApi.listTournamentMatches(tournamentId!),
     enabled: !!tournamentId,
     refetchInterval: 5000,
+  })
+
+  // 5. Fetch Tournament Standings
+  const {
+    data: standings = [],
+    isLoading: isStandingsLoading,
+  } = useQuery<TeamStanding[]>({
+    queryKey: ['tournament-standings', tournamentId],
+    queryFn: () => matchApi.getTournamentStandings(tournamentId!),
+    enabled: !!tournamentId,
+    refetchInterval: 5000,
+  })
+
+  // Tab & Score Modal States
+  const [activeTab, setActiveTab] = useState<'standings' | 'matches' | 'teams'>('standings')
+  const [selectedScoreMatch, setSelectedScoreMatch] = useState<MatchDetail | null>(null)
+  const [isScoreModalOpen, setIsScoreModalOpen] = useState(false)
+
+  // Record Match Score Mutation
+  const recordScoreMutation = useMutation({
+    mutationFn: async ({ matchId, homeScore, awayScore }: { matchId: string; homeScore: number; awayScore: number }) => {
+      return matchApi.recordScore(matchId, { homeScore, awayScore })
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['tournament-matches', tournamentId] })
+      queryClient.invalidateQueries({ queryKey: ['tournament-standings', tournamentId] })
+      queryClient.invalidateQueries({ queryKey: ['tournament', tournamentId] })
+      setIsScoreModalOpen(false)
+      setSelectedScoreMatch(null)
+      setActionError(null)
+    },
+    onError: (err: any) => {
+      setActionError(err?.message || 'Không thể ghi nhận tỉ số trận đấu.')
+    },
   })
 
   // Schedule Match Mutation
@@ -556,7 +593,71 @@ export const TournamentDetailPage: React.FC = () => {
         </div>
       </div>
 
-      {/* Teams Roster & Standings */}
+      {/* Navigation Tabs */}
+      <div className="flex items-center gap-2 border-b border-border-default pb-2">
+        <button
+          type="button"
+          onClick={() => setActiveTab('standings')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-display text-sm font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'standings'
+              ? 'bg-amber-500/15 text-amber-400 border border-amber-500/40 shadow-[0_0_15px_rgba(245,197,24,0.15)]'
+              : 'text-zinc-400 hover:text-white hover:bg-surface-elevated border border-transparent'
+          }`}
+        >
+          <Trophy className="w-4 h-4" />
+          <span>Bảng Xếp Hạng &amp; Điểm</span>
+          {standings.length > 0 && (
+            <span className="font-mono text-xs px-1.5 py-0.2 rounded bg-amber-400/20 text-amber-300">
+              {standings.length} Đội
+            </span>
+          )}
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('matches')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-display text-sm font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'matches'
+              ? 'bg-neon/15 text-neon border border-neon/40 shadow-[0_0_15px_rgba(61,255,107,0.15)]'
+              : 'text-zinc-400 hover:text-white hover:bg-surface-elevated border border-transparent'
+          }`}
+        >
+          <Swords className="w-4 h-4" />
+          <span>Lịch Thi Đấu &amp; Cấm Chọn</span>
+          <span className="font-mono text-xs px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-300">
+            {matches?.length || 0}
+          </span>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => setActiveTab('teams')}
+          className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-display text-sm font-bold uppercase tracking-wider transition-all cursor-pointer ${
+            activeTab === 'teams'
+              ? 'bg-cyan/15 text-cyan border border-cyan/40 shadow-[0_0_15px_rgba(0,229,255,0.15)]'
+              : 'text-zinc-400 hover:text-white hover:bg-surface-elevated border border-transparent'
+          }`}
+        >
+          <Users className="w-4 h-4" />
+          <span>Đội Tuyển Tham Gia</span>
+          <span className="font-mono text-xs px-1.5 py-0.2 rounded bg-zinc-800 text-zinc-300">
+            {teams?.length || 0}
+          </span>
+        </button>
+      </div>
+
+      {/* TAB 1: Tournament Standings */}
+      {activeTab === 'standings' && (
+        <TournamentStandingsSection
+          standings={standings}
+          isLoading={isStandingsLoading}
+          totalMatchesCount={matches?.length || 0}
+          completedMatchesCount={matches?.filter((m) => m.status === 'COMPLETED').length || 0}
+        />
+      )}
+
+      {/* TAB 2: Teams Roster */}
+      {activeTab === 'teams' && (
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex flex-col gap-0.5">
@@ -770,8 +871,10 @@ export const TournamentDetailPage: React.FC = () => {
           })}
         </div>
       </div>
+      )}
 
-      {/* Matches & Tactical Bans Section */}
+      {/* TAB 3: Matches & Tactical Bans Section */}
+      {activeTab === 'matches' && (
       <div className="flex flex-col gap-4">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -871,36 +974,68 @@ export const TournamentDetailPage: React.FC = () => {
                   </div>
 
                   <div className="flex items-center justify-between py-2">
-                    <div className="flex flex-col">
-                      <span className="font-bold text-sm text-white">{m.homeTeam.name}</span>
+                    <div className="flex flex-col min-w-0 flex-1">
+                      <span className="font-bold text-sm text-white truncate">{m.homeTeam.name}</span>
                       <span className="text-[10px] text-zinc-400 font-mono">
                         {m.homeTeam.confirmed ? '🔒 Đã khoá' : 'Đang chọn'}
                       </span>
                     </div>
-                    <span className="font-mono font-bold text-xs text-zinc-500 px-2">VS</span>
-                    <div className="flex flex-col text-right">
-                      <span className="font-bold text-sm text-white">{m.awayTeam.name}</span>
+
+                    {m.status === 'COMPLETED' ? (
+                      <div className="flex flex-col items-center px-3 py-1 bg-emerald-500/10 border border-emerald-500/30 rounded-lg shrink-0 mx-2">
+                        <span className="font-mono font-black text-lg text-emerald-400">
+                          {m.homeScore ?? m.homeTeam.score ?? 0} - {m.awayScore ?? m.awayTeam.score ?? 0}
+                        </span>
+                        <span className="text-[9px] font-mono text-emerald-300 uppercase tracking-widest font-bold">
+                          KẾT THÚC
+                        </span>
+                      </div>
+                    ) : (
+                      <span className="font-mono font-bold text-xs text-zinc-500 px-2 shrink-0">VS</span>
+                    )}
+
+                    <div className="flex flex-col text-right min-w-0 flex-1">
+                      <span className="font-bold text-sm text-white truncate">{m.awayTeam.name}</span>
                       <span className="text-[10px] text-zinc-400 font-mono">
                         {m.awayTeam.confirmed ? '🔒 Đã khoá' : 'Đang chọn'}
                       </span>
                     </div>
                   </div>
 
-                  <Link
-                    to={`/tournaments/${tournamentId}/matches/${m.id}/bans`}
-                    className="w-full"
-                  >
-                    <Button variant="neon" size="sm" className="w-full font-bold uppercase tracking-wider text-xs">
-                      <Swords className="w-3.5 h-3.5 mr-1.5" />
-                      Vào Phòng Cấm Chọn (Ban)
-                    </Button>
-                  </Link>
+                  <div className="flex items-center gap-2">
+                    <Link
+                      to={`/tournaments/${tournamentId}/matches/${m.id}/bans`}
+                      className="flex-1"
+                    >
+                      <Button variant="neon" size="sm" className="w-full font-bold uppercase tracking-wider text-xs">
+                        <Swords className="w-3.5 h-3.5 mr-1.5" />
+                        {m.status === 'COMPLETED' ? 'Xem Cấm Chọn' : 'Vào Phòng Cấm'}
+                      </Button>
+                    </Link>
+
+                    {isAdmin && (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs font-mono font-bold border-amber-500/40 text-amber-400 hover:bg-amber-500/10 shrink-0"
+                        title="Nhập hoặc chỉnh sửa tỉ số trận đấu"
+                        onClick={() => {
+                          setSelectedScoreMatch(m)
+                          setIsScoreModalOpen(true)
+                        }}
+                      >
+                        <Trophy className="w-3.5 h-3.5 mr-1 text-amber-400" />
+                        {m.status === 'COMPLETED' ? 'Sửa Tỉ Số' : 'Nhập Điểm'}
+                      </Button>
+                    )}
+                  </div>
                 </Card>
               )
             })}
           </div>
         )}
       </div>
+      )}
 
       {/* Add Team Modal */}
       <Modal
@@ -1285,6 +1420,22 @@ export const TournamentDetailPage: React.FC = () => {
           )}
         </div>
       </Modal>
+
+      {/* Admin Record Match Score Modal */}
+      {isAdmin && (
+        <RecordScoreModal
+          isOpen={isScoreModalOpen}
+          onClose={() => {
+            setIsScoreModalOpen(false)
+            setSelectedScoreMatch(null)
+          }}
+          match={selectedScoreMatch}
+          onSaveScore={async (id, homeScore, awayScore) => {
+            await recordScoreMutation.mutateAsync({ matchId: id, homeScore, awayScore })
+          }}
+          isLoading={recordScoreMutation.isPending}
+        />
+      )}
     </div>
   )
 }

@@ -580,3 +580,67 @@ async def test_snake_case_rules_parsed_correctly(
     )
     assert ban2_res.status_code == 422
     assert ban2_res.json()["code"] == "BAN_LIMIT_REACHED"
+
+
+@pytest.mark.integration
+async def test_record_match_score_and_standings(
+    client: AsyncClient,
+    match_env: dict[str, Any],
+) -> None:
+    """Admin records final score for a match and standings are updated."""
+    trn = match_env["tournament"]
+    team1 = match_env["team1"]
+    team2 = match_env["team2"]
+
+    # 1. Admin creates a match
+    await _login(client, "admin_mch_test", "admin_pass")
+    create_res = await client.post(
+        f"/api/tournaments/{trn.id}/matches",
+        json={"homeTeamId": str(team1.id), "awayTeamId": str(team2.id)},
+    )
+    assert create_res.status_code == 201
+    m_id = create_res.json()["id"]
+
+    # 2. Team user cannot record score (403)
+    await _login(client, "team1_mch_test", "team1_pass")
+    forbidden_res = await client.post(
+        f"/api/matches/{m_id}/score",
+        json={"homeScore": 3, "awayScore": 1},
+    )
+    assert forbidden_res.status_code == 403
+
+    # 3. Admin records score: Team 1 (3) - Team 2 (1)
+    await _login(client, "admin_mch_test", "admin_pass")
+    score_res = await client.post(
+        f"/api/matches/{m_id}/score",
+        json={"homeScore": 3, "awayScore": 1},
+    )
+    assert score_res.status_code == 200
+    score_data = score_res.json()
+    assert score_data["status"] == "COMPLETED"
+    assert score_data["homeScore"] == 3
+    assert score_data["awayScore"] == 1
+    assert score_data["homeTeam"]["score"] == 3
+    assert score_data["awayTeam"]["score"] == 1
+
+    # 4. Check standings
+    standings_res = await client.get(f"/api/tournaments/{trn.id}/standings")
+    assert standings_res.status_code == 200
+    standings = standings_res.json()
+    assert len(standings) == 2
+
+    # Team 1 is top (3 pts, +2 GD)
+    assert standings[0]["teamId"] == str(team1.id)
+    assert standings[0]["played"] == 1
+    assert standings[0]["won"] == 1
+    assert standings[0]["points"] == 3
+    assert standings[0]["goalDifference"] == 2
+    assert standings[0]["form"] == ["W"]
+
+    # Team 2 is 2nd (0 pts, -2 GD)
+    assert standings[1]["teamId"] == str(team2.id)
+    assert standings[1]["played"] == 1
+    assert standings[1]["lost"] == 1
+    assert standings[1]["points"] == 0
+    assert standings[1]["goalDifference"] == -2
+    assert standings[1]["form"] == ["L"]

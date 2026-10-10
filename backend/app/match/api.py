@@ -16,6 +16,7 @@ from app.auth.domain import User
 from app.common.clock import Clock, get_clock
 from app.db import get_session
 from app.match.broadcaster import MatchBroadcaster, get_match_broadcaster
+from app.match.domain import TeamStanding
 from app.match.service import MatchService
 
 matches_router = APIRouter(prefix="/api/matches", tags=["Matches"])
@@ -43,6 +44,13 @@ class CreateMatchRequest(BaseModel):
     scheduled_at: str | None = Field(default=None, alias="scheduledAt")
 
 
+class RecordMatchScoreRequest(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    home_score: int = Field(..., ge=0, alias="homeScore")
+    away_score: int = Field(..., ge=0, alias="awayScore")
+
+
 class SubmitBanRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
@@ -57,6 +65,7 @@ class TeamSummary(BaseModel):
     name: str
     confirmed: bool = False
     ban_count: int = Field(default=0, serialization_alias="banCount")
+    score: int | None = None
 
 
 class BanItemResponse(BaseModel):
@@ -83,6 +92,9 @@ class MatchDetailResponse(BaseModel):
     scheduled_at: str | None = Field(None, serialization_alias="scheduledAt")
     ban_started_at: str | None = Field(None, serialization_alias="banStartedAt")
     ban_expires_at: str | None = Field(None, serialization_alias="banExpiresAt")
+    completed_at: str | None = Field(None, serialization_alias="completedAt")
+    home_score: int | None = Field(None, serialization_alias="homeScore")
+    away_score: int | None = Field(None, serialization_alias="awayScore")
     version: int
     server_time: str = Field(serialization_alias="serverTime")
     rules_snapshot: dict[str, Any] = Field(serialization_alias="rulesSnapshot")
@@ -99,6 +111,9 @@ class MatchDetailResponse(BaseModel):
             scheduled_at=data["scheduledAt"],
             ban_started_at=data["banStartedAt"],
             ban_expires_at=data["banExpiresAt"],
+            completed_at=data.get("completedAt"),
+            home_score=data.get("homeScore"),
+            away_score=data.get("awayScore"),
             version=data["version"],
             server_time=data["serverTime"],
             rules_snapshot=data["rulesSnapshot"],
@@ -107,12 +122,14 @@ class MatchDetailResponse(BaseModel):
                 name=data["homeTeam"]["name"],
                 confirmed=data["homeTeam"]["confirmed"],
                 ban_count=data["homeTeam"]["banCount"],
+                score=data["homeTeam"].get("score"),
             ),
             away_team=TeamSummary(
                 id=uuid.UUID(data["awayTeam"]["id"]),
                 name=data["awayTeam"]["name"],
                 confirmed=data["awayTeam"]["confirmed"],
                 ban_count=data["awayTeam"]["banCount"],
+                score=data["awayTeam"].get("score"),
             ),
             bans=[
                 BanItemResponse(
@@ -173,6 +190,15 @@ async def list_tournament_matches(
         )
         for m in matches
     ]
+
+
+@tournaments_match_router.get("/{tournament_id}/standings", response_model=list[TeamStanding])
+async def get_tournament_standings(
+    tournament_id: uuid.UUID,
+    service: MatchService = Depends(get_match_service),
+) -> list[TeamStanding]:
+    """Calculate and return the tournament standings leaderboard."""
+    return await service.get_tournament_standings(tournament_id)
 
 
 @matches_router.get("/{match_id}", response_model=MatchDetailResponse)
@@ -267,5 +293,22 @@ async def complete_match(
 ) -> MatchDetailResponse:
     """Mark match as COMPLETED (ADMIN only)."""
     match = await service.complete_match(match_id)
+    view_data = service.build_match_view_dict(match, is_admin=True)
+    return MatchDetailResponse.from_dict(view_data)
+
+
+@matches_router.post("/{match_id}/score", response_model=MatchDetailResponse)
+async def record_match_score(
+    match_id: uuid.UUID,
+    body: RecordMatchScoreRequest,
+    _admin: object = Depends(require_admin),
+    service: MatchService = Depends(get_match_service),
+) -> MatchDetailResponse:
+    """Record final score for a match and mark as COMPLETED (ADMIN only)."""
+    match = await service.record_score(
+        match_id=match_id,
+        home_score=body.home_score,
+        away_score=body.away_score,
+    )
     view_data = service.build_match_view_dict(match, is_admin=True)
     return MatchDetailResponse.from_dict(view_data)

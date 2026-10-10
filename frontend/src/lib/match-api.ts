@@ -3,6 +3,7 @@ import type {
   MatchDetail,
   MatchBanItem,
   TeamRosterResponse,
+  TeamStanding,
 } from '@/types/domain'
 
 export interface CreateMatchPayload {
@@ -67,6 +68,21 @@ export const matchApi = {
   // 9. Fetch drafted roster of a team
   getTeamRoster: async (teamId: string): Promise<TeamRosterResponse> => {
     const res = await apiClient.get<TeamRosterResponse>(`/teams/${teamId}/roster`)
+    return res.data
+  },
+
+  // 10. Record match score (ADMIN only)
+  recordScore: async (
+    matchId: string,
+    payload: { homeScore: number; awayScore: number }
+  ): Promise<MatchDetail> => {
+    const res = await apiClient.post<MatchDetail>(`/matches/${matchId}/score`, payload)
+    return res.data
+  },
+
+  // 11. Get tournament leaderboard standings
+  getTournamentStandings: async (tournamentId: string): Promise<TeamStanding[]> => {
+    const res = await apiClient.get<TeamStanding[]>(`/tournaments/${tournamentId}/standings`)
     return res.data
   },
 }

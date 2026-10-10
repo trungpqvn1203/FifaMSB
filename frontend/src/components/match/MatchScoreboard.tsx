@@ -63,12 +63,22 @@ export const MatchScoreboard: React.FC<MatchScoreboardProps> = ({
       timerColor = 'text-[#3DFF6B] drop-shadow-[0_0_12px_rgba(61,255,107,0.45)]'
       subtext = `Đối thủ đang chọn ẩn ${banQuota} thẻ cấm · Kết quả khoá lúc 00:00`
     }
-  } else if (status === 'BANS_LOCKED' || status === 'COMPLETED') {
+  } else if (status === 'BANS_LOCKED') {
     phaseLabel = 'HOÀN THÀNH GIAI ĐOẠN · CÔNG BỐ THẺ CẤM'
     phaseColor = 'text-red-500'
     timerText = '00:00'
     timerColor = 'text-red-500 drop-shadow-[0_0_12px_rgba(255,59,78,0.45)]'
     subtext = `Cả 2 đội đã khoá lượt! ${friendlyTeam.banCount + targetTeam.banCount} thẻ cấm bị loại khỏi trận đấu.`
+  } else if (status === 'COMPLETED') {
+    phaseLabel = 'TRẬN ĐẤU ĐÃ KẾT THÚC · TỈ SỐ CHUNG CUỘC'
+    phaseColor = 'text-emerald-400'
+    const hScore = homeTeam.score ?? 0
+    const aScore = awayTeam.score ?? 0
+    const myScore = isAwayUser ? aScore : hScore
+    const opScore = isAwayUser ? hScore : aScore
+    timerText = `${myScore} - ${opScore}`
+    timerColor = 'text-emerald-400 drop-shadow-[0_0_15px_rgba(61,255,107,0.5)]'
+    subtext = `Tỉ số chung cuộc đã được ghi nhận vào Bảng Xếp Hạng giải đấu.`
   }
 
   const opponentStatusText = targetTeam.confirmed

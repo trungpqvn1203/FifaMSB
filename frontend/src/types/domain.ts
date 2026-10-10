@@ -82,6 +82,7 @@ export interface MatchTeamSummary {
   name: string
   confirmed: boolean
   banCount: number
+  score?: number | null
 }
 
 export interface MatchBanItem {
@@ -115,12 +116,30 @@ export interface MatchDetail {
   scheduledAt: string | null
   banStartedAt: string | null
   banExpiresAt: string | null
+  completedAt?: string | null
+  homeScore?: number | null
+  awayScore?: number | null
   version: number
   serverTime: string
   rulesSnapshot: MatchRulesSnapshot
   homeTeam: MatchTeamSummary
   awayTeam: MatchTeamSummary
   bans: MatchBanItem[]
+}
+
+export interface TeamStanding {
+  teamId: string
+  teamName: string
+  draftOrder: number
+  played: number
+  won: number
+  drawn: number
+  lost: number
+  goalsFor: number
+  goalsAgainst: number
+  goalDifference: number
+  points: number
+  form: string[]
 }
 
 export interface MatchSocketEvent extends MatchDetail {

@@ -1,6 +1,6 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, Trophy } from 'lucide-react'
 
 interface MatchHeaderProps {
   tournamentId: string
@@ -8,6 +8,9 @@ interface MatchHeaderProps {
   matchId: string
   simulatedMode?: 'live' | 'active' | 'locked' | 'revealed'
   onSimulateModeChange?: (mode: 'live' | 'active' | 'locked' | 'revealed') => void
+  isAdmin?: boolean
+  status?: string
+  onOpenScoreModal?: () => void
 }
 
 export const MatchHeader: React.FC<MatchHeaderProps> = ({
@@ -16,6 +19,9 @@ export const MatchHeader: React.FC<MatchHeaderProps> = ({
   matchId,
   simulatedMode = 'live',
   onSimulateModeChange,
+  isAdmin = false,
+  status = 'BAN_PHASE',
+  onOpenScoreModal,
 }) => {
   return (
     <header className="w-full bg-[#111217] border-b border-[#242731] px-4 lg:px-8 py-2.5 select-none relative z-30">
@@ -109,6 +115,17 @@ export const MatchHeader: React.FC<MatchHeaderProps> = ({
               3. REVEALED
             </button>
           </div>
+        )}
+
+        {isAdmin && onOpenScoreModal && (
+          <button
+            type="button"
+            onClick={onOpenScoreModal}
+            className="px-3 py-1 rounded font-display font-bold text-xs bg-neon text-black hover:bg-neon/90 transition shadow-glow-neon flex items-center gap-1.5 cursor-pointer uppercase tracking-wider"
+          >
+            <Trophy className="w-3.5 h-3.5" />
+            <span>{status === 'COMPLETED' ? 'Sửa Tỉ Số Trận' : 'Ghi Nhận Tỉ Số'}</span>
+          </button>
         )}
       </div>
     </header>

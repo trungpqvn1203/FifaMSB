@@ -26,6 +26,7 @@
 | 11 | Admin UI & Operations Console | ✅ Hoàn thành | Build PASS (0 errors, 48 mypy files) |
 | **12** | **E2E, Docker, Nginx & Hardening** | **✅ Hoàn thành** | **Full E2E suite, Multi-stage Docker, Compose PASS** |
 | **Sync** | **Đồng Bộ Cầu Thủ FC Online (Nexon API)** | **✅ Hoàn thành** | **102 unit, 76 int (PASS)** |
+| **Feature** | **Hoàn Tất Trận Đấu, Nhập Tỉ Số & Bảng Xếp Hạng Giải Đấu** | **✅ Hoàn thành** | **188/188 tests PASS (0 errors)** |
 
 ---
 
@@ -35,6 +36,8 @@
 - `0001_initial_schema.py` — seasons, players, player_seasons, users, sessions, tournaments, teams
 - `0002_draft_tables.py` — draft_sessions, draft_picks, draft_events, partial unique indexes (`uq_draft_sessions_active_tournament`, `uq_draft_picks_session_player`)
 - `0003_match_tables.py` — matches, match_bans, check constraints (`ck_matches_status`, `ck_matches_different_teams`), unique index (`uq_match_bans_match_banning_player`)
+- `0004_add_team_tournament_id.py` — tournament context for users
+- `0005_match_scores_and_standings.py` — matches (home_score, away_score, completed_at, check constraint non-negative)
 
 **Bảng đã tồn tại**:
 - `seasons` — mã mùa, tên, badge_url

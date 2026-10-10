@@ -5,7 +5,7 @@ from datetime import UTC, datetime
 
 from app.common.clock import FakeClock
 from app.match.broadcaster import NoOpMatchBroadcaster
-from app.match.domain import Match, MatchBan
+from app.match.domain import Match, MatchBan, calculate_standings
 from app.match.service import MatchService
 from app.player.domain import Player, PlayerSeason, Season
 from app.tournament.domain import Team
@@ -156,3 +156,68 @@ def test_locked_ban_phase_reveals_all_bans() -> None:
     banned_names = {b["playerName"] for b in spectator_view["bans"]}
     assert "Kylian Mbappé" in banned_names
     assert "Erling Haaland" in banned_names
+
+
+def test_calculate_standings_empty_matches() -> None:
+    t_id = uuid.uuid4()
+    t1 = Team(id=uuid.uuid4(), tournament_id=t_id, name="Alpha", draft_order=1)
+    t2 = Team(id=uuid.uuid4(), tournament_id=t_id, name="Beta", draft_order=2)
+
+    standings = calculate_standings([t1, t2], [])
+    assert len(standings) == 2
+    assert standings[0].team_name == "Alpha"
+    assert standings[0].points == 0
+    assert standings[0].played == 0
+    assert standings[1].team_name == "Beta"
+
+
+def test_calculate_standings_win_loss_draw() -> None:
+    t_id = uuid.uuid4()
+    now = datetime(2026, 9, 21, 12, 0, 0, tzinfo=UTC)
+    t1 = Team(id=uuid.uuid4(), tournament_id=t_id, name="Team 1", draft_order=1)
+    t2 = Team(id=uuid.uuid4(), tournament_id=t_id, name="Team 2", draft_order=2)
+    t3 = Team(id=uuid.uuid4(), tournament_id=t_id, name="Team 3", draft_order=3)
+
+    # Match 1: Team 1 (3) - Team 2 (1) -> Team 1 win
+    m1 = Match(
+        id=uuid.uuid4(),
+        tournament_id=t_id,
+        home_team_id=t1.id,
+        away_team_id=t2.id,
+        status="COMPLETED",
+        home_score=3,
+        away_score=1,
+        completed_at=now,
+        created_at=now,
+    )
+    # Match 2: Team 2 (2) - Team 3 (2) -> Draw
+    m2 = Match(
+        id=uuid.uuid4(),
+        tournament_id=t_id,
+        home_team_id=t2.id,
+        away_team_id=t3.id,
+        status="COMPLETED",
+        home_score=2,
+        away_score=2,
+        completed_at=now,
+        created_at=now,
+    )
+
+    standings = calculate_standings([t1, t2, t3], [m1, m2])
+    # Team 1: 1P, 1W, 0D, 0L, 3GF, 1GA, +2GD, 3PTS
+    assert standings[0].team_name == "Team 1"
+    assert standings[0].points == 3
+    assert standings[0].goal_difference == 2
+    assert standings[0].form == ["W"]
+
+    # Team 3: 1P, 0W, 1D, 0L, 2GF, 2GA, 0GD, 1PTS
+    assert standings[1].team_name == "Team 3"
+    assert standings[1].points == 1
+    assert standings[1].goal_difference == 0
+    assert standings[1].form == ["D"]
+
+    # Team 2: 2P, 0W, 1D, 1L, 3GF, 5GA, -2GD, 1PTS
+    assert standings[2].team_name == "Team 2"
+    assert standings[2].points == 1
+    assert standings[2].goal_difference == -2
+    assert standings[2].form == ["L", "D"]

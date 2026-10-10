@@ -23,7 +23,7 @@ from app.common.errors import (
 )
 from app.match import repository
 from app.match.broadcaster import MatchBroadcaster
-from app.match.domain import Match, MatchBan
+from app.match.domain import Match, MatchBan, TeamStanding, calculate_standings
 from app.tournament import repository as tournament_repo
 
 
@@ -348,6 +348,40 @@ class MatchService:
         await self._broadcast_match_event(full_match, "MATCH_COMPLETED")
         return full_match
 
+    async def record_score(
+        self,
+        match_id: uuid.UUID,
+        home_score: int,
+        away_score: int,
+    ) -> Match:
+        """Record match score and mark as COMPLETED (ADMIN only)."""
+        now = self._clock.now()
+        match = await repository.get_match_by_id(self._session, match_id, for_update=True)
+        if match is None:
+            raise MatchNotFound(str(match_id))
+
+        match.home_score = home_score
+        match.away_score = away_score
+        match.status = "COMPLETED"
+        match.completed_at = now
+        match.version += 1
+        match.updated_at = now
+        await self._session.commit()
+
+        full_match = await repository.get_match_by_id(self._session, match_id)
+        assert full_match is not None
+        await self._broadcast_match_event(full_match, "MATCH_COMPLETED")
+        return full_match
+
+    async def get_tournament_standings(
+        self,
+        tournament_id: uuid.UUID,
+    ) -> list[TeamStanding]:
+        """Fetch teams and matches for a tournament and compute leaderboard standings."""
+        teams = await tournament_repo.list_teams(self._session, tournament_id)
+        matches = await repository.list_matches_for_tournament(self._session, tournament_id)
+        return calculate_standings(teams, matches)
+
     # ------------------------------------------------------------------
     # Secrecy Filtering & Snapshot Generation (BR-M04)
     # ------------------------------------------------------------------
@@ -408,6 +442,9 @@ class MatchService:
             "scheduledAt": match.scheduled_at.isoformat() if match.scheduled_at else None,
             "banStartedAt": match.ban_started_at.isoformat() if match.ban_started_at else None,
             "banExpiresAt": match.ban_expires_at.isoformat() if match.ban_expires_at else None,
+            "completedAt": match.completed_at.isoformat() if match.completed_at else None,
+            "homeScore": match.home_score,
+            "awayScore": match.away_score,
             "version": match.version,
             "serverTime": self._clock.now().isoformat(),
             "rulesSnapshot": match.rules_snapshot,
@@ -416,12 +453,14 @@ class MatchService:
                 "name": match.home_team.name,
                 "confirmed": match.home_confirmed,
                 "banCount": len(home_bans),
+                "score": match.home_score,
             },
             "awayTeam": {
                 "id": str(match.away_team.id),
                 "name": match.away_team.name,
                 "confirmed": match.away_confirmed,
                 "banCount": len(away_bans),
+                "score": match.away_score,
             },
             "bans": revealed_bans,
         }
