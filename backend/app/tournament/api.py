@@ -226,6 +226,7 @@ class RosterItemPlayer(BaseModel):
     position: str
     rating: int | None = None
     salary: int
+    image_url: str | None = Field(None, serialization_alias="imageUrl")
     season: RosterSeasonSummary
 
 
@@ -412,6 +413,7 @@ async def get_team_roster(
                     position=p.player_season.position,
                     rating=p.player_season.rating,
                     salary=p.salary_at_pick,
+                    image_url=p.player_season.image_url,
                     season=RosterSeasonSummary(
                         id=season_model.id,
                         code=season_model.code,

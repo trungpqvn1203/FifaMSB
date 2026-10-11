@@ -9,11 +9,13 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.auth.dependencies import (
     get_current_team,
+    get_current_user,
     get_optional_current_user,
     require_admin,
 )
 from app.auth.domain import User
 from app.common.clock import Clock, get_clock
+from app.common.errors import NoTeamAssigned, NotYourTurn
 from app.db import get_session
 from app.match.broadcaster import MatchBroadcaster, get_match_broadcaster
 from app.match.domain import TeamStanding
@@ -55,6 +57,7 @@ class SubmitBanRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
     player_season_id: uuid.UUID = Field(alias="playerSeasonId")
+    banning_team_id: uuid.UUID | None = Field(default=None, alias="banningTeamId")
     target_team_id: uuid.UUID | None = Field(default=None, alias="targetTeamId")
 
 
@@ -78,6 +81,8 @@ class BanItemResponse(BaseModel):
     player_name: str = Field(serialization_alias="playerName")
     position: str
     rating: int = 0
+    salary: int = 0
+    image_url: str | None = Field(None, serialization_alias="imageUrl")
     season_code: str = Field(serialization_alias="seasonCode")
     season_badge_url: str | None = Field(None, serialization_alias="seasonBadgeUrl")
     created_at: str = Field(serialization_alias="createdAt")
@@ -92,6 +97,9 @@ class MatchDetailResponse(BaseModel):
     scheduled_at: str | None = Field(None, serialization_alias="scheduledAt")
     ban_started_at: str | None = Field(None, serialization_alias="banStartedAt")
     ban_expires_at: str | None = Field(None, serialization_alias="banExpiresAt")
+    current_banning_team_id: uuid.UUID | None = Field(
+        None, serialization_alias="currentBanningTeamId"
+    )
     completed_at: str | None = Field(None, serialization_alias="completedAt")
     home_score: int | None = Field(None, serialization_alias="homeScore")
     away_score: int | None = Field(None, serialization_alias="awayScore")
@@ -111,6 +119,9 @@ class MatchDetailResponse(BaseModel):
             scheduled_at=data["scheduledAt"],
             ban_started_at=data["banStartedAt"],
             ban_expires_at=data["banExpiresAt"],
+            current_banning_team_id=uuid.UUID(data["currentBanningTeamId"])
+            if data.get("currentBanningTeamId")
+            else None,
             completed_at=data.get("completedAt"),
             home_score=data.get("homeScore"),
             away_score=data.get("awayScore"),
@@ -139,9 +150,11 @@ class MatchDetailResponse(BaseModel):
                     player_season_id=uuid.UUID(b["playerSeasonId"]),
                     player_name=b["playerName"],
                     position=b["position"],
-                    rating=b["rating"],
+                    rating=b.get("rating", 0),
+                    salary=b.get("salary", 0),
+                    image_url=b.get("imageUrl"),
                     season_code=b["seasonCode"],
-                    season_badge_url=b["seasonBadgeUrl"],
+                    season_badge_url=b.get("seasonBadgeUrl"),
                     created_at=b["createdAt"],
                 )
                 for b in data.get("bans", [])
@@ -229,19 +242,46 @@ async def start_ban_phase(
     return MatchDetailResponse.from_dict(view_data)
 
 
+@matches_router.post("/{match_id}/bans/reset", response_model=MatchDetailResponse)
+async def reset_ban_phase(
+    match_id: uuid.UUID,
+    _admin: object = Depends(require_admin),
+    service: MatchService = Depends(get_match_service),
+) -> MatchDetailResponse:
+    """Reset Tactical Ban Phase for testing (ADMIN only)."""
+    match = await service.reset_ban_phase(match_id)
+    view_data = service.build_match_view_dict(match, is_admin=True)
+    return MatchDetailResponse.from_dict(view_data)
+
+
 @matches_router.post("/{match_id}/bans", response_model=BanItemResponse, status_code=201)
 async def submit_ban(
     match_id: uuid.UUID,
     body: SubmitBanRequest,
-    current_team_id: uuid.UUID = Depends(get_current_team),
+    current_user: User = Depends(get_current_user),
     service: MatchService = Depends(get_match_service),
 ) -> BanItemResponse:
-    """Submit a single player card ban for the authenticated team."""
+    """Submit a single player card ban for the authenticated team or by Admin."""
+    is_admin = current_user.role == "ADMIN"
+    if current_user.team_id is not None:
+        banning_team_id = current_user.team_id
+    elif is_admin:
+        match = await service.get_match(match_id)
+        eff_team = match.get_effective_banning_team_id()
+        if eff_team is None:
+            raise NotYourTurn()
+        if body.banning_team_id is not None and not match.is_team_turn(body.banning_team_id):
+            raise NotYourTurn()
+        banning_team_id = body.banning_team_id or eff_team
+    else:
+        raise NoTeamAssigned()
+
     ban = await service.submit_ban(
         match_id=match_id,
-        banning_team_id=current_team_id,
+        banning_team_id=banning_team_id,
         player_season_id=body.player_season_id,
         target_team_id=body.target_team_id,
+        is_admin=is_admin,
     )
     ps = ban.player_season
     return BanItemResponse(
@@ -251,11 +291,29 @@ async def submit_ban(
         player_season_id=ban.player_season_id,
         player_name=ps.player.name if ps and ps.player else "",
         position=ps.position if ps else "",
-        rating=ps.rating if ps else 0,
+        rating=(ps.rating or 0) if ps else 0,
+        salary=ps.salary if ps else 0,
+        image_url=ps.image_url if ps else None,
         season_code=ps.season.code if ps and ps.season else "",
         season_badge_url=ps.season.badge_url if ps and ps.season else None,
         created_at=ban.created_at.isoformat(),
     )
+
+
+@matches_router.post("/{match_id}/bans/skip", response_model=MatchDetailResponse)
+async def skip_ban_turn(
+    match_id: uuid.UUID,
+    current_user: User = Depends(get_current_user),
+    service: MatchService = Depends(get_match_service),
+) -> MatchDetailResponse:
+    """Skip the current ban turn (timeout or manual skip)."""
+    match = await service.skip_ban_turn(match_id)
+    view_data = service.build_match_view_dict(
+        match,
+        viewer_team_id=current_user.team_id,
+        is_admin=current_user.role == "ADMIN",
+    )
+    return MatchDetailResponse.from_dict(view_data)
 
 
 @matches_router.delete("/{match_id}/bans/{ban_id}", status_code=204)

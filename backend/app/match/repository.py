@@ -87,8 +87,31 @@ async def get_match_ban_by_id(
     session: AsyncSession,
     ban_id: uuid.UUID,
 ) -> MatchBan | None:
-    """Fetch MatchBan by ID."""
-    stmt = select(MatchBan).where(MatchBan.id == ban_id)
+    """Fetch MatchBan by ID with eager loading."""
+    stmt = (
+        select(MatchBan)
+        .where(MatchBan.id == ban_id)
+        .options(
+            selectinload(MatchBan.player_season).selectinload(PlayerSeason.player),
+            selectinload(MatchBan.player_season).selectinload(PlayerSeason.season),
+            selectinload(MatchBan.banning_team),
+            selectinload(MatchBan.target_team),
+        )
+    )
+    result = await session.execute(stmt)
+    return result.scalar_one_or_none()
+
+
+async def get_player_season_by_id(
+    session: AsyncSession,
+    player_season_id: uuid.UUID,
+) -> PlayerSeason | None:
+    """Fetch PlayerSeason by ID with player and season relations."""
+    stmt = (
+        select(PlayerSeason)
+        .where(PlayerSeason.id == player_season_id)
+        .options(selectinload(PlayerSeason.player), selectinload(PlayerSeason.season))
+    )
     result = await session.execute(stmt)
     return result.scalar_one_or_none()
 

@@ -68,11 +68,11 @@ class DraftVersionMismatch(DomainError):
 
 
 class NotYourTurn(DomainError):
-    def __init__(self) -> None:
+    def __init__(self, message: str = "It is not your team's turn to pick or ban.") -> None:
         super().__init__(
             code="NOT_YOUR_TURN",
             http_status=403,
-            message="It is not your team's turn to pick.",
+            message=message,
         )
 
 
@@ -246,6 +246,18 @@ class BanLimitReached(DomainError):
             code="BAN_LIMIT_REACHED",
             http_status=422,
             message=f"Your team has already reached the maximum of {limit} bans.",
+        )
+
+
+class LineBanLimitReached(DomainError):
+    def __init__(self, line_name: str, limit: int = 2) -> None:
+        super().__init__(
+            code="LINE_BAN_LIMIT_REACHED",
+            http_status=422,
+            message=(
+                f"Đã đạt giới hạn cấm tối đa {limit} cầu thủ ở tuyến {line_name}. "
+                "Vui lòng chọn cầu thủ thuộc tuyến khác!"
+            ),
         )
 
 

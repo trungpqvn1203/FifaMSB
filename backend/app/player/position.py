@@ -34,3 +34,22 @@ def get_positions_for_group(group: str) -> set[str] | None:
     Returns None if group is not recognized.
     """
     return POSITION_GROUPS.get(group.strip().upper())
+
+
+def get_position_line(pos: str) -> str:
+    """Return tactical line for a position: FW (Tiền đạo), MF (Tiền vệ), DF (Hậu vệ / Thủ môn)."""
+    p = normalize_position(pos)
+    if p in {"ST", "CF", "LW", "RW", "RF", "LF"}:
+        return "FW"
+    if p in {"CAM", "CM", "CDM", "LM", "RM"}:
+        return "MF"
+    if p in {"CB", "LB", "RB", "LWB", "RWB", "GK", "SW"}:
+        return "DF"
+    return "DF"
+
+
+LINE_LABELS: dict[str, str] = {
+    "FW": "Tiền đạo",
+    "MF": "Tiền vệ",
+    "DF": "Hậu vệ",
+}

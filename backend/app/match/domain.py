@@ -62,6 +62,9 @@ class Match(Base):
     away_confirmed: Mapped[bool] = mapped_column(
         Boolean, nullable=False, default=False, server_default="false"
     )
+    current_banning_team_id: Mapped[uuid.UUID | None] = mapped_column(
+        UUID(as_uuid=True), ForeignKey("teams.id", ondelete="SET NULL"), nullable=True
+    )
     home_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
     away_score: Mapped[int | None] = mapped_column(Integer, nullable=True)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
@@ -80,12 +83,35 @@ class Match(Base):
     tournament: Mapped["Tournament"] = relationship("Tournament")
     home_team: Mapped["Team"] = relationship("Team", foreign_keys=[home_team_id])
     away_team: Mapped["Team"] = relationship("Team", foreign_keys=[away_team_id])
+    current_banning_team: Mapped["Team | None"] = relationship(
+        "Team", foreign_keys=[current_banning_team_id]
+    )
     bans: Mapped[list["MatchBan"]] = relationship(
         "MatchBan",
         back_populates="match",
         cascade="all, delete-orphan",
         order_by="MatchBan.created_at",
     )
+
+    def is_team_turn(self, team_id: uuid.UUID) -> bool:
+        """Return True if it is currently team_id's turn to ban."""
+        if self.status != "BAN_PHASE":
+            return False
+        if self.current_banning_team_id is None:
+            active_id = self.home_team_id if len(self.bans) % 2 == 0 else self.away_team_id
+            return active_id == team_id
+        return self.current_banning_team_id == team_id
+
+    def get_effective_banning_team_id(self) -> uuid.UUID | None:
+        """Return the current active banning team UUID."""
+        if self.status != "BAN_PHASE":
+            return None
+        if self.current_banning_team_id is not None:
+            return self.current_banning_team_id
+        max_bans = int(self.rules_snapshot.get("banCount", 5))
+        if len(self.bans) >= max_bans * 2:
+            return None
+        return self.home_team_id if len(self.bans) % 2 == 0 else self.away_team_id
 
     def is_participant(self, team_id: uuid.UUID) -> bool:
         """Return True if team is either home or away team in this match."""

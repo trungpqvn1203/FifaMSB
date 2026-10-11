@@ -15,6 +15,7 @@ export interface CreateMatchPayload {
 export interface SubmitBanPayload {
   playerSeasonId: string
   targetTeamId?: string | null
+  banningTeamId?: string | null
 }
 
 export const matchApi = {
@@ -42,6 +43,12 @@ export const matchApi = {
     return res.data
   },
 
+  // 4b. Reset Tactical Ban Phase for testing (ADMIN only)
+  resetBanPhase: async (matchId: string): Promise<MatchDetail> => {
+    const res = await apiClient.post<MatchDetail>(`/matches/${matchId}/bans/reset`)
+    return res.data
+  },
+
   // 5. Submit a ban on a player
   submitBan: async (matchId: string, payload: SubmitBanPayload): Promise<MatchBanItem> => {
     const res = await apiClient.post<MatchBanItem>(`/matches/${matchId}/bans`, payload)
@@ -56,6 +63,12 @@ export const matchApi = {
   // 7. Confirm bans for current team
   confirmBans: async (matchId: string): Promise<MatchDetail> => {
     const res = await apiClient.post<MatchDetail>(`/matches/${matchId}/bans/confirm`)
+    return res.data
+  },
+
+  // 7b. Skip current ban turn (timeout or admin skip)
+  skipBanTurn: async (matchId: string): Promise<MatchDetail> => {
+    const res = await apiClient.post<MatchDetail>(`/matches/${matchId}/bans/skip`)
     return res.data
   },
 

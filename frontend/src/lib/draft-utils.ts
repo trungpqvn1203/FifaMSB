@@ -132,3 +132,22 @@ export function getRoundCategoryLabel(round: number): {
   }
   return { label: 'Lượt chọn', count: 1, isMain: false, isMainSquad: false }
 }
+
+export type PositionLine = 'FW' | 'MF' | 'DF'
+
+export const LINE_NAME_VI: Record<PositionLine, string> = {
+  FW: 'Tiền đạo',
+  MF: 'Tiền vệ',
+  DF: 'Hậu vệ / GK',
+}
+
+export function getPositionLine(pos: string): PositionLine {
+  const upper = (pos || '').trim().toUpperCase()
+  if (['ST', 'CF', 'LW', 'RW', 'RF', 'LF'].includes(upper)) {
+    return 'FW'
+  }
+  if (['CAM', 'CM', 'CDM', 'LM', 'RM'].includes(upper)) {
+    return 'MF'
+  }
+  return 'DF'
+}

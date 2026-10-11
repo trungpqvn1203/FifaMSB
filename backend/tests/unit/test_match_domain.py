@@ -221,3 +221,34 @@ def test_calculate_standings_win_loss_draw() -> None:
     assert standings[2].points == 1
     assert standings[2].goal_difference == -2
     assert standings[2].form == ["L", "D"]
+
+
+def test_tactical_position_line_mapping() -> None:
+    """FW, MF, DF lines map correctly to positions including GK."""
+    from app.player.position import get_position_line
+
+    assert get_position_line("ST") == "FW"
+    assert get_position_line("CF") == "FW"
+    assert get_position_line("LW") == "FW"
+    assert get_position_line("RW") == "FW"
+
+    assert get_position_line("CAM") == "MF"
+    assert get_position_line("CM") == "MF"
+    assert get_position_line("CDM") == "MF"
+    assert get_position_line("LM") == "MF"
+    assert get_position_line("RM") == "MF"
+
+    assert get_position_line("CB") == "DF"
+    assert get_position_line("LB") == "DF"
+    assert get_position_line("RB") == "DF"
+    assert get_position_line("GK") == "DF"
+
+
+def test_line_ban_limit_reached_exception() -> None:
+    """Test that LineBanLimitReached has 422 status and RFC 9457 structured details."""
+    from app.common.errors import LineBanLimitReached
+
+    err = LineBanLimitReached("Tiền đạo", limit=2)
+    assert err.http_status == 422
+    assert err.code == "LINE_BAN_LIMIT_REACHED"
+    assert "tối đa 2 cầu thủ ở tuyến Tiền đạo" in err.message

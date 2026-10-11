@@ -60,6 +60,7 @@ exclude = ["alembic/"]
 module = [
     "testcontainers.*",
     "asyncpg.*",
+    "pandas",
     "pandas.*",
 ]
 ignore_missing_imports = true

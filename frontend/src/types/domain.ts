@@ -105,6 +105,8 @@ export interface MatchBanItem {
   playerName: string
   position: string
   rating: number
+  salary?: number
+  imageUrl?: string | null
   seasonCode: string
   seasonBadgeUrl?: string | null
   createdAt: string
@@ -128,6 +130,7 @@ export interface MatchDetail {
   scheduledAt: string | null
   banStartedAt: string | null
   banExpiresAt: string | null
+  currentBanningTeamId?: string | null
   completedAt?: string | null
   homeScore?: number | null
   awayScore?: number | null
@@ -154,6 +157,18 @@ export interface TeamStanding {
   form: string[]
 }
 
+export interface LastBannedPlayerInfo {
+  playerName: string
+  position?: string
+  rating?: number
+  salary?: number
+  imageUrl?: string | null
+  seasonCode?: string
+  seasonBadgeUrl?: string | null
+  banningTeamName?: string
+  targetTeamName?: string
+}
+
 export interface MatchSocketEvent extends MatchDetail {
   eventType?:
     | 'INITIAL_SNAPSHOT'
@@ -163,6 +178,7 @@ export interface MatchSocketEvent extends MatchDetail {
     | 'BANS_CONFIRMED'
     | 'BANS_LOCKED'
     | 'MATCH_COMPLETED'
+  lastBannedPlayer?: LastBannedPlayerInfo | null
 }
 
 export interface RosterPlayerSeasonSummary {
@@ -179,6 +195,7 @@ export interface RosterItemPlayer {
   position: string
   rating: number
   salary: number
+  imageUrl?: string | null
   season: RosterPlayerSeasonSummary
 }
 

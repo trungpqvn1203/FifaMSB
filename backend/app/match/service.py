@@ -12,8 +12,10 @@ from app.common.errors import (
     BanNotFound,
     BansAlreadyConfirmed,
     BansLocked,
+    LineBanLimitReached,
     MatchNotActive,
     MatchNotFound,
+    NotYourTurn,
     PlayerAlreadyBanned,
     PlayerNotInRoster,
     SameTeamMatch,
@@ -24,6 +26,7 @@ from app.common.errors import (
 from app.match import repository
 from app.match.broadcaster import MatchBroadcaster
 from app.match.domain import Match, MatchBan, TeamStanding, calculate_standings
+from app.player.position import LINE_LABELS, get_position_line
 from app.tournament import repository as tournament_repo
 
 
@@ -123,13 +126,19 @@ class MatchService:
         if match.status != "SCHEDULED":
             raise MatchNotActive()
 
-        raw_ban_seconds = match.rules_snapshot.get(
-            "banTimeSeconds", match.rules_snapshot.get("ban_time_seconds", 60)
-        )
-        ban_seconds = int(raw_ban_seconds)
+        turn_seconds = 30  # Chuẩn FVPL: 30 giây cho mỗi lượt cấm luân phiên
+        rules = dict(match.rules_snapshot)
+        rules["ban_order"] = "ALTERNATING"
+        rules["banOrder"] = "ALTERNATING"
+        rules["homeTurnsSpent"] = 0
+        rules["awayTurnsSpent"] = 0
+        rules["banTurn"] = 1
+        match.rules_snapshot = rules
+
         match.status = "BAN_PHASE"
+        match.current_banning_team_id = match.home_team_id  # Đội nhà cấm trước
         match.ban_started_at = now
-        match.ban_expires_at = now + timedelta(seconds=ban_seconds)
+        match.ban_expires_at = now + timedelta(seconds=turn_seconds)
         match.home_confirmed = False
         match.away_confirmed = False
         match.version += 1
@@ -142,12 +151,51 @@ class MatchService:
         await self._broadcast_match_event(full_match, "BAN_PHASE_STARTED")
         return full_match
 
+    async def reset_ban_phase(self, match_id: uuid.UUID) -> Match:
+        """Reset match back to fresh BAN_PHASE (deletes existing bans for re-testing)."""
+        now = self._clock.now()
+        match = await repository.get_match_by_id(self._session, match_id, for_update=True)
+        if match is None:
+            raise MatchNotFound(str(match_id))
+
+        # Delete existing bans
+        for b in list(match.bans):
+            await self._session.delete(b)
+
+        turn_seconds = 30
+        rules = dict(match.rules_snapshot)
+        rules["ban_order"] = "ALTERNATING"
+        rules["banOrder"] = "ALTERNATING"
+        rules["homeTurnsSpent"] = 0
+        rules["awayTurnsSpent"] = 0
+        rules["banTurn"] = 1
+        match.rules_snapshot = rules
+
+        match.status = "BAN_PHASE"
+        match.current_banning_team_id = match.home_team_id
+        match.ban_started_at = now
+        match.ban_expires_at = now + timedelta(seconds=turn_seconds)
+        match.home_confirmed = False
+        match.away_confirmed = False
+        match.home_score = None
+        match.away_score = None
+        match.completed_at = None
+        match.version += 1
+        match.updated_at = now
+        await self._session.commit()
+
+        full_match = await repository.get_match_by_id(self._session, match_id)
+        assert full_match is not None
+        await self._broadcast_match_event(full_match, "BAN_PHASE_STARTED")
+        return full_match
+
     async def submit_ban(
         self,
         match_id: uuid.UUID,
         banning_team_id: uuid.UUID,
         player_season_id: uuid.UUID,
         target_team_id: uuid.UUID | None = None,
+        is_admin: bool = False,
     ) -> MatchBan:
         """Submit a single player card ban under SELECT ... FOR UPDATE lock."""
         now = self._clock.now()
@@ -158,16 +206,12 @@ class MatchService:
         if match.status != "BAN_PHASE":
             raise MatchNotActive()
 
-        # Check expiry: auto-lock if time expired
-        if match.is_ban_phase_expired(now):
-            match.status = "BANS_LOCKED"
-            match.version += 1
-            match.updated_at = now
-            await self._session.commit()
-            full_match = await repository.get_match_by_id(self._session, match_id)
-            if full_match:
-                await self._broadcast_match_event(full_match, "BANS_LOCKED")
-            raise BansLocked()
+        # Check turn in alternating mode strictly: each team only 1 pick per turn
+        ban_order = match.rules_snapshot.get(
+            "banOrder", match.rules_snapshot.get("ban_order", "ALTERNATING")
+        )
+        if ban_order == "ALTERNATING" and not match.is_team_turn(banning_team_id):
+            raise NotYourTurn()
 
         if not match.is_participant(banning_team_id):
             raise TeamNotInMatch()
@@ -212,6 +256,24 @@ class MatchService:
         if existing:
             raise PlayerAlreadyBanned()
 
+        # Check tactical line ban limit: maximum 2 players per line (FW, MF, DF)
+        target_ps = await repository.get_player_season_by_id(self._session, player_season_id)
+        if target_ps:
+            target_line = get_position_line(target_ps.position)
+            existing_line_bans = len(
+                [
+                    b
+                    for b in match.bans
+                    if b.banning_team_id == banning_team_id
+                    and b.player_season
+                    and get_position_line(b.player_season.position) == target_line
+                ]
+            )
+            max_line_bans = int(match.rules_snapshot.get("max_line_bans", 2))
+            if existing_line_bans >= max_line_bans:
+                line_name = LINE_LABELS.get(target_line, target_line)
+                raise LineBanLimitReached(line_name, max_line_bans)
+
         ban = MatchBan(
             id=uuid.uuid4(),
             match_id=match_id,
@@ -221,17 +283,74 @@ class MatchService:
             created_at=now,
         )
         await repository.create_match_ban(self._session, ban)
+
+        # Update turns spent in snapshot
+        rules = dict(match.rules_snapshot)
+        turn_seconds = 30
+
+        if banning_team_id == match.home_team_id:
+            rules["homeTurnsSpent"] = rules.get("homeTurnsSpent", 0) + 1
+        else:
+            rules["awayTurnsSpent"] = rules.get("awayTurnsSpent", 0) + 1
+        rules["banTurn"] = rules.get("banTurn", 1) + 1
+        match.rules_snapshot = rules
+
+        # Count total bans for home and away
+        home_bans_count = await repository.get_team_bans_count(
+            self._session, match_id, match.home_team_id
+        )
+        away_bans_count = await repository.get_team_bans_count(
+            self._session, match_id, match.away_team_id
+        )
+
+        # Check if both teams have completed their bans (or reached max_bans)
+        if home_bans_count >= max_bans and away_bans_count >= max_bans:
+            match.status = "BANS_LOCKED"
+            match.current_banning_team_id = None
+            match.home_confirmed = True
+            match.away_confirmed = True
+        else:
+            next_team = match.get_opponent_team_id(banning_team_id)
+            next_bans_count = (
+                away_bans_count if next_team == match.away_team_id else home_bans_count
+            )
+            if next_bans_count >= max_bans:
+                next_team = banning_team_id
+            match.current_banning_team_id = next_team
+            match.ban_expires_at = now + timedelta(seconds=turn_seconds)
+
         match.version += 1
         match.updated_at = now
         await self._session.commit()
 
+        created_ban = await repository.get_match_ban_by_id(self._session, ban.id)
+        assert created_ban is not None
+
+        ps = created_ban.player_season
+        banning_team_obj = (
+            match.home_team if banning_team_id == match.home_team_id else match.away_team
+        )
+        last_banned_player = {
+            "playerSeasonId": str(ps.id) if ps else str(player_season_id),
+            "playerName": ps.player.name if ps and ps.player else "",
+            "position": ps.position if ps else "",
+            "rating": ps.rating if ps else 0,
+            "salary": ps.salary if ps else 0,
+            "imageUrl": ps.image_url if ps else None,
+            "seasonCode": ps.season.code if ps and ps.season else "",
+            "seasonBadgeUrl": ps.season.badge_url if ps and ps.season else None,
+            "banningTeamId": str(banning_team_id),
+            "banningTeamName": banning_team_obj.name if banning_team_obj else "",
+        }
+
         # Broadcast state
         full_match = await repository.get_match_by_id(self._session, match_id)
         assert full_match is not None
-        await self._broadcast_match_event(full_match, "BAN_SUBMITTED")
-
-        created_ban = await repository.get_match_ban_by_id(self._session, ban.id)
-        assert created_ban is not None
+        await self._broadcast_match_event(
+            full_match,
+            "BAN_SUBMITTED",
+            extra_data={"lastBannedPlayer": last_banned_player},
+        )
         return created_ban
 
     async def delete_ban(
@@ -311,25 +430,69 @@ class MatchService:
         await self._broadcast_match_event(full_match, "BANS_CONFIRMED")
         return full_match
 
-    async def lock_expired_bans(self, match_id: uuid.UUID) -> bool:
-        """Lock match bans if ban_expires_at has passed (called by background timer loop)."""
+    async def skip_ban_turn(self, match_id: uuid.UUID) -> Match:
+        """Skip current team's turn on timeout and advance turn to opponent (Skip turn)."""
         now = self._clock.now()
         match = await repository.get_match_by_id(self._session, match_id, for_update=True)
+        if match is None:
+            raise MatchNotFound(str(match_id))
+        if match.status != "BAN_PHASE":
+            return match
+
+        rules = dict(match.rules_snapshot)
+        max_bans = int(rules.get("banCount", rules.get("ban_count", 5)))
+        turn_seconds = 30
+
+        current_team = match.get_effective_banning_team_id()
+        if current_team == match.home_team_id:
+            rules["homeTurnsSpent"] = rules.get("homeTurnsSpent", 0) + 1
+        elif current_team == match.away_team_id:
+            rules["awayTurnsSpent"] = rules.get("awayTurnsSpent", 0) + 1
+        rules["banTurn"] = rules.get("banTurn", 1) + 1
+        match.rules_snapshot = rules
+
+        home_turns = rules.get("homeTurnsSpent", 0)
+        away_turns = rules.get("awayTurnsSpent", 0)
+        if home_turns >= max_bans and away_turns >= max_bans:
+            match.status = "BANS_LOCKED"
+            match.current_banning_team_id = None
+            match.home_confirmed = True
+            match.away_confirmed = True
+            event_type = "BANS_LOCKED"
+        else:
+            next_team = (
+                match.get_opponent_team_id(current_team)
+                if current_team
+                else match.home_team_id
+            )
+            if (next_team == match.home_team_id and home_turns >= max_bans) or (
+                next_team == match.away_team_id and away_turns >= max_bans
+            ):
+                next_team = current_team or match.away_team_id
+            match.current_banning_team_id = next_team
+            match.ban_expires_at = now + timedelta(seconds=turn_seconds)
+            event_type = "BAN_TURN_TIMEOUT"
+
+        match.version += 1
+        match.updated_at = now
+        await self._session.commit()
+
+        full_match = await repository.get_match_by_id(self._session, match_id)
+        assert full_match is not None
+        await self._broadcast_match_event(full_match, event_type)
+        return full_match
+
+    async def lock_expired_bans(self, match_id: uuid.UUID) -> bool:
+        """Lock or skip expired ban turn (called by background timer loop)."""
+        now = self._clock.now()
+        match = await repository.get_match_by_id(self._session, match_id)
         if match is None or match.status != "BAN_PHASE":
             return False
 
         if match.is_ban_phase_expired(now):
-            match.status = "BANS_LOCKED"
-            match.version += 1
-            match.updated_at = now
-            await self._session.commit()
-        else:
-            return False
-
-        full_match = await repository.get_match_by_id(self._session, match_id)
-        assert full_match is not None
-        await self._broadcast_match_event(full_match, "BANS_LOCKED")
-        return True
+            await self.skip_ban_turn(match_id)
+            return True
+        return False
 
     async def complete_match(self, match_id: uuid.UUID) -> Match:
         """Mark match as COMPLETED (ADMIN only)."""
@@ -392,15 +555,9 @@ class MatchService:
         viewer_team_id: uuid.UUID | None = None,
         is_admin: bool = False,
     ) -> dict[str, Any]:
-        """Build dictionary representation respecting SIMULTANEOUS privacy rules (BR-M04).
-
-        In SIMULTANEOUS ban phase:
-        - Participating team sees full details of its own bans and only count of opponent bans.
-        - Spectator / unauthenticated viewer sees only ban counts for both teams.
-        - Once BANS_LOCKED or COMPLETED: all bans are revealed to everyone.
-        """
+        """Build dictionary representation respecting privacy and alternating rules."""
         ban_order = match.rules_snapshot.get(
-            "banOrder", match.rules_snapshot.get("ban_order", "SIMULTANEOUS")
+            "banOrder", match.rules_snapshot.get("ban_order", "ALTERNATING")
         )
         is_secret_phase = (
             match.status == "BAN_PHASE" and ban_order == "SIMULTANEOUS" and not is_admin
@@ -419,12 +576,14 @@ class MatchService:
                 "playerName": ps.player.name if ps and ps.player else "",
                 "position": ps.position if ps else "",
                 "rating": ps.rating if ps else 0,
+                "salary": ps.salary if ps else 0,
+                "imageUrl": ps.image_url if ps else None,
                 "seasonCode": ps.season.code if ps and ps.season else "",
                 "seasonBadgeUrl": ps.season.badge_url if ps and ps.season else None,
                 "createdAt": b.created_at.isoformat(),
             }
 
-        # Filter bans
+        # Filter bans: in ALTERNATING mode, bans are immediately public
         if is_secret_phase:
             if viewer_team_id == match.home_team_id:
                 revealed_bans = [_format_ban(b) for b in home_bans]
@@ -435,6 +594,8 @@ class MatchService:
         else:
             revealed_bans = [_format_ban(b) for b in match.bans]
 
+        eff_banning_team = match.get_effective_banning_team_id()
+
         return {
             "id": str(match.id),
             "tournamentId": str(match.tournament_id),
@@ -442,6 +603,7 @@ class MatchService:
             "scheduledAt": match.scheduled_at.isoformat() if match.scheduled_at else None,
             "banStartedAt": match.ban_started_at.isoformat() if match.ban_started_at else None,
             "banExpiresAt": match.ban_expires_at.isoformat() if match.ban_expires_at else None,
+            "currentBanningTeamId": str(eff_banning_team) if eff_banning_team else None,
             "completedAt": match.completed_at.isoformat() if match.completed_at else None,
             "homeScore": match.home_score,
             "awayScore": match.away_score,
@@ -465,9 +627,15 @@ class MatchService:
             "bans": revealed_bans,
         }
 
-    async def _broadcast_match_event(self, match: Match, event_type: str) -> None:
+    async def _broadcast_match_event(
+        self,
+        match: Match,
+        event_type: str,
+        extra_data: dict[str, Any] | None = None,
+    ) -> None:
         """Broadcast match state to room outside transaction."""
-        # For public broadcast, spectators view with masked secrets
         payload = self.build_match_view_dict(match, viewer_team_id=None, is_admin=False)
         payload["eventType"] = event_type
+        if extra_data:
+            payload.update(extra_data)
         await self._broadcaster.broadcast(match.id, payload)
