@@ -546,3 +546,28 @@ async def test_cancelled_draft_does_not_accumulate_picks_in_new_draft(
     draft2_detail = await client.get(f"/api/drafts/{draft2_id}")
     team1_info = next(t for t in draft2_detail.json()["teams"] if t["name"] == "Flash Team 1")
     assert team1_info["pickedCount"] == 1
+
+
+@pytest.mark.integration
+async def test_make_pick_invalid_pick_count_rejected(
+    client: AsyncClient, draft_env: dict[str, Any]
+) -> None:
+    """Sending wrong number of cards for current round -> 422 INVALID_PICK_COUNT."""
+    trn_id = draft_env["tournament"].id
+    cards = draft_env["cards"]
+
+    await _login(client, "admin_drf_test", "admin_pass")
+    start_res = await client.post(f"/api/tournaments/{trn_id}/draft/start")
+    draft_id = start_res.json()["id"]
+
+    await _login(client, "team1_drf_test", "team1_pass")
+    # Round 1 requires 1 card; sending 2 cards must be rejected
+    res = await client.post(
+        f"/api/drafts/{draft_id}/picks",
+        json={
+            "playerSeasonIds": [str(cards[0].id), str(cards[1].id)],
+            "expectedVersion": 1,
+        },
+    )
+    assert res.status_code == 422
+    assert res.json()["code"] == "INVALID_PICK_COUNT"

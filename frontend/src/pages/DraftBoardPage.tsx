@@ -138,7 +138,6 @@ export const DraftBoardPage: React.FC = () => {
   }, [socketState?.teams, initialDraft?.teams])
 
   const budgetCap = Number(initialDraft?.rulesSnapshot?.budget || 305)
-  const rosterSize = Number(initialDraft?.rulesSnapshot?.rosterSize || 24)
 
   // Current active team
   const currentTeam = useMemo(() => {
@@ -157,10 +156,11 @@ export const DraftBoardPage: React.FC = () => {
 
   // 5. Make Pick Mutation
   const makePickMutation = useMutation({
-    mutationFn: async (playerSeasonId: string) => {
+    mutationFn: async (playerSeasonIds: string[] | string) => {
       if (!effectiveDraftId) throw new Error('No draft ID')
+      const ids = Array.isArray(playerSeasonIds) ? playerSeasonIds : [playerSeasonIds]
       const res = await apiClient.post(`/drafts/${effectiveDraftId}/picks`, {
-        playerSeasonId,
+        playerSeasonIds: ids,
         expectedVersion: activeVersion,
       })
       return res.data
@@ -194,11 +194,17 @@ export const DraftBoardPage: React.FC = () => {
     },
   })
 
-  const handleMakePick = (playerSeasonId: string, card?: PlayerSeason) => {
+  const handleMakePick = (
+    playerSeasonIds: string[] | string,
+    card?: PlayerSeason[] | PlayerSeason
+  ) => {
     if (card) {
-      setLastPickedCard(card)
+      const cardList = Array.isArray(card) ? card : [card]
+      if (cardList.length > 0) {
+        setLastPickedCard(cardList[cardList.length - 1])
+      }
     }
-    makePickMutation.mutate(playerSeasonId)
+    makePickMutation.mutate(playerSeasonIds)
   }
 
   const handlePreviewCard = (card: PlayerSeason) => {
@@ -317,7 +323,7 @@ export const DraftBoardPage: React.FC = () => {
             <DraftMatrix
               teams={teams}
               picks={picks}
-              totalRounds={rosterSize}
+              totalRounds={11}
               currentRound={activeRound}
               currentTurn={activeTurn}
               currentTeamId={activeTeamId}

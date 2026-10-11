@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react'
+import React, { useState, useMemo, useEffect } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import {
   Search,
@@ -9,6 +9,7 @@ import {
   Maximize2,
   Layers,
   X,
+  Check,
 } from 'lucide-react'
 import { apiClient } from '@/lib/api-client'
 import type {
@@ -18,7 +19,12 @@ import type {
   TeamDraftStatus,
   SeasonOption,
 } from '@/types/domain'
-import { POSITION_FILTERS, getPositionStyle } from '@/lib/draft-utils'
+import {
+  POSITION_FILTERS,
+  getPositionStyle,
+  getPicksCountForRound,
+  getRoundCategoryLabel,
+} from '@/lib/draft-utils'
 import { PlayerPoolModal } from '@/components/draft/PlayerPoolModal'
 
 interface PlayerPoolDrawerProps {
@@ -27,7 +33,7 @@ interface PlayerPoolDrawerProps {
   draftStatus: string
   picks: DraftPickBoardItem[]
   isMyTurn: boolean
-  onMakePick: (playerSeasonId: string, card?: PlayerSeason) => void
+  onMakePick: (playerSeasonIds: string[] | string, card?: PlayerSeason[] | PlayerSeason) => void
   onPreviewCard?: (card: PlayerSeason) => void
   isPickingLoading: boolean
   pickError?: string | null
@@ -45,8 +51,8 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
   onPreviewCard,
   isPickingLoading,
   pickError,
-  currentRound,
-  currentTurn,
+  currentRound = 1,
+  currentTurn = 1,
   secondsRemaining,
 }) => {
   const [selectedPosition, setSelectedPosition] = useState<string>('ALL')
@@ -54,6 +60,15 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
   const [searchTerm, setSearchTerm] = useState<string>('')
   const [sortBy, setSortBy] = useState<'salary-desc' | 'salary-asc' | 'ovr-desc'>('salary-desc')
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false)
+  const [selectedBatch, setSelectedBatch] = useState<PlayerSeason[]>([])
+
+  const requiredPicks = getPicksCountForRound(currentRound)
+  const roundCategory = getRoundCategoryLabel(currentRound)
+
+  // Reset selected batch on round or turn change
+  useEffect(() => {
+    setSelectedBatch([])
+  }, [currentRound, currentTurn])
 
   // Fetch available seasons for the season filter dropdown
   const { data: seasons = [] } = useQuery<SeasonOption[]>({
@@ -141,14 +156,61 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
   }, [playerList, selectedSeasonId, searchTerm, sortBy])
 
   const remainingBudget = currentTeam?.budgetRemaining ?? 305
+  const isSubstituteRound = currentRound > 7
+
+  const toggleBatchCard = (card: PlayerSeason) => {
+    setSelectedBatch((prev) => {
+      const exists = prev.some((c) => c.id === card.id)
+      if (exists) {
+        return prev.filter((c) => c.id !== card.id)
+      }
+      // Prevent duplicate master player in batch
+      const duplicatePlayer = prev.some((c) => c.player.id === card.player.id)
+      if (duplicatePlayer) {
+        return prev
+      }
+      // Prevent picking more than required
+      if (prev.length >= requiredPicks) {
+        return prev
+      }
+      // Budget check only for main squad (rounds 1-7)
+      if (!isSubstituteRound) {
+        const currentBatchSalary = prev.reduce((sum, c) => sum + c.salary, 0)
+        if (currentBatchSalary + card.salary > remainingBudget) {
+          return prev
+        }
+      }
+      return [...prev, card]
+    })
+  }
+
+  const handleConfirmBatch = () => {
+    if (selectedBatch.length !== requiredPicks) return
+    onMakePick(
+      selectedBatch.map((c) => c.id),
+      selectedBatch
+    )
+    setSelectedBatch([])
+  }
+
+  const handleSinglePick = (card: PlayerSeason) => {
+    onMakePick(card.id, card)
+    setSelectedBatch([])
+  }
 
   return (
     <>
       <div className="w-full bg-surface-panel border border-border-default/80 p-3 md:p-4 flex flex-col gap-3 shadow-panel">
         {/* 1. Header & Filters Row */}
         <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-3">
-          {/* Position Filter Chips */}
-          <div className="flex items-center flex-wrap gap-1">
+          {/* Left: Position Filter Chips + Round Mode Badge */}
+          <div className="flex items-center flex-wrap gap-1.5">
+            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-neon/10 border border-neon/30 text-neon font-mono text-[11px] font-bold uppercase mr-1">
+              <span>V{currentRound}: {roundCategory.label}</span>
+              <span className="text-zinc-500">|</span>
+              <span className="text-white">CHỌN {requiredPicks} CẦU THỦ</span>
+            </div>
+
             {POSITION_FILTERS.map((pos) => {
               const isSelected = selectedPosition === pos
               return (
@@ -242,9 +304,9 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
         )}
 
         {/* 2. Player Table (Expanded Height: max-h-[380px] lg:max-h-[440px]) */}
-        <div className="w-full bg-surface-card border border-border-default overflow-hidden">
+        <div className="w-full bg-surface-card border border-border-default overflow-hidden flex flex-col">
           {/* Table Column Header */}
-          <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-app-void font-mono text-[10px] text-zinc-400 uppercase tracking-wider border-b border-border-subtle">
+          <div className="grid grid-cols-12 gap-2 px-3 py-2 bg-app-void font-mono text-[10px] text-zinc-400 uppercase tracking-wider border-b border-border-subtle shrink-0">
             <div className="col-span-5 md:col-span-4">CẦU THỦ</div>
             <div className="col-span-2 hidden md:block">MÙA GIẢI</div>
             <div className="col-span-2 text-center">VỊ TRÍ</div>
@@ -269,7 +331,16 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
                 const draftedByTeam = draftedCardIds.get(card.id)
                 const isPlayerAlreadyDrafted = draftedPlayerIds.has(card.player.id)
                 const isDrafted = !!draftedByTeam || isPlayerAlreadyDrafted
-                const isOverBudget = card.salary > remainingBudget
+
+                const isSelectedInBatch = selectedBatch.some((c) => c.id === card.id)
+                const isSamePlayerInBatch =
+                  !isSelectedInBatch && selectedBatch.some((c) => c.player.id === card.player.id)
+                const currentBatchSalary = selectedBatch.reduce((sum, c) => sum + c.salary, 0)
+                const effectiveRemaining = isSelectedInBatch
+                  ? remainingBudget - (currentBatchSalary - card.salary)
+                  : remainingBudget - currentBatchSalary
+
+                const isOverBudget = !isSubstituteRound && card.salary > effectiveRemaining
                 const posStyle = getPositionStyle(card.position)
 
                 const canPick =
@@ -277,7 +348,8 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
                   isMyTurn &&
                   !isDrafted &&
                   !isOverBudget &&
-                  !isPickingLoading
+                  !isPickingLoading &&
+                  !isSamePlayerInBatch
 
                 return (
                   <div
@@ -285,6 +357,8 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
                     className={`grid grid-cols-12 gap-2 px-3 py-2 items-center transition-colors ${
                       isDrafted
                         ? 'opacity-40 bg-app-void/40'
+                        : isSelectedInBatch
+                        ? 'bg-neon/10 border-l-2 border-neon'
                         : 'hover:bg-surface-elevated/60'
                     }`}
                   >
@@ -352,7 +426,11 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
                     {/* Salary */}
                     <div
                       className={`col-span-3 md:col-span-2 text-center font-mono text-xs font-bold ${
-                        isOverBudget ? 'text-danger' : 'text-neon'
+                        isSubstituteRound
+                          ? 'text-zinc-300'
+                          : isOverBudget
+                          ? 'text-danger'
+                          : 'text-neon'
                       }`}
                     >
                       {card.salary}.0M
@@ -369,6 +447,7 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
                           <Sparkles className="w-3.5 h-3.5 group-hover:text-amber-400 transition-colors" />
                         </button>
                       )}
+
                       {isDrafted ? (
                         <span className="font-mono text-[10px] text-zinc-500 uppercase px-2 py-1">
                           ĐÃ PICK
@@ -377,9 +456,13 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
                         <span className="font-mono text-[10px] text-danger uppercase px-2 py-1">
                           VƯỢT LƯƠNG
                         </span>
-                      ) : (
+                      ) : isSamePlayerInBatch ? (
+                        <span className="font-mono text-[10px] text-amber-400 uppercase px-2 py-1">
+                          TRÙNG CT
+                        </span>
+                      ) : requiredPicks === 1 ? (
                         <button
-                          onClick={() => onMakePick(card.id, card)}
+                          onClick={() => handleSinglePick(card)}
                           disabled={!canPick}
                           className={`px-3 py-1 font-display text-[11px] font-bold uppercase tracking-wider transition-all ${
                             canPick
@@ -395,6 +478,27 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
                             'CHỜ'
                           )}
                         </button>
+                      ) : isSelectedInBatch ? (
+                        <button
+                          onClick={() => toggleBatchCard(card)}
+                          className="px-2 py-1 font-display text-[10px] font-bold uppercase tracking-wider bg-neon text-black hover:bg-red-500 hover:text-white transition-all shadow-glow-neon flex items-center gap-1 active:scale-95"
+                          title="Nhấn để bỏ chọn thẻ này"
+                        >
+                          <Check className="w-3 h-3 stroke-[3]" />
+                          <span>ĐÃ CHỌN</span>
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => toggleBatchCard(card)}
+                          disabled={!canPick || selectedBatch.length >= requiredPicks}
+                          className={`px-2.5 py-1 font-display text-[10px] font-bold uppercase tracking-wider transition-all ${
+                            canPick && selectedBatch.length < requiredPicks
+                              ? 'bg-surface-elevated text-neon border border-neon/50 hover:bg-neon hover:text-black active:scale-95'
+                              : 'bg-surface-elevated text-zinc-600 border border-border-default cursor-not-allowed'
+                          }`}
+                        >
+                          {selectedBatch.length >= requiredPicks ? `ĐỦ ${requiredPicks}` : '+ CHỌN'}
+                        </button>
                       )}
                     </div>
                   </div>
@@ -402,6 +506,86 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
               })
             )}
           </div>
+
+          {/* Sticky Batch Selection Floating Tray */}
+          {requiredPicks > 1 && (
+            <div className="w-full bg-surface-elevated/95 backdrop-blur border-t border-neon/40 p-2.5 sm:p-3 flex flex-wrap items-center justify-between gap-3 shadow-panel">
+              <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+                <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-neon/10 border border-neon/30 text-neon font-mono text-xs font-bold uppercase">
+                  <span>Vòng {currentRound} • {roundCategory.label}</span>
+                  <span className="text-zinc-500">|</span>
+                  <span>Cần chọn {requiredPicks} thẻ</span>
+                  <span className="text-white font-mono font-black ml-1">
+                    ({selectedBatch.length}/{requiredPicks})
+                  </span>
+                </div>
+
+                {/* Selected cards chips */}
+                <div className="flex items-center gap-1.5 flex-wrap">
+                  {selectedBatch.map((card) => (
+                    <div
+                      key={card.id}
+                      className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded bg-surface-card border border-border-default text-xs font-semibold text-white shadow-sm"
+                    >
+                      <span>{card.player.name}</span>
+                      <span className="text-[10px] font-mono text-neon font-bold">
+                        {card.salary}M
+                      </span>
+                      <button
+                        onClick={() => toggleBatchCard(card)}
+                        className="p-0.5 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white"
+                        title="Bỏ chọn"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ))}
+
+                  {Array.from({
+                    length: Math.max(0, requiredPicks - selectedBatch.length),
+                  }).map((_, idx) => (
+                    <div
+                      key={idx}
+                      className="px-2 py-0.5 rounded border border-dashed border-zinc-600 text-zinc-500 font-mono text-[11px]"
+                    >
+                      + Vị trí {selectedBatch.length + idx + 1}
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {selectedBatch.length > 0 && (
+                  <button
+                    onClick={() => setSelectedBatch([])}
+                    className="px-2.5 py-1 text-xs font-mono text-zinc-400 hover:text-white hover:bg-surface-card rounded transition-colors"
+                  >
+                    Hủy chọn
+                  </button>
+                )}
+                <button
+                  onClick={handleConfirmBatch}
+                  disabled={
+                    selectedBatch.length !== requiredPicks || !isMyTurn || isPickingLoading
+                  }
+                  className={`px-4 py-1.5 rounded-sm font-display text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all ${
+                    selectedBatch.length === requiredPicks && isMyTurn && !isPickingLoading
+                      ? 'bg-neon text-black hover:bg-white shadow-glow-neon active:scale-95 cursor-pointer'
+                      : 'bg-surface-card text-zinc-500 border border-border-default cursor-not-allowed'
+                  }`}
+                >
+                  {isPickingLoading ? (
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  ) : (
+                    <Check className="w-3.5 h-3.5 stroke-[3]" />
+                  )}
+                  <span>
+                    XÁC NHẬN CHỌN ({selectedBatch.length}/{requiredPicks})
+                  </span>
+                </button>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -431,6 +615,13 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
         currentRound={currentRound}
         currentTurn={currentTurn}
         secondsRemaining={secondsRemaining}
+        selectedBatch={selectedBatch}
+        onToggleBatchCard={toggleBatchCard}
+        onConfirmBatch={handleConfirmBatch}
+        onClearBatch={() => setSelectedBatch([])}
+        requiredPicks={requiredPicks}
+        roundCategory={roundCategory}
+        isSubstituteRound={isSubstituteRound}
       />
     </>
   )

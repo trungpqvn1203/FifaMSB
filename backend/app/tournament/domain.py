@@ -35,7 +35,7 @@ class TournamentRules(BaseModel):
     rules_version: int = Field(default=1, ge=1)
 
     # Roster & budget
-    roster_size: int = Field(default=24, ge=1, le=60, serialization_alias="rosterSize")
+    roster_size: int = Field(default=23, ge=1, le=60, serialization_alias="rosterSize")
     budget: int = Field(default=305, ge=1)
 
     # Pick timing

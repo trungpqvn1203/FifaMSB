@@ -11,7 +11,7 @@ from app.auth.dependencies import get_current_team, require_admin
 from app.common.clock import Clock, get_clock
 from app.db import get_session
 from app.draft.broadcaster import DraftBroadcaster, get_draft_broadcaster
-from app.draft.domain import DraftPick, DraftSession
+from app.draft.domain import DraftPick, DraftSession, get_picks_count_for_round
 from app.draft.service import DraftService
 
 drafts_router = APIRouter(prefix="/api/drafts", tags=["Drafts"])
@@ -71,7 +71,8 @@ class StartDraftResponse(BaseModel):
 class DraftPickRequest(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
-    player_season_id: uuid.UUID = Field(alias="playerSeasonId")
+    player_season_ids: list[uuid.UUID] = Field(default_factory=list, alias="playerSeasonIds")
+    player_season_id: uuid.UUID | None = Field(default=None, alias="playerSeasonId")
     expected_version: int = Field(alias="expectedVersion")
 
 
@@ -115,6 +116,7 @@ class NextStateInfo(BaseModel):
 class MakePickResponse(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 
+    picks: list[PickResponseItem] = Field(default_factory=list, serialization_alias="picks")
     pick: PickResponseItem
     next_state: NextStateInfo = Field(serialization_alias="nextState")
 
@@ -218,6 +220,8 @@ class DraftDetailResponse(BaseModel):
     version: int
     server_time: str = Field(serialization_alias="serverTime")
     rules_snapshot: dict[str, Any] = Field(serialization_alias="rulesSnapshot")
+    required_picks: int = Field(1, serialization_alias="requiredPicks")
+    is_main_squad: bool = Field(True, serialization_alias="isMainSquad")
     teams: list[TeamDraftStatus]
 
 
@@ -250,6 +254,8 @@ async def start_draft(
         version=draft.version,
         server_time=now.isoformat(),
         rules_snapshot=draft.rules_snapshot,
+        required_picks=get_picks_count_for_round(draft.current_round),
+        is_main_squad=draft.current_round <= 7,
         teams=[
             TeamDraftStatus(
                 id=t.id,
@@ -284,6 +290,8 @@ async def get_tournament_draft(
         version=draft.version,
         server_time=now.isoformat(),
         rules_snapshot=draft.rules_snapshot,
+        required_picks=get_picks_count_for_round(draft.current_round),
+        is_main_squad=draft.current_round <= 7,
         teams=[
             TeamDraftStatus(
                 id=t.id,
@@ -318,6 +326,8 @@ async def get_draft_detail(
         version=draft.version,
         server_time=now.isoformat(),
         rules_snapshot=draft.rules_snapshot,
+        required_picks=get_picks_count_for_round(draft.current_round),
+        is_main_squad=draft.current_round <= 7,
         teams=[
             TeamDraftStatus(
                 id=t.id,
@@ -349,11 +359,16 @@ async def make_pick(
     current_team_id: uuid.UUID = Depends(get_current_team),
     service: DraftService = Depends(get_draft_service),
 ) -> MakePickResponse:
-    """Submit a single player card pick for the current team's turn."""
-    pick, draft = await service.make_pick(
+    """Submit player card pick(s) for the current team's turn."""
+    target_ids = (
+        body.player_season_ids
+        if body.player_season_ids
+        else ([body.player_season_id] if body.player_season_id else [])
+    )
+    picks, draft = await service.make_pick(
         draft_id=draft_id,
         team_id=current_team_id,
-        player_season_id=body.player_season_id,
+        player_season_ids=target_ids,
         expected_version=body.expected_version,
     )
 
@@ -366,8 +381,10 @@ async def make_pick(
         version=draft.version,
     )
 
+    pick_items = [PickResponseItem.from_domain(p) for p in picks]
     return MakePickResponse(
-        pick=PickResponseItem.from_domain(pick),
+        picks=pick_items,
+        pick=pick_items[0],
         next_state=next_state,
     )
 

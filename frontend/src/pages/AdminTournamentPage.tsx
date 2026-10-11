@@ -31,7 +31,7 @@ export const AdminTournamentPage: React.FC = () => {
   const [scheduleDate, setScheduleDate] = useState('2026-07-15T19:30')
 
   // Draft Rules State
-  const [rosterSize, setRosterSize] = useState<number>(24)
+  const [rosterSize, setRosterSize] = useState<number>(23)
   const [budget, setBudget] = useState<number>(305)
   const [pickTimeSeconds, setPickTimeSeconds] = useState<number>(30)
   const [playersPerTurn, setPlayersPerTurn] = useState<number>(1)

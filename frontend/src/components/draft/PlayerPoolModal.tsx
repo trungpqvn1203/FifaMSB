@@ -2,6 +2,7 @@ import React, { useState, useMemo } from 'react'
 import {
   Search,
   X,
+  Check,
   Sparkles,
   Loader2,
   Grid,
@@ -39,13 +40,20 @@ interface PlayerPoolModalProps {
   draftStatus: string
   picks: DraftPickBoardItem[]
   isMyTurn: boolean
-  onMakePick: (playerSeasonId: string, card?: PlayerSeason) => void
+  onMakePick: (playerSeasonIds: string[] | string, card?: PlayerSeason[] | PlayerSeason) => void
   onPreviewCard?: (card: PlayerSeason) => void
   isPickingLoading: boolean
   pickError?: string | null
   currentRound?: number
   currentTurn?: number
   secondsRemaining?: number
+  selectedBatch?: PlayerSeason[]
+  onToggleBatchCard?: (card: PlayerSeason) => void
+  onConfirmBatch?: () => void
+  onClearBatch?: () => void
+  requiredPicks?: number
+  roundCategory?: { label: string; count?: number; isMain?: boolean; isMainSquad?: boolean }
+  isSubstituteRound?: boolean
 }
 
 export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
@@ -73,6 +81,13 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
   currentRound,
   currentTurn,
   secondsRemaining,
+  selectedBatch = [],
+  onToggleBatchCard,
+  onConfirmBatch,
+  onClearBatch,
+  requiredPicks = 1,
+  roundCategory,
+  isSubstituteRound = false,
 }) => {
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table')
 
@@ -130,11 +145,17 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
   }, [cards, selectedSeasonId, searchTerm, sortBy])
 
   const remainingBudget = currentTeam?.budgetRemaining ?? 305
+  const currentBatchSalary = selectedBatch.reduce((sum, c) => sum + c.salary, 0)
 
   if (!isOpen) return null
 
   const handlePickAndClose = (card: PlayerSeason) => {
     onMakePick(card.id, card)
+    onClose()
+  }
+
+  const handleConfirmBatchAndClose = () => {
+    onConfirmBatch?.()
     onClose()
   }
 
@@ -387,7 +408,16 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
                     const draftedByTeam = draftedCardIds.get(card.id)
                     const isPlayerAlreadyDrafted = draftedPlayerIds.has(card.player.id)
                     const isDrafted = Boolean(draftedByTeam || isPlayerAlreadyDrafted)
-                    const isOverBudget = card.salary > remainingBudget
+
+                    const isSelectedInBatch = selectedBatch.some((c) => c.id === card.id)
+                    const isSamePlayerInBatch =
+                      !isSelectedInBatch &&
+                      selectedBatch.some((c) => c.player.id === card.player.id)
+                    const effectiveRemaining = isSelectedInBatch
+                      ? remainingBudget - (currentBatchSalary - card.salary)
+                      : remainingBudget - currentBatchSalary
+
+                    const isOverBudget = !isSubstituteRound && card.salary > effectiveRemaining
                     const posStyle = getPositionStyle(card.position)
 
                     const canPick =
@@ -395,7 +425,8 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
                       isMyTurn &&
                       !isDrafted &&
                       !isOverBudget &&
-                      !isPickingLoading
+                      !isPickingLoading &&
+                      !isSamePlayerInBatch
 
                     return (
                       <tr
@@ -403,6 +434,8 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
                         className={`transition-colors ${
                           isDrafted
                             ? 'opacity-40 bg-app-void/40'
+                            : isSelectedInBatch
+                            ? 'bg-neon/10 border-l-2 border-neon'
                             : 'hover:bg-surface-elevated/70'
                         }`}
                       >
@@ -473,7 +506,15 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
 
                         {/* Salary */}
                         <td className="py-2.5 px-3 text-center font-mono text-xs font-bold">
-                          <span className={isOverBudget ? 'text-danger' : 'text-neon'}>
+                          <span
+                            className={
+                              isSubstituteRound
+                                ? 'text-zinc-300'
+                                : isOverBudget
+                                ? 'text-danger'
+                                : 'text-neon'
+                            }
+                          >
                             {card.salary}.0M
                           </span>
                         </td>
@@ -488,8 +529,16 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
                             <span className="font-mono text-[10px] text-danger uppercase px-2 py-0.5 rounded bg-danger/10 border border-danger/30">
                               VƯỢT LƯƠNG
                             </span>
+                          ) : isSamePlayerInBatch ? (
+                            <span className="font-mono text-[10px] text-amber-400 uppercase px-2 py-0.5 rounded bg-amber-400/10 border border-amber-400/30">
+                              TRÙNG CT
+                            </span>
+                          ) : isSelectedInBatch ? (
+                            <span className="font-mono text-[10px] text-neon uppercase px-2 py-0.5 rounded bg-neon/10 border border-neon/30 font-bold">
+                              ĐÃ CHỌN
+                            </span>
                           ) : (
-                            <span className="font-mono text-[10px] text-neon uppercase px-2 py-0.5 rounded bg-neon/10 border border-neon/30">
+                            <span className="font-mono text-[10px] text-zinc-400 uppercase px-2 py-0.5 rounded bg-surface-elevated border border-border-default">
                               SẴN SÀNG
                             </span>
                           )}
@@ -516,7 +565,11 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
                               <span className="font-mono text-[10px] text-danger uppercase px-3 py-1">
                                 QUÁ QUỸ LƯƠNG
                               </span>
-                            ) : (
+                            ) : isSamePlayerInBatch ? (
+                              <span className="font-mono text-[10px] text-amber-400 uppercase px-3 py-1">
+                                TRÙNG CẦU THỦ
+                              </span>
+                            ) : requiredPicks === 1 ? (
                               <button
                                 onClick={() => handlePickAndClose(card)}
                                 disabled={!canPick}
@@ -534,6 +587,29 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
                                   'CHỜ LƯỢT'
                                 )}
                               </button>
+                            ) : isSelectedInBatch ? (
+                              <button
+                                onClick={() => onToggleBatchCard?.(card)}
+                                className="px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider bg-neon text-black hover:bg-red-500 hover:text-white transition-all shadow-glow-neon flex items-center gap-1 rounded-sm active:scale-95"
+                                title="Nhấn để bỏ chọn thẻ này"
+                              >
+                                <Check className="w-3.5 h-3.5 stroke-[3]" />
+                                <span>ĐÃ CHỌN</span>
+                              </button>
+                            ) : (
+                              <button
+                                onClick={() => onToggleBatchCard?.(card)}
+                                disabled={!canPick || selectedBatch.length >= requiredPicks}
+                                className={`px-3 py-1.5 font-display text-xs font-bold uppercase tracking-wider transition-all rounded-sm ${
+                                  canPick && selectedBatch.length < requiredPicks
+                                    ? 'bg-surface-elevated text-neon border border-neon/50 hover:bg-neon hover:text-black active:scale-95'
+                                    : 'bg-surface-elevated text-zinc-600 border border-border-default cursor-not-allowed'
+                                }`}
+                              >
+                                {selectedBatch.length >= requiredPicks
+                                  ? `ĐỦ ${requiredPicks}`
+                                  : '+ CHỌN'}
+                              </button>
                             )}
                           </div>
                         </td>
@@ -550,7 +626,16 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
                 const draftedByTeam = draftedCardIds.get(card.id)
                 const isPlayerAlreadyDrafted = draftedPlayerIds.has(card.player.id)
                 const isDrafted = Boolean(draftedByTeam || isPlayerAlreadyDrafted)
-                const isOverBudget = card.salary > remainingBudget
+
+                const isSelectedInBatch = selectedBatch.some((c) => c.id === card.id)
+                const isSamePlayerInBatch =
+                  !isSelectedInBatch &&
+                  selectedBatch.some((c) => c.player.id === card.player.id)
+                const effectiveRemaining = isSelectedInBatch
+                  ? remainingBudget - (currentBatchSalary - card.salary)
+                  : remainingBudget - currentBatchSalary
+
+                const isOverBudget = !isSubstituteRound && card.salary > effectiveRemaining
                 const posStyle = getPositionStyle(card.position)
 
                 const canPick =
@@ -558,7 +643,8 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
                   isMyTurn &&
                   !isDrafted &&
                   !isOverBudget &&
-                  !isPickingLoading
+                  !isPickingLoading &&
+                  !isSamePlayerInBatch
 
                 return (
                   <div
@@ -566,6 +652,8 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
                     className={`relative rounded-lg p-2.5 bg-surface-card border transition-all flex flex-col justify-between group overflow-hidden ${
                       isDrafted
                         ? 'opacity-40 border-border-subtle bg-app-void/60'
+                        : isSelectedInBatch
+                        ? 'border-neon bg-neon/10 shadow-glow-neon/30'
                         : isOverBudget
                         ? 'border-border-default hover:border-danger/40'
                         : 'border-border-default hover:border-neon hover:shadow-glow-neon/20 hover:-translate-y-1'
@@ -631,7 +719,13 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
                       <div className="flex items-center justify-between text-[10px] font-mono px-1 py-0.5 rounded bg-surface-elevated/70">
                         <span className="text-zinc-400">LƯƠNG:</span>
                         <span
-                          className={`font-bold ${isOverBudget ? 'text-danger' : 'text-neon'}`}
+                          className={`font-bold ${
+                            isSubstituteRound
+                              ? 'text-zinc-300'
+                              : isOverBudget
+                              ? 'text-danger'
+                              : 'text-neon'
+                          }`}
                         >
                           {card.salary}.0M
                         </span>
@@ -657,7 +751,11 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
                           <span className="w-full text-center py-1 font-mono text-[9px] text-danger uppercase bg-danger/10 rounded">
                             VƯỢT LƯƠNG
                           </span>
-                        ) : (
+                        ) : isSamePlayerInBatch ? (
+                          <span className="w-full text-center py-1 font-mono text-[9px] text-amber-400 uppercase bg-amber-400/10 rounded">
+                            TRÙNG CT
+                          </span>
+                        ) : requiredPicks === 1 ? (
                           <button
                             onClick={() => handlePickAndClose(card)}
                             disabled={!canPick}
@@ -675,6 +773,29 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
                               'CHỜ'
                             )}
                           </button>
+                        ) : isSelectedInBatch ? (
+                          <button
+                            onClick={() => onToggleBatchCard?.(card)}
+                            className="w-full py-1 font-display text-[11px] font-bold uppercase tracking-wider bg-neon text-black hover:bg-red-500 hover:text-white transition-all shadow-glow-neon flex items-center justify-center gap-1 rounded active:scale-95"
+                            title="Nhấn để bỏ chọn thẻ này"
+                          >
+                            <Check className="w-3 h-3 stroke-[3]" />
+                            <span>ĐÃ CHỌN</span>
+                          </button>
+                        ) : (
+                          <button
+                            onClick={() => onToggleBatchCard?.(card)}
+                            disabled={!canPick || selectedBatch.length >= requiredPicks}
+                            className={`w-full py-1 font-display text-[11px] font-bold uppercase tracking-wider transition-all rounded ${
+                              canPick && selectedBatch.length < requiredPicks
+                                ? 'bg-surface-elevated text-neon border border-neon/50 hover:bg-neon hover:text-black active:scale-95'
+                                : 'bg-surface-elevated text-zinc-600 border border-border-default cursor-not-allowed'
+                            }`}
+                          >
+                            {selectedBatch.length >= requiredPicks
+                              ? `ĐỦ ${requiredPicks}`
+                              : '+ CHỌN'}
+                          </button>
                         )}
                       </div>
                     </div>
@@ -684,6 +805,86 @@ export const PlayerPoolModal: React.FC<PlayerPoolModalProps> = ({
             </div>
           )}
         </div>
+
+        {/* Sticky Batch Selection Modal Footer */}
+        {requiredPicks > 1 && (
+          <footer className="px-4 py-2.5 bg-surface-card border-t border-neon/40 flex flex-wrap items-center justify-between gap-3 shrink-0">
+            <div className="flex items-center gap-2 sm:gap-3 flex-wrap">
+              <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-neon/10 border border-neon/30 text-neon font-mono text-xs font-bold uppercase">
+                <span>Vòng {currentRound} • {roundCategory?.label || 'Đá chính'}</span>
+                <span className="text-zinc-500">|</span>
+                <span>Cần chọn {requiredPicks} thẻ</span>
+                <span className="text-white font-mono font-black ml-1">
+                  ({selectedBatch.length}/{requiredPicks})
+                </span>
+              </div>
+
+              {/* Selected chips */}
+              <div className="flex items-center gap-1.5 flex-wrap">
+                {selectedBatch.map((card) => (
+                  <div
+                    key={card.id}
+                    className="flex items-center gap-1.5 pl-2 pr-1 py-1 rounded bg-surface-elevated border border-border-default text-xs font-semibold text-white shadow-sm"
+                  >
+                    <span>{card.player.name}</span>
+                    <span className="text-[10px] font-mono text-neon font-bold">
+                      {card.salary}M
+                    </span>
+                    <button
+                      onClick={() => onToggleBatchCard?.(card)}
+                      className="p-0.5 hover:bg-zinc-700 rounded text-zinc-400 hover:text-white"
+                      title="Bỏ chọn"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                ))}
+
+                {Array.from({
+                  length: Math.max(0, requiredPicks - selectedBatch.length),
+                }).map((_, idx) => (
+                  <div
+                    key={idx}
+                    className="px-2 py-0.5 rounded border border-dashed border-zinc-600 text-zinc-500 font-mono text-[11px]"
+                  >
+                    + Vị trí {selectedBatch.length + idx + 1}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {selectedBatch.length > 0 && onClearBatch && (
+                <button
+                  onClick={onClearBatch}
+                  className="px-2.5 py-1 text-xs font-mono text-zinc-400 hover:text-white hover:bg-surface-elevated rounded transition-colors"
+                >
+                  Hủy chọn
+                </button>
+              )}
+              <button
+                onClick={handleConfirmBatchAndClose}
+                disabled={
+                  selectedBatch.length !== requiredPicks || !isMyTurn || isPickingLoading
+                }
+                className={`px-4 py-1.5 rounded-sm font-display text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 transition-all ${
+                  selectedBatch.length === requiredPicks && isMyTurn && !isPickingLoading
+                    ? 'bg-neon text-black hover:bg-white shadow-glow-neon active:scale-95 cursor-pointer'
+                    : 'bg-surface-elevated text-zinc-500 border border-border-default cursor-not-allowed'
+                }`}
+              >
+                {isPickingLoading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Check className="w-3.5 h-3.5 stroke-[3]" />
+                )}
+                <span>
+                  XÁC NHẬN CHỌN ({selectedBatch.length}/{requiredPicks})
+                </span>
+              </button>
+            </div>
+          </footer>
+        )}
       </div>
     </div>
   )

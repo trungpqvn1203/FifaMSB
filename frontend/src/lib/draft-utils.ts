@@ -107,3 +107,28 @@ export const POSITION_FILTERS = [
   'CF',
   'ST',
 ] as const
+
+export function getPicksCountForRound(round: number): number {
+  if (round >= 1 && round <= 3) return 1
+  if (round >= 4 && round <= 7) return 2
+  if (round >= 8 && round <= 11) return 3
+  return 1
+}
+
+export function getRoundCategoryLabel(round: number): {
+  label: string
+  count: number
+  isMain: boolean
+  isMainSquad: boolean
+} {
+  if (round >= 1 && round <= 3) {
+    return { label: 'Đá chính', count: 1, isMain: true, isMainSquad: true }
+  }
+  if (round >= 4 && round <= 7) {
+    return { label: 'Đá chính', count: 2, isMain: true, isMainSquad: true }
+  }
+  if (round >= 8 && round <= 11) {
+    return { label: 'Dự bị', count: 3, isMain: false, isMainSquad: false }
+  }
+  return { label: 'Lượt chọn', count: 1, isMain: false, isMainSquad: false }
+}

@@ -166,6 +166,23 @@ def is_budget_feasible(
     return remaining_budget_after_pick >= required_budget_for_rest
 
 
+def get_picks_count_for_round(round_number: int) -> int:
+    """Return the number of player cards to pick in the given draft round.
+
+    Tournament squad structure (23 players total across 11 rounds):
+    - Rounds 1-3: 1 card each round (3 starters)
+    - Rounds 4-7: 2 cards each round (8 starters -> 11 starters total)
+    - Rounds 8-11: 3 cards each round (12 substitutes -> 23 players total)
+    """
+    if 1 <= round_number <= 3:
+        return 1
+    if 4 <= round_number <= 7:
+        return 2
+    if 8 <= round_number <= 11:
+        return 3
+    return 1
+
+
 # ---------------------------------------------------------------------------
 # SQLAlchemy Models
 # ---------------------------------------------------------------------------
@@ -262,12 +279,6 @@ class DraftPick(Base):
             "draft_session_id",
             "player_season_id",
             name="uq_draft_picks_session_player_season",
-        ),
-        UniqueConstraint(
-            "draft_session_id",
-            "team_id",
-            "round",
-            name="uq_draft_picks_session_team_round",
         ),
     )
 

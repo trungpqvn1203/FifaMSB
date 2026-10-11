@@ -9,11 +9,20 @@ export type TournamentRules = components['schemas']['TournamentRulesSchema']
 export type Team = components['schemas']['TeamResponse']
 export type CreateTeamRequest = components['schemas']['CreateTeamRequest']
 
-export type DraftDetail = components['schemas']['DraftDetailResponse']
+export type DraftDetail = components['schemas']['DraftDetailResponse'] & {
+  requiredPicks?: number
+  isMainSquad?: boolean
+}
 export type TeamDraftStatus = components['schemas']['TeamDraftStatus']
 export type DraftPickBoardItem = components['schemas']['DraftPickBoardItem']
-export type MakePickResponse = components['schemas']['MakePickResponse']
-export type DraftPickRequest = components['schemas']['DraftPickRequest']
+export type MakePickResponse = components['schemas']['MakePickResponse'] & {
+  picks?: components['schemas']['PickResponseItem'][]
+}
+export type DraftPickRequest = {
+  playerSeasonId?: string
+  playerSeasonIds?: string[]
+  expectedVersion: number
+}
 
 export type PlayerSeason = components['schemas']['PlayerSeasonResponse']
 export type PlayerSeasonList = components['schemas']['PlayerSeasonListResponse']
@@ -62,7 +71,10 @@ export interface DraftSocketEvent {
   turnStartedAt: string | null
   turnExpiresAt: string | null
   remainingMillis: number | null
+  requiredPicks?: number
+  isMainSquad?: boolean
   pickedPlayer?: PickedPlayerDetail | null
+  pickedPlayers?: PickedPlayerDetail[]
   teams: Array<{
     id: string
     name: string

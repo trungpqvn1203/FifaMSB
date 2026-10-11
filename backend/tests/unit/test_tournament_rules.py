@@ -18,7 +18,7 @@ from app.tournament.domain import TournamentRules, compute_tournament_status, ru
 def test_tournament_rules_defaults() -> None:
     """TournamentRules created with no arguments should use all spec defaults."""
     rules = TournamentRules()
-    assert rules.roster_size == 24
+    assert rules.roster_size == 23
     assert rules.budget == 305
     assert rules.pick_time_seconds == 30
     assert rules.unique_by == "PLAYER"
@@ -34,12 +34,12 @@ def test_tournament_rules_defaults() -> None:
 def test_tournament_rules_custom_values() -> None:
     """Custom values inside valid ranges should be accepted."""
     rules = TournamentRules(
-        roster_size=23,
+        roster_size=20,
         budget=400,
         unique_by="CARD",
         timeout_policy="SKIP_TURN",
     )
-    assert rules.roster_size == 23
+    assert rules.roster_size == 20
     assert rules.budget == 400
     assert rules.unique_by == "CARD"
     assert rules.timeout_policy == "SKIP_TURN"

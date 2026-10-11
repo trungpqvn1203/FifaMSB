@@ -170,6 +170,24 @@ class TeamRosterFull(DomainError):
         )
 
 
+class InvalidPickCount(DomainError):
+    def __init__(self, expected: int, received: int) -> None:
+        super().__init__(
+            code="INVALID_PICK_COUNT",
+            http_status=422,
+            message=f"This round requires selecting {expected} player(s), but received {received}.",
+        )
+
+
+class DuplicateCardsInBatch(DomainError):
+    def __init__(self) -> None:
+        super().__init__(
+            code="DUPLICATE_CARDS_IN_BATCH",
+            http_status=422,
+            message="Cannot select duplicate cards in the same pick batch.",
+        )
+
+
 class PoolLocked(DomainError):
     """Raised when player pool modification is attempted while draft is active."""
 

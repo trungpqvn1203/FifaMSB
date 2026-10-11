@@ -43,7 +43,7 @@ class TournamentRulesSchema(BaseModel):
         default=1, ge=1, alias="rulesVersion", serialization_alias="rulesVersion"
     )
     roster_size: int = Field(
-        default=24, ge=1, le=60, alias="rosterSize", serialization_alias="rosterSize"
+        default=23, ge=1, le=60, alias="rosterSize", serialization_alias="rosterSize"
     )
     budget: int = Field(default=305, ge=1)
     pick_time_seconds: int = Field(

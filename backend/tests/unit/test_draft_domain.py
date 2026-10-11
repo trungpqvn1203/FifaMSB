@@ -12,6 +12,7 @@ import uuid
 from app.draft.domain import (
     LinearOrder,
     TeamTurnInfo,
+    get_picks_count_for_round,
     is_budget_feasible,
 )
 
@@ -183,3 +184,27 @@ def test_budget_feasible_zero_or_negative_slots() -> None:
     """Zero or negative slots left returns False."""
     assert not is_budget_feasible(budget_remaining=10, salary=1, slots_left=0)
     assert not is_budget_feasible(budget_remaining=10, salary=1, slots_left=-1)
+
+
+# ---------------------------------------------------------------------------
+# Pick Count by Round Tests (New Format: 23 players across 11 rounds)
+# ---------------------------------------------------------------------------
+
+
+def test_get_picks_count_for_round() -> None:
+    """Verify pick count progression: 3 rounds x 1, 4 rounds x 2, 4 rounds x 3."""
+    # Rounds 1-3: 1 starter each
+    for r in (1, 2, 3):
+        assert get_picks_count_for_round(r) == 1
+
+    # Rounds 4-7: 2 starters each (3 + 8 = 11 starters)
+    for r in (4, 5, 6, 7):
+        assert get_picks_count_for_round(r) == 2
+
+    # Rounds 8-11: 3 substitutes each (11 + 12 = 23 total roster)
+    for r in (8, 9, 10, 11):
+        assert get_picks_count_for_round(r) == 3
+
+    # Total cards drafted across 11 rounds must equal 23
+    total_picks = sum(get_picks_count_for_round(r) for r in range(1, 12))
+    assert total_picks == 23
