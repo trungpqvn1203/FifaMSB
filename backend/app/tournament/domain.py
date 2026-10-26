@@ -56,7 +56,7 @@ class TournamentRules(BaseModel):
 
     # Ban phase settings
     ban_count: int = Field(default=5, ge=0, serialization_alias="banCount")
-    ban_time_seconds: int = Field(default=60, ge=1, serialization_alias="banTimeSeconds")
+    ban_time_seconds: int = Field(default=180, ge=1, serialization_alias="banTimeSeconds")
     ban_target: Literal["OPPONENT_ROSTER", "OWN_ROSTER"] = Field(
         default="OPPONENT_ROSTER", serialization_alias="banTarget"
     )

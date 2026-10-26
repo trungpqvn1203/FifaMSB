@@ -64,7 +64,7 @@ class TournamentRulesSchema(BaseModel):
     )
     ban_count: int = Field(default=5, ge=0, alias="banCount", serialization_alias="banCount")
     ban_time_seconds: int = Field(
-        default=60, ge=1, alias="banTimeSeconds", serialization_alias="banTimeSeconds"
+        default=180, ge=1, alias="banTimeSeconds", serialization_alias="banTimeSeconds"
     )
     ban_target: Literal["OPPONENT_ROSTER", "OWN_ROSTER"] = Field(
         default="OPPONENT_ROSTER",

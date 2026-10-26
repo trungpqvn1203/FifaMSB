@@ -138,6 +138,7 @@ export const DraftBoardPage: React.FC = () => {
   }, [socketState?.teams, initialDraft?.teams])
 
   const budgetCap = Number(initialDraft?.rulesSnapshot?.budget || 305)
+  const rosterSize = Number(initialDraft?.rulesSnapshot?.rosterSize || 23)
 
   // Current active team
   const currentTeam = useMemo(() => {
@@ -317,6 +318,7 @@ export const DraftBoardPage: React.FC = () => {
               budgetCap={budgetCap}
               currentRound={activeRound}
               currentTurn={activeTurn}
+              rosterSize={rosterSize}
             />
 
             {/* Matrix Grid */}

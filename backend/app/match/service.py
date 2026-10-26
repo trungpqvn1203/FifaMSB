@@ -126,8 +126,8 @@ class MatchService:
         if match.status != "SCHEDULED":
             raise MatchNotActive()
 
-        turn_seconds = 30  # Chuẩn FVPL: 30 giây cho mỗi lượt cấm luân phiên
         rules = dict(match.rules_snapshot)
+        turn_seconds = int(rules.get("banTimeSeconds", rules.get("ban_time_seconds", 180)))
         rules["ban_order"] = "ALTERNATING"
         rules["banOrder"] = "ALTERNATING"
         rules["homeTurnsSpent"] = 0
@@ -162,8 +162,8 @@ class MatchService:
         for b in list(match.bans):
             await self._session.delete(b)
 
-        turn_seconds = 30
         rules = dict(match.rules_snapshot)
+        turn_seconds = int(rules.get("banTimeSeconds", rules.get("ban_time_seconds", 180)))
         rules["ban_order"] = "ALTERNATING"
         rules["banOrder"] = "ALTERNATING"
         rules["homeTurnsSpent"] = 0
@@ -286,7 +286,7 @@ class MatchService:
 
         # Update turns spent in snapshot
         rules = dict(match.rules_snapshot)
-        turn_seconds = 30
+        turn_seconds = int(rules.get("banTimeSeconds", rules.get("ban_time_seconds", 180)))
 
         if banning_team_id == match.home_team_id:
             rules["homeTurnsSpent"] = rules.get("homeTurnsSpent", 0) + 1
@@ -441,7 +441,7 @@ class MatchService:
 
         rules = dict(match.rules_snapshot)
         max_bans = int(rules.get("banCount", rules.get("ban_count", 5)))
-        turn_seconds = 30
+        turn_seconds = int(rules.get("banTimeSeconds", rules.get("ban_time_seconds", 180)))
 
         current_team = match.get_effective_banning_team_id()
         if current_team == match.home_team_id:

@@ -77,9 +77,9 @@ export const AdminBanRulesSection: React.FC<AdminBanRulesProps> = ({
             <label className="text-xs font-mono uppercase tracking-wider text-gray-200 font-semibold">
               Thời Gian Cấm Chọn (Ban)
             </label>
-            <span className="text-[10px] font-mono text-gray-400">Đếm Ngược</span>
+            <span className="text-[10px] font-mono text-[#00FFC2]">180s = 3 Phút</span>
           </div>
-          <p className="text-[11px] text-gray-400">Thời lượng dành cho việc cấm chọn chiến thuật.</p>
+          <p className="text-[11px] text-gray-400">Thời lượng dành cho mỗi lượt cấm chọn chiến thuật.</p>
           <div className="flex items-center gap-2 mt-1">
             <input
               type="number"
@@ -92,7 +92,7 @@ export const AdminBanRulesSection: React.FC<AdminBanRulesProps> = ({
             <span className="text-xs font-mono text-gray-400">GIÂY</span>
           </div>
           <div className="text-[11px] font-mono text-gray-400 pt-1">
-            Tự động khoá lựa chọn khi về 00:00.
+            Mặc định: 180 giây (3 phút/lượt). Tự động khoá lựa chọn khi về 00:00.
           </div>
         </div>
 

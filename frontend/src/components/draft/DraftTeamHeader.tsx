@@ -9,6 +9,7 @@ interface DraftTeamHeaderProps {
   budgetCap: number
   currentRound: number
   currentTurn: number
+  rosterSize?: number
 }
 
 export const DraftTeamHeader: React.FC<DraftTeamHeaderProps> = ({
@@ -17,18 +18,19 @@ export const DraftTeamHeader: React.FC<DraftTeamHeaderProps> = ({
   budgetCap,
   currentRound,
   currentTurn,
+  rosterSize = 23,
 }) => {
   return (
-    <div className="flex items-stretch gap-1 pb-1">
-      {/* Left Gutter: Round Header */}
-      <div className="w-14 shrink-0 bg-app-void border border-border-default/40 flex flex-col justify-center items-center py-2">
+    <div className="flex items-stretch gap-1.5 pb-1 select-none">
+      {/* Left Gutter: Round Header (aligned exactly with DraftMatrix w-20) */}
+      <div className="w-20 shrink-0 bg-app-void border border-border-default/40 flex flex-col justify-center items-center py-2">
         <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest font-bold">
           VÒNG
         </span>
       </div>
 
       {/* Team Columns */}
-      <div className="flex-1 grid grid-flow-col auto-cols-fr gap-1">
+      <div className="flex-1 grid grid-flow-col auto-cols-fr gap-1.5">
         {teams.map((team) => {
           const isActive = team.id === currentTeamId
           const percentUsed = Math.min(
@@ -41,7 +43,7 @@ export const DraftTeamHeader: React.FC<DraftTeamHeaderProps> = ({
             return (
               <div
                 key={team.id}
-                className="bg-neon text-black p-2 flex flex-col justify-between shadow-glow-neon relative overflow-hidden transition-all duration-300 border border-neon"
+                className="bg-neon text-black p-2 flex flex-col justify-between shadow-glow-neon relative overflow-hidden transition-all duration-300 border border-neon rounded-sm"
               >
                 {/* Subtle background bolt */}
                 <div className="absolute -right-2 -top-2 opacity-15 pointer-events-none text-black">
@@ -68,10 +70,9 @@ export const DraftTeamHeader: React.FC<DraftTeamHeaderProps> = ({
                 </div>
 
                 <div className="flex items-center justify-between mt-1.5 z-10 font-mono text-[10px] font-bold">
-                  <span>CÒN LẠI: {team.budgetRemaining}M</span>
-                  <span>
-                    {team.budgetUsed}/{budgetCap}
-                  </span>
+                  <span>CÒN: {team.budgetRemaining}M</span>
+                  <span>ĐỘI HÌNH: {team.pickedCount}/{rosterSize}</span>
+                  <span>QUỸ: {team.budgetUsed}/{budgetCap}</span>
                 </div>
 
                 {/* Progress bar */}
@@ -85,7 +86,7 @@ export const DraftTeamHeader: React.FC<DraftTeamHeaderProps> = ({
           return (
             <div
               key={team.id}
-              className="bg-surface-panel border border-border-default/60 p-2 flex flex-col justify-between transition-colors"
+              className="bg-surface-panel border border-border-default/60 p-2 flex flex-col justify-between transition-colors rounded-sm"
             >
               <div className="flex items-center justify-between gap-1">
                 <div className="flex items-center gap-1.5 min-w-0">
@@ -96,8 +97,10 @@ export const DraftTeamHeader: React.FC<DraftTeamHeaderProps> = ({
                     <div className="font-display font-bold text-xs text-zinc-200 truncate leading-tight">
                       {team.name}
                     </div>
-                    <div className="font-mono text-[9px] text-zinc-400">
-                      QUỸ: {team.budgetUsed}/{budgetCap}
+                    <div className="font-mono text-[9px] text-zinc-400 flex items-center gap-2">
+                      <span>QUỸ: {team.budgetUsed}/{budgetCap}</span>
+                      <span className="text-zinc-600">·</span>
+                      <span className="text-zinc-300 font-semibold">{team.pickedCount}/{rosterSize} CT</span>
                     </div>
                   </div>
                 </div>
@@ -120,3 +123,4 @@ export const DraftTeamHeader: React.FC<DraftTeamHeaderProps> = ({
     </div>
   )
 }
+

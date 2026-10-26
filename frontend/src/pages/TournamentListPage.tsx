@@ -72,7 +72,7 @@ export const TournamentListPage: React.FC = () => {
         banCount: Number(banCount),
         uniqueBy,
         timeoutPolicy: 'AUTO_PICK_CHEAPEST',
-        banTimeSeconds: 60,
+        banTimeSeconds: 180,
         banTarget: 'OPPONENT_ROSTER',
         banOrder: 'SIMULTANEOUS',
         allowedSeasonIds: [],

@@ -95,7 +95,7 @@ export const MatchBanPage: React.FC = () => {
   const [optimisticBannedIds, setOptimisticBannedIds] = useState<Set<string>>(new Set())
   const [optimisticTurnTeamId, setOptimisticTurnTeamId] = useState<string | null>(null)
   const [optimisticTimerResetAt, setOptimisticTimerResetAt] = useState<number | null>(null)
-  const [optimisticSeconds, setOptimisticSeconds] = useState<number>(30)
+  const [optimisticSeconds, setOptimisticSeconds] = useState<number>(180)
   const [turnToast, setTurnToast] = useState<string | null>(null)
 
   // Countdown loop for optimistic 30s timer
@@ -179,6 +179,12 @@ export const MatchBanPage: React.FC = () => {
       banExpiresAt: primary.banExpiresAt ?? secondary.banExpiresAt,
     }
   }, [socketMatch, fetchedMatch])
+
+  const banDurationSeconds = useMemo(() => {
+    const rules = currentMatch?.rulesSnapshot
+    if (!rules) return 180
+    return rules.banTimeSeconds || rules.ban_time_seconds || 180
+  }, [currentMatch?.rulesSnapshot])
 
   // Clear optimistic turn override when match version advances from server
   useEffect(() => {
@@ -310,11 +316,12 @@ export const MatchBanPage: React.FC = () => {
   }, [simulatedMode, currentMatch?.status])
 
   const effectiveSeconds = useMemo(() => {
-    if (simulatedMode === 'home_turn' || simulatedMode === 'away_turn') return 29
+    if (simulatedMode === 'home_turn' || simulatedMode === 'away_turn')
+      return Math.max(0, banDurationSeconds - 1)
     if (simulatedMode === 'locked') return 0
     if (optimisticTimerResetAt) return optimisticSeconds
-    return socketSeconds || 30
-  }, [simulatedMode, optimisticTimerResetAt, optimisticSeconds, socketSeconds])
+    return socketSeconds || banDurationSeconds
+  }, [simulatedMode, optimisticTimerResetAt, optimisticSeconds, socketSeconds, banDurationSeconds])
 
   // Target team logic:
   // If Home Team is banning -> Target is Away Team
@@ -401,8 +408,8 @@ export const MatchBanPage: React.FC = () => {
     mutationFn: () => matchApi.skipBanTurn(matchId),
     onSuccess: (updated) => {
       setErrorMessage(null)
-      setOptimisticTimerResetAt(Date.now() + 30000)
-      setOptimisticSeconds(30)
+      setOptimisticTimerResetAt(Date.now() + banDurationSeconds * 1000)
+      setOptimisticSeconds(banDurationSeconds)
       if (setMatchState) setMatchState(updated as any)
       refetchMatch()
     },
@@ -417,8 +424,8 @@ export const MatchBanPage: React.FC = () => {
       setErrorMessage(null)
       setOptimisticBannedIds(new Set())
       setOptimisticTurnTeamId(null)
-      setOptimisticTimerResetAt(Date.now() + 30000)
-      setOptimisticSeconds(30)
+      setOptimisticTimerResetAt(Date.now() + banDurationSeconds * 1000)
+      setOptimisticSeconds(banDurationSeconds)
       setTurnToast(`BẮT ĐẦU GIAI ĐOẠN CẤM (LƯỢT ${homeTeam.name})!`)
       setTimeout(() => setTurnToast(null), 3000)
       if (setMatchState) setMatchState(updated as any)
@@ -432,10 +439,10 @@ export const MatchBanPage: React.FC = () => {
       setErrorMessage(null)
       setOptimisticBannedIds(new Set())
       setOptimisticTurnTeamId(null)
-      setOptimisticTimerResetAt(Date.now() + 30000)
-      setOptimisticSeconds(30)
+      setOptimisticTimerResetAt(Date.now() + banDurationSeconds * 1000)
+      setOptimisticSeconds(banDurationSeconds)
       setBigBanReveal(null)
-      setTurnToast(`ĐÃ RESET! LƯỢT 1: ${homeTeam.name} CẤM (30s)`)
+      setTurnToast(`ĐÃ RESET! LƯỢT 1: ${homeTeam.name} CẤM (${banDurationSeconds}s)`)
       setTimeout(() => setTurnToast(null), 3000)
       if (setMatchState) setMatchState(updated as any)
       refetchMatch()
@@ -495,12 +502,12 @@ export const MatchBanPage: React.FC = () => {
       return
     }
 
-    // 0ms Optimistic UI: mark card banned, immediately switch turn to Home team & reset 30s timer
+    // 0ms Optimistic UI: mark card banned, immediately switch turn to Home team & reset timer
     setOptimisticBannedIds((prev) => new Set([...prev, playerSeasonId]))
     setOptimisticTurnTeamId(homeTeam.id)
-    setOptimisticTimerResetAt(Date.now() + 30000)
-    setOptimisticSeconds(30)
-    setTurnToast(`ĐÃ CẤM ${player.name}! ĐỔI LƯỢT SANG ${homeTeam.name} (30s)`)
+    setOptimisticTimerResetAt(Date.now() + banDurationSeconds * 1000)
+    setOptimisticSeconds(banDurationSeconds)
+    setTurnToast(`ĐÃ CẤM ${player.name}! ĐỔI LƯỢT SANG ${homeTeam.name} (${banDurationSeconds}s)`)
     setTimeout(() => setTurnToast(null), 3500)
 
     setBigBanReveal({
@@ -550,12 +557,12 @@ export const MatchBanPage: React.FC = () => {
       return
     }
 
-    // 0ms Optimistic UI: mark card banned, immediately switch turn to Away team & reset 30s timer
+    // 0ms Optimistic UI: mark card banned, immediately switch turn to Away team & reset timer
     setOptimisticBannedIds((prev) => new Set([...prev, playerSeasonId]))
     setOptimisticTurnTeamId(awayTeam.id)
-    setOptimisticTimerResetAt(Date.now() + 30000)
-    setOptimisticSeconds(30)
-    setTurnToast(`ĐÃ CẤM ${player.name}! ĐỔI LƯỢT SANG ${awayTeam.name} (30s)`)
+    setOptimisticTimerResetAt(Date.now() + banDurationSeconds * 1000)
+    setOptimisticSeconds(banDurationSeconds)
+    setTurnToast(`ĐÃ CẤM ${player.name}! ĐỔI LƯỢT SANG ${awayTeam.name} (${banDurationSeconds}s)`)
     setTimeout(() => setTurnToast(null), 3500)
 
     setBigBanReveal({

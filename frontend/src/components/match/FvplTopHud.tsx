@@ -111,7 +111,7 @@ export const FvplTopHud: React.FC<FvplTopHudProps> = ({
               {status === 'BAN_PHASE'
                 ? formatTimer(secondsRemaining)
                 : status === 'SCHEDULED'
-                ? '00:30'
+                ? '03:00'
                 : status === 'BANS_LOCKED'
                 ? 'LOCKED'
                 : status === 'COMPLETED'

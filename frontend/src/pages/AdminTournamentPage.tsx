@@ -41,7 +41,7 @@ export const AdminTournamentPage: React.FC = () => {
 
   // Ban Rules State
   const [banQuota, setBanQuota] = useState<number>(5)
-  const [banTimeSeconds, setBanTimeSeconds] = useState<number>(45)
+  const [banTimeSeconds, setBanTimeSeconds] = useState<number>(180)
   const [banTarget, setBanTarget] = useState<'OPPONENT_ROSTER' | 'OWN_ROSTER'>('OPPONENT_ROSTER')
   const [banOrder, setBanOrder] = useState<'SIMULTANEOUS' | 'ALTERNATING'>('SIMULTANEOUS')
 
