@@ -22,7 +22,7 @@ def test_tournament_rules_defaults() -> None:
     assert rules.budget == 305
     assert rules.pick_time_seconds == 30
     assert rules.unique_by == "PLAYER"
-    assert rules.timeout_policy == "AUTO_PICK_CHEAPEST"
+    assert rules.timeout_policy == "SKIP_TURN"
     assert rules.allowed_season_ids == []
     assert rules.ban_count == 5
     assert rules.ban_time_seconds == 180

@@ -129,7 +129,13 @@ export const DraftHeader: React.FC<DraftHeaderProps> = ({
           <div className="hidden lg:flex items-center gap-2 bg-surface-card border border-border-default px-3 py-1 text-xs font-mono">
             <span className="text-zinc-200 font-bold uppercase">Lượt Pick {currentTurn}</span>
             <span className="text-zinc-500">·</span>
-            <span className="text-neon uppercase font-semibold">Vòng {currentRound}</span>
+            <span
+              className={`uppercase font-semibold ${
+                currentRound > 11 ? 'text-amber-400 font-bold' : 'text-neon'
+              }`}
+            >
+              {currentRound > 11 ? `Vòng Bù #${currentRound - 11}` : `Vòng ${currentRound}`}
+            </span>
           </div>
 
           {/* Connection status */}

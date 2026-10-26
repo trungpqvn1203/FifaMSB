@@ -36,7 +36,7 @@ export const AdminTournamentPage: React.FC = () => {
   const [pickTimeSeconds, setPickTimeSeconds] = useState<number>(30)
   const [playersPerTurn, setPlayersPerTurn] = useState<number>(1)
   const [uniqueBy, setUniqueBy] = useState<'PLAYER' | 'CARD'>('PLAYER')
-  const [timeoutPolicy, setTimeoutPolicy] = useState<'AUTO_PICK_CHEAPEST' | 'SKIP_TURN'>('AUTO_PICK_CHEAPEST')
+  const [timeoutPolicy, setTimeoutPolicy] = useState<'AUTO_PICK_CHEAPEST' | 'SKIP_TURN'>('SKIP_TURN')
   const [allowedSeasons, setAllowedSeasons] = useState<string[]>([])
 
   // Ban Rules State

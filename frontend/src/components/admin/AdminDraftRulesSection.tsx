@@ -163,7 +163,7 @@ export const AdminDraftRulesSection: React.FC<AdminDraftRulesProps> = ({
           <div className="text-[11px] font-mono text-gray-400 pt-1 flex items-center justify-between">
             <span>Hết giờ:</span>
             <span className="text-[#3DFF6B] font-mono">
-              {timeoutPolicy === 'AUTO_PICK_CHEAPEST' ? 'Auto-Pick Rẻ Nhất' : 'Skip Turn'}
+              {timeoutPolicy === 'SKIP_TURN' ? 'Mất Lượt (Pick Bù Sau)' : 'Auto-Pick Rẻ Nhất'}
             </span>
           </div>
         </div>
@@ -262,29 +262,6 @@ export const AdminDraftRulesSection: React.FC<AdminDraftRulesProps> = ({
           </label>
           <div className="space-y-2">
             <label
-              onClick={() => onTimeoutPolicyChange('AUTO_PICK_CHEAPEST')}
-              className={`flex items-start gap-3 p-3 rounded cursor-pointer transition ${
-                timeoutPolicy === 'AUTO_PICK_CHEAPEST'
-                  ? 'bg-[#181C1F] border border-[#3DFF6B]/50 bg-[#3DFF6B]/5'
-                  : 'bg-[#181C1F] border border-[#2A3138] hover:border-gray-500'
-              }`}
-            >
-              <input
-                type="radio"
-                name="timeout_policy"
-                checked={timeoutPolicy === 'AUTO_PICK_CHEAPEST'}
-                onChange={() => onTimeoutPolicyChange('AUTO_PICK_CHEAPEST')}
-                className="mt-0.5 text-[#3DFF6B] focus:ring-0"
-              />
-              <div>
-                <span className="text-xs font-bold text-[#3DFF6B] block">Tự Động Pick Cầu Thủ Lương Thấp Nhất</span>
-                <span className="text-[11px] text-gray-400">
-                  Hệ thống tự động pick cầu thủ hợp lệ có lương thấp nhất để đảm bảo tính khả thi của quỹ lương.
-                </span>
-              </div>
-            </label>
-
-            <label
               onClick={() => onTimeoutPolicyChange('SKIP_TURN')}
               className={`flex items-start gap-3 p-3 rounded cursor-pointer transition ${
                 timeoutPolicy === 'SKIP_TURN'
@@ -300,9 +277,36 @@ export const AdminDraftRulesSection: React.FC<AdminDraftRulesProps> = ({
                 className="mt-0.5 text-[#3DFF6B] focus:ring-0"
               />
               <div>
-                <span className="text-xs font-bold text-gray-300 block">Bỏ Qua Lượt (Mất Lượt)</span>
+                <span className="text-xs font-bold text-[#3DFF6B] block">
+                  Mất Lượt & Pick Bù Sau (Khuyên Dùng)
+                </span>
                 <span className="text-[11px] text-gray-400">
-                  Đội bị mất lượt pick hiện tại và đồng hồ tự động chuyển sang đội tiếp theo trong danh sách.
+                  Khi hết giờ, đội bị mất lượt và đồng hồ chuyển sang đội tiếp theo. Các đội bị mất lượt sẽ được mở vòng pick bù ở cuối đợt draft cho đến khi đủ 23 cầu thủ.
+                </span>
+              </div>
+            </label>
+
+            <label
+              onClick={() => onTimeoutPolicyChange('AUTO_PICK_CHEAPEST')}
+              className={`flex items-start gap-3 p-3 rounded cursor-pointer transition ${
+                timeoutPolicy === 'AUTO_PICK_CHEAPEST'
+                  ? 'bg-[#181C1F] border border-[#3DFF6B]/50 bg-[#3DFF6B]/5'
+                  : 'bg-[#181C1F] border border-[#2A3138] hover:border-gray-500'
+              }`}
+            >
+              <input
+                type="radio"
+                name="timeout_policy"
+                checked={timeoutPolicy === 'AUTO_PICK_CHEAPEST'}
+                onChange={() => onTimeoutPolicyChange('AUTO_PICK_CHEAPEST')}
+                className="mt-0.5 text-[#3DFF6B] focus:ring-0"
+              />
+              <div>
+                <span className="text-xs font-bold text-gray-300 block">
+                  Tự Động Pick Cầu Thủ Lương Thấp Nhất (Auto-Pick)
+                </span>
+                <span className="text-[11px] text-gray-400">
+                  Hệ thống tự động pick cầu thủ hợp lệ có lương thấp nhất để đảm bảo tính khả thi của quỹ lương.
                 </span>
               </div>
             </label>

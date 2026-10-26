@@ -130,7 +130,7 @@ export function getRoundCategoryLabel(round: number): {
   if (round >= 8 && round <= 11) {
     return { label: 'Dự bị', count: 3, isMain: false, isMainSquad: false }
   }
-  return { label: 'Lượt chọn', count: 1, isMain: false, isMainSquad: false }
+  return { label: 'Pick bù', count: 1, isMain: false, isMainSquad: false }
 }
 
 export type PositionLine = 'FW' | 'MF' | 'DF'

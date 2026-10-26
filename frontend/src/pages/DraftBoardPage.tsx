@@ -1,7 +1,7 @@
 import React, { useState, useCallback, useMemo } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { AlertCircle, ArrowLeft, Loader2 } from 'lucide-react'
+import { AlertCircle, ArrowLeft, Loader2, X } from 'lucide-react'
 import { apiClient, ApiError } from '@/lib/api-client'
 import { useAuth } from '@/context/AuthContext'
 import { useDraftSocket } from '@/hooks/useDraftSocket'
@@ -30,6 +30,7 @@ export const DraftBoardPage: React.FC = () => {
   const [actionError, setActionError] = useState<string | null>(null)
   const [revealedPlayer, setRevealedPlayer] = useState<RevealPlayerData | null>(null)
   const [lastPickedCard, setLastPickedCard] = useState<PlayerSeason | null>(null)
+  const [skippedNotice, setSkippedNotice] = useState<string | null>(null)
 
   // 1. Resolve Tournament or Draft Detail
   // If we arrived via /tournaments/:tournamentId/draft, fetch via /tournaments/:id/draft
@@ -121,6 +122,18 @@ export const DraftBoardPage: React.FC = () => {
     draftId: effectiveDraftId,
     onVersionGap: handleResync,
     onPickMade: handlePickMade,
+    onDraftEvent: (event) => {
+      if (event.eventType === 'TURN_SKIPPED') {
+        const teamName =
+          event.teams?.find((t) => t.id === event.currentTeamId)?.name ||
+          teams.find((t) => t.id === event.currentTeamId)?.name ||
+          'Một đội'
+        setSkippedNotice(
+          `Đội ${teamName} đã hết thời gian nên bị mất lượt. Đội sẽ được pick bù sau khi kết thúc 11 vòng.`
+        )
+        handleResync()
+      }
+    },
   })
 
   // Merge HTTP initial draft with latest WebSocket snapshot
@@ -304,6 +317,23 @@ export const DraftBoardPage: React.FC = () => {
         onCancel={() => cancelMutation.mutate()}
         isActionLoading={isActionLoading}
       />
+
+      {/* Missed Turn Notification Banner */}
+      {skippedNotice && (
+        <div className="mx-4 md:mx-6 mt-3 px-4 py-2 bg-amber-500/15 border border-amber-500/50 rounded-sm flex items-center justify-between text-amber-300 font-mono text-xs shadow-lg animate-fadeIn">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-amber-400 shrink-0" />
+            <span>{skippedNotice}</span>
+          </div>
+          <button
+            onClick={() => setSkippedNotice(null)}
+            className="p-1 hover:bg-amber-500/20 rounded text-amber-400 transition-colors"
+            title="Đóng thông báo"
+          >
+            <X className="w-4 h-4" />
+          </button>
+        </div>
+      )}
 
       {/* Main Broadcast Draft Arena */}
       <main className="flex-1 w-full px-4 md:px-6 py-3 flex flex-col gap-3">

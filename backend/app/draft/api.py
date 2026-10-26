@@ -241,6 +241,14 @@ async def start_draft(
     """Start a new draft session for a READY tournament (ADMIN only)."""
     draft = await service.start_draft(tournament_id)
     _, teams_status_data, now = await service.get_latest_draft_for_tournament(tournament_id)
+    current_team_status = next(
+        (t for t in teams_status_data if t.id == draft.current_team_id), None
+    )
+    is_main_squad = (
+        current_team_status.picked_count < 11
+        if current_team_status
+        else (draft.current_round <= 7)
+    )
     return DraftDetailResponse(
         id=draft.id,
         tournament_id=draft.tournament_id,
@@ -255,7 +263,7 @@ async def start_draft(
         server_time=now.isoformat(),
         rules_snapshot=draft.rules_snapshot,
         required_picks=get_picks_count_for_round(draft.current_round),
-        is_main_squad=draft.current_round <= 7,
+        is_main_squad=is_main_squad,
         teams=[
             TeamDraftStatus(
                 id=t.id,
@@ -277,6 +285,14 @@ async def get_tournament_draft(
 ) -> DraftDetailResponse:
     """Get the latest/active draft session details for a tournament."""
     draft, teams_status_data, now = await service.get_latest_draft_for_tournament(tournament_id)
+    current_team_status = next(
+        (t for t in teams_status_data if t.id == draft.current_team_id), None
+    )
+    is_main_squad = (
+        current_team_status.picked_count < 11
+        if current_team_status
+        else (draft.current_round <= 7)
+    )
     return DraftDetailResponse(
         id=draft.id,
         tournament_id=draft.tournament_id,
@@ -291,7 +307,7 @@ async def get_tournament_draft(
         server_time=now.isoformat(),
         rules_snapshot=draft.rules_snapshot,
         required_picks=get_picks_count_for_round(draft.current_round),
-        is_main_squad=draft.current_round <= 7,
+        is_main_squad=is_main_squad,
         teams=[
             TeamDraftStatus(
                 id=t.id,
@@ -313,6 +329,14 @@ async def get_draft_detail(
 ) -> DraftDetailResponse:
     """Get full draft details, current timer, and team status."""
     draft, teams_status_data, now = await service.get_draft_detail_data(draft_id)
+    current_team_status = next(
+        (t for t in teams_status_data if t.id == draft.current_team_id), None
+    )
+    is_main_squad = (
+        current_team_status.picked_count < 11
+        if current_team_status
+        else (draft.current_round <= 7)
+    )
     return DraftDetailResponse(
         id=draft.id,
         tournament_id=draft.tournament_id,
@@ -327,7 +351,7 @@ async def get_draft_detail(
         server_time=now.isoformat(),
         rules_snapshot=draft.rules_snapshot,
         required_picks=get_picks_count_for_round(draft.current_round),
-        is_main_squad=draft.current_round <= 7,
+        is_main_squad=is_main_squad,
         teams=[
             TeamDraftStatus(
                 id=t.id,

@@ -208,3 +208,36 @@ def test_get_picks_count_for_round() -> None:
     # Total cards drafted across 11 rounds must equal 23
     total_picks = sum(get_picks_count_for_round(r) for r in range(1, 12))
     assert total_picks == 23
+
+
+def test_linear_order_makeup_turn_after_skip() -> None:
+    """When a team skips a pick earlier, draft continues to extra round for makeup pick."""
+    strategy = LinearOrder()
+    # Team 1 skipped 1 pick (has 22 cards after round 11), Team 2 has 23 cards
+    t1 = _team(1, picked=22)
+    t2 = _team(2, picked=23)
+
+    # At the end of round 11, after Team 2 finished
+    res = strategy.next_turn(
+        teams=[t1, t2],
+        current_team_id=t2.team_id,
+        current_round=11,
+        roster_size=23,
+    )
+    # Must NOT complete draft yet; must give makeup turn (Round 12) to Team 1
+    assert not res.is_completed
+    assert res.next_team_id == t1.team_id
+    assert res.next_round == 12
+
+    # After Team 1 picks in round 12 (now has 23 cards)
+    t1_completed = _team(1, picked=23)
+    res_completed = strategy.next_turn(
+        teams=[t1_completed, t2],
+        current_team_id=t1.team_id,
+        current_round=12,
+        roster_size=23,
+    )
+    # Now all teams have reached 23 cards -> Draft completes!
+    assert res_completed.is_completed
+    assert res_completed.next_team_id is None
+

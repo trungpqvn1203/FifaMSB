@@ -156,7 +156,7 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
   }, [playerList, selectedSeasonId, searchTerm, sortBy])
 
   const remainingBudget = currentTeam?.budgetRemaining ?? 305
-  const isSubstituteRound = currentRound > 7
+  const isSubstituteRound = (currentTeam?.pickedCount ?? 0) >= 11
 
   const toggleBatchCard = (card: PlayerSeason) => {
     setSelectedBatch((prev) => {
@@ -206,7 +206,7 @@ export const PlayerPoolDrawer: React.FC<PlayerPoolDrawerProps> = ({
           {/* Left: Position Filter Chips + Round Mode Badge */}
           <div className="flex items-center flex-wrap gap-1.5">
             <div className="flex items-center gap-1.5 px-2.5 py-1 rounded bg-neon/10 border border-neon/30 text-neon font-mono text-[11px] font-bold uppercase mr-1">
-              <span>V{currentRound}: {roundCategory.label}</span>
+              <span>{currentRound > 11 ? `Vòng Bù #${currentRound - 11}` : `V${currentRound}`}: {roundCategory.label}</span>
               <span className="text-zinc-500">|</span>
               <span className="text-white">CHỌN {requiredPicks} CẦU THỦ</span>
             </div>

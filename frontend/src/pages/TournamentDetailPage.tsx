@@ -587,7 +587,7 @@ export const TournamentDetailPage: React.FC = () => {
           <Card className="p-4 bg-surface-card border-border-subtle">
             <div className="text-zinc-400 text-xs font-mono uppercase">Xử Lý Hết Giờ</div>
             <div className="font-mono text-sm font-bold text-zinc-300 mt-2 uppercase">
-              {rules.timeoutPolicy === 'AUTO_PICK_CHEAPEST' ? 'Tự Chọn Rẻ Nhất' : 'Bỏ Qua Lượt'}
+              {rules.timeoutPolicy === 'AUTO_PICK_CHEAPEST' ? 'Tự Chọn Rẻ Nhất' : 'Mất Lượt (Pick Bù Sau)'}
             </div>
           </Card>
         </div>

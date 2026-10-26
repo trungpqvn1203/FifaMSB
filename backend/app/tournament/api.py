@@ -53,7 +53,7 @@ class TournamentRulesSchema(BaseModel):
         default="PLAYER", alias="uniqueBy", serialization_alias="uniqueBy"
     )
     timeout_policy: Literal["SKIP_TURN", "AUTO_PICK_CHEAPEST"] = Field(
-        default="AUTO_PICK_CHEAPEST",
+        default="SKIP_TURN",
         alias="timeoutPolicy",
         serialization_alias="timeoutPolicy",
     )

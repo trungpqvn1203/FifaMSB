@@ -46,7 +46,7 @@ class TournamentRules(BaseModel):
 
     # What happens when a team's turn timer expires
     timeout_policy: Literal["SKIP_TURN", "AUTO_PICK_CHEAPEST"] = Field(
-        default="AUTO_PICK_CHEAPEST", serialization_alias="timeoutPolicy"
+        default="SKIP_TURN", serialization_alias="timeoutPolicy"
     )
 
     # Which seasons cards may be picked from (empty list = all seasons allowed)

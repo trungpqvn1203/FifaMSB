@@ -60,7 +60,7 @@ export const DraftTeamHeader: React.FC<DraftTeamHeaderProps> = ({
                         {team.name}
                       </div>
                       <div className="font-mono text-[9px] uppercase tracking-wider font-semibold opacity-80 truncate">
-                        ĐANG CHỌN · V{currentRound} L{currentTurn}
+                        ĐANG CHỌN · {currentRound > 11 ? `BÙ #${currentRound - 11}` : `V${currentRound}`} L{currentTurn}
                       </div>
                     </div>
                   </div>

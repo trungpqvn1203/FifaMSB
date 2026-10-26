@@ -234,6 +234,15 @@ class DraftService:
         if picked_players_list:
             picked_player_dict = picked_players_list[-1]
 
+        current_team_status = next(
+            (t for t in teams_status if t.id == draft.current_team_id), None
+        )
+        is_main_squad = (
+            current_team_status.picked_count < 11
+            if current_team_status
+            else (draft.current_round <= 7)
+        )
+
         return {
             "draftId": str(draft.id),
             "version": draft.version,
@@ -246,7 +255,7 @@ class DraftService:
             "turnExpiresAt": draft.turn_expires_at.isoformat() if draft.turn_expires_at else None,
             "remainingMillis": draft.remaining_millis,
             "requiredPicks": get_picks_count_for_round(draft.current_round),
-            "isMainSquad": draft.current_round <= 7,
+            "isMainSquad": is_main_squad,
             "pickedPlayer": picked_player_dict,
             "pickedPlayers": picked_players_list,
             "teams": [
@@ -664,7 +673,7 @@ class DraftService:
         """Execute the timeout policy for the current turn (auto-pick or skip)."""
         rules = draft.rules_snapshot
         timeout_policy = str(
-            rules.get("timeoutPolicy") or rules.get("timeout_policy") or "AUTO_PICK_CHEAPEST"
+            rules.get("timeoutPolicy") or rules.get("timeout_policy") or "SKIP_TURN"
         )
         unique_by = str(rules.get("uniqueBy") or rules.get("unique_by") or "PLAYER")
         unique_by_player = unique_by == "PLAYER"
@@ -774,7 +783,7 @@ class DraftService:
                 event_type="SKIP",
                 team_id=draft.current_team_id,
                 turn_number=draft.current_turn,
-                payload={"reason": "TIMEOUT_SKIP"},
+                payload={"reason": "TIMEOUT_SKIP", "round": draft.current_round},
                 created_at=now,
             )
 
