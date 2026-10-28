@@ -410,6 +410,7 @@ export const DraftBoardPage: React.FC = () => {
       <PlayerPickReveal
         data={revealedPlayer}
         onDismiss={() => setRevealedPlayer(null)}
+        durationMs={3000}
       />
     </div>
   )

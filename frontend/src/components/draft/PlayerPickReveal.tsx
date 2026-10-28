@@ -21,13 +21,13 @@ export interface RevealPlayerData {
 interface PlayerPickRevealProps {
   data: RevealPlayerData | null
   onDismiss: () => void
-  durationMs?: number // default 4000ms
+  durationMs?: number // default 3000ms (3s)
 }
 
 export const PlayerPickReveal: React.FC<PlayerPickRevealProps> = ({
   data,
   onDismiss,
-  durationMs = 4200,
+  durationMs = 3000,
 }) => {
   const [isClosing, setIsClosing] = useState(false)
   const [isMuted, setIsMuted] = useState(() => {

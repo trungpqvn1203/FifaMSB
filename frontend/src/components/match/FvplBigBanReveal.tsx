@@ -20,13 +20,13 @@ export interface BannedPlayerDetail {
 interface FvplBigBanRevealProps {
   data: BannedPlayerDetail | null
   onDismiss: () => void
-  durationMs?: number // default 3800ms
+  durationMs?: number // default 3000ms (3s)
 }
 
 export const FvplBigBanReveal: React.FC<FvplBigBanRevealProps> = ({
   data,
   onDismiss,
-  durationMs = 3800,
+  durationMs = 3000,
 }) => {
   const [progressWidth, setProgressWidth] = useState(100)
   const timerRef = useRef<number | null>(null)
